@@ -1,67 +1,27 @@
 # SESSION_STATE
 
 ## Current objective
-Bug fixes and UX polish after live testing with Anna.
+EPIC 8 — Multi-subject navigation framework (Maths + Geography + History "Coming Soon").
 
 ## Completed this session
-- EPIC 4 fully implemented (gamification, quest sessions, payouts)
-- EPIC 5 fully implemented (OpenAI tutor — Professor Quill)
-- Fixed leaked API key in git history (git-filter-repo + force-push)
-- EPIC 6 fully implemented:
-  - Structured logging: `core/logging.py` with JSON (prod) and coloured (dev) formatters
-  - Request logging middleware: method, path, status, duration_ms with request_id
-  - Themed error pages: 404/500/403 with fantasy messaging + `error.html`
-  - HTMX error toast: `responseError` listener for failed AJAX requests
-  - Retry UX: HTML5 `required` + server-side empty-answer inline error with red border
-  - YAML cross-validation tests (7): skills exist, chapters match, marking modes supported, solution steps, ID prefixes, difficulty distribution, chapter coverage
-  - End-to-end generation tests (5): every template generates, marks correct, marks wrong, deterministic with same seed, different seeds produce variety
-  - Logging tests (7): JSON/Dev formatter output, extras, level override, no duplicates
-  - Error page tests (4): 404 themed, home link, health unaffected, empty answer inline
-  - Bug fixes found by E2E tests:
-    - `mark_rounding_dp`: was reading raw `dp_from_param` string instead of resolved `dp` value
-    - `mark_fraction_or_decimal`: `rounding` could be `None`, causing AttributeError
-  - 23 new tests in `test_quality.py` (151 total passing)
-  - ADR 009: Quality & Observability
-- Doubled question bank:
-  - 15 new v2 templates added (30 total across Ch5-8)
-  - Each skill now has 2 templates at different difficulty levels
-  - All 30 templates pass E2E generation, correct-marking, and wrong-marking tests
-  - Fixed `_compute_algebra` to include variable name in answer dict
-- EPIC 6.5 fully implemented:
-  - `calculator` field on `TemplateDef` (optional: "basic" or "scientific") with Pydantic validator
-  - 16 templates tagged with `calculator: basic` (mean, pie chart, substitution, metric, rounding, BIDMAS, division, experimental probability — both v1 and v2)
-  - On-screen calculator panel: toggle button (🧮), 4×5 grid (digits, operators, clear, backspace, equals), read-only display, "Copy to answer" button
-  - Calculator wired through `quest.py` — all 3 `quest_question.html` render calls pass `calculator` from template
-  - 2 new calculator tests in `test_quality.py` (field values + tagged template count)
-  - ADR 010: On-screen Calculator
-- Weekly gold cap increased from 100 to 500 (£10/week at 2p/gold)
-- EPIC 6.6 fully implemented:
-  - `detect_milestone(old_xp, new_xp)` helper in `questions.py` — detects 100-XP boundary crossings
-  - `milestone_message(xp)` — 6 rotating title/body pairs with fantasy theme
-  - Canvas fireworks animation: 8 staggered bursts, coloured particles with gravity decay
-  - Mini 4×4 Sudoku reward game: 6 pre-built puzzles, input validation (1-4 only), check/close
-  - Milestone banner on `quest_result.html` with "🧩 Play a Reward Game!" button
-  - Wired into `quest_answer()` — captures `old_xp` before `check_answer()`, detects milestone, passes to template
-  - 15 new milestone tests (detect_milestone, milestone_message, integration)
-  - ADR 011: Milestone Celebrations
-- EPIC 6.7 fully implemented:
-  - `services/tiers.py`: 9-tier Greek mythology progression system (Mortal → Heir of Olympus)
-  - Each tier has unique colour scheme (accent, glow, gradient, badge)
-  - `base.html`: body gradient + CSS custom properties change per tier
-  - `templates/shared.py`: Jinja2 template factory with tier globals
-  - Tier badge in all page navbars (icon + title pill)
-  - Home page: tier progress card with progress bar, XP tracker, and full tier roadmap
-  - `detect_tier_up()` in `quest_answer` — banner celebration on tier crossings
-  - 28 new tests in `test_tiers.py` (get_tier, tier_progress, detect_tier_up, data integrity)
-  - ADR 012: Adventurer Tier System
-- Live bug fixes after Anna tested:
-  - DB migration: added idempotent `ALTER TABLE` system in `session.py` for `hints_used` and `fun_prompt` columns missing from existing SQLite DB
-  - MCQ rendering: line graph "which statement is true?" now shows 4 radio buttons instead of blank text input; `get_mcq_options()` helper with deterministic shuffle; 3 new tests
-  - Context-aware line graph data: replaced generic y_range (10-60) with scenario-bundled ranges (temperature 5-25°C, rainfall 20-120mm, sales £50-500, etc.); y-axis now shows unit labels; chart titles are context-specific; prompt renderer supports namespace attribute access
-  - ADR 013: Context-Aware Data & Realistic Ranges
-  - Hint scroll UX: clicking Hint now scrolls to the hint area so hints aren't missed when calculator is open
-  - ADR 014: Hint Button Scroll-to-Top UX
-  - Algebra prompt fix: 6 YAML prompts were dumping raw Python dicts (e.g. `{'expr_str': '-2x - 5y - 5', ...}`); fixed to use `.expr_str` / `.text` sub-fields; improved `_Namespace.__str__` with `_DISPLAY_KEYS` fallback and `__format__` safety
+- EPIC 8 Story 8.1: Multi-subject feed loader + subject dashboard UI
+  - **feed_loader.py**: Major refactor for multi-subject support:
+    - `SkillDef` and `TemplateDef` now have optional `subject`, `unit` fields; `chapter` is optional
+    - Auto-mapping for legacy maths: chapter 5→data, 6→algebra, 7→calculation, 8→probability
+    - New `MarkingMode` values: gridref_4fig, gridref_6fig, bearing_3digit, grid_match, label_match
+    - Loads multiple YAML packs: skills.yaml + templates_ch5_to_ch8.yaml AND skills_geography.yaml + templates_geography.yaml
+    - New query helpers: `get_templates_by_subject()`, `get_templates_by_unit()`, `get_subjects()`, `get_units_for_subject()`, `clear_cache()`
+    - Cross-validation updated for subject/unit consistency
+  - **Subject dashboard**: Home page (`/`) transformed from 4 maths chapter cards to 3 subject cards (Maths=ready, Geography=Coming Soon, History=Coming Soon greyed out)
+  - **Subject home page**: New `/subject/{name}` route + `subject_home.html` template showing unit cards per subject
+  - **Persistent breadcrumb**: Quest chapter page now has home → subject → chapter breadcrumb in nav
+  - **Tests**: Updated `test_feed_loader.py` (14 tests) and `test_quality.py` (43 tests) for multi-subject; E2E generation tests filtered to maths-only (geography generators are EPIC 9)
+  - **Docs**: BACKLOG updated, ADR 015 created, QUESTION_FEED_SPEC.md fully rewritten
+  - All 199 tests pass
+
+## Previous session work
+- EPICs 0-6.7 fully implemented (Docker/Caddy, auth, 30 maths templates, gamification, tutor, calculator, milestones, tiers)
+- Live bug fixes: DB migration, MCQ radios, context-aware data, hint scroll, algebra prompts, pie charts, probability ordering, rounding dots, BIDMAS superscript
 
 ## Decisions made
 - UI: HTMX + Tailwind CSS, server-rendered via Jinja2 (ADR 001)
@@ -78,27 +38,28 @@ Bug fixes and UX polish after live testing with Anna.
 - Tiers: 9-tier Greek mythology progression with dynamic theming (ADR 012)
 - Context-aware data: sensible UK ranges + y-axis units on charts (ADR 013)
 - Hint UX: scroll-to-hint on button click for visibility (ADR 014)
+- Multi-subject: feed_loader multi-pack, subject/unit navigation, new marking modes (ADR 015)
 
 ## Open questions
-- None for current EPICs
+- None for EPIC 8.1
 
-## Next actions (EPIC 7 — Hardening)
-- [x] Increase weekly gold cap to 500 (£10/week)
+## Next actions (EPIC 8 continued + EPIC 9)
+- [ ] EPIC 8.2: Subject-scoped progress tracking (per-subject XP/stats)
+- [ ] EPIC 9: Geography generators + renderers (map_grid, compass_rose, contour assets)
+- [ ] EPIC 10: History subject pack (YAML templates + generators)
+- [ ] EPIC 11: Cross-subject features (combined leaderboard, subject streaks)
 - [ ] UFW rules for LAN subnet
 - [ ] Optional Caddy basic auth
-- [ ] Consider adding more v3 templates for skills with low coverage
-- [ ] Consider adding more mini-games (word search, memory match) for milestone variety
-- [ ] Consider persisting highest tier reached for permanent badges
 
 ## Notes / gotchas
+- Geography YAML files exist but generators are NOT implemented yet (EPIC 9 work)
+- E2E quality tests correctly filter to maths-only to avoid geography generator failures
+- feed_loader cache must be cleared between tests (autouse fixture handles this)
+- Maths chapter routes (`/quest/chapter/{N}`) remain fully backward-compatible
+- Subject dashboard is at `/` → `/subject/maths` → `/quest/chapter/{N}` → questions
 - Dockerfile no longer requires uv.lock (uses uv sync without --frozen)
 - Tests require --extra dev flag: uv run --extra dev pytest
 - The app auto-seeds users on first startup; delete data/app.sqlite3 to re-seed
-- SQLModel relationships require `List["Type"]` from typing (not `list["Type"]`)
 - Never store or transmit any book page images/text to OpenAI
-- IMPORTANT: Rotate the OpenAI API key -- it was briefly in .env.example (now fixed)
-- Keep backups on second drive and outside git
-- Schema changes are now handled by idempotent migrations in `session.py` (no need to delete DB)
-- Weekly gold cap is in-memory only — resets on container restart
+- Schema changes are handled by idempotent migrations in `session.py`
 - OPENAI_API_KEY must be set in .env for tutor features to work
-- Tutor features degrade gracefully if API key is missing or API is down

@@ -116,3 +116,165 @@
 - [ ] UFW rules for LAN subnet
 - [ ] Optional Caddy basic auth
 - [ ] Optional Tailscale access
+
+## EPIC 8 — Multi-subject Navigation (Maths + Geography + History soon)
+Goal: Add subject-level organisation without forcing users to bounce back to the top after every action.
+Anna should:
+1) log in → see subjects (Maths, Geography, History coming soon) + progress per subject
+2) enter a subject → see quests (units/chapters) + progress
+3) drill into quest → see skills/subskills
+4) answer questions continuously while staying in that subject context
+Switching subjects is done via a top navigation link, not by forcing a return.
+
+### Stories
+- [ ] Define subject hierarchy model:
+      Subject → Unit/Quest → Skill → Template → Question Instance
+- [ ] Update feed spec to support subject/unit fields in skills + templates
+- [ ] Update backend selection API to accept subject/unit filters
+- [ ] Update frontend routing/state to retain current subject context
+- [ ] Add top navigation subject switcher (persistent header)
+
+### Tasks (backend)
+- [ ] Update template loader to accept optional fields on skills/templates:
+      `subject`, `unit` (and keep backward compatibility with maths/chapter fields)
+- [ ] Maths chapter-to-unit mapping:
+      - Ch5 → unit `data` (Data & Charts)
+      - Ch6 → unit `algebra` (Expressions & Formulae)
+      - Ch7 → unit `calculation` (Calculation & Measure)
+      - Ch8 → unit `probability` (Probability)
+- [ ] Add validation rules:
+      - template.subject must match skill.subject (if both present)
+      - template.unit must match skill.unit (if both present)
+      - ids unique; marking modes supported
+- [ ] Extend DB schema (migration):
+      - Add columns: questions.subject, questions.unit, questions.skill_code (if not already)
+      - Add columns: attempts.subject/unit (or derive via join if you prefer)
+- [ ] Add/extend endpoints:
+      - GET /subjects (list subjects + progress summary)
+      - GET /subjects/{subject}/quests (list units/quests + progress)
+      - GET /subjects/{subject}/quests/{unit}/skills (list skills + progress)
+      - POST /subjects/{subject}/start (start quest within subject context)
+- [ ] Update scoring/progress rollups to group by subject/unit/skill
+
+### Tasks (frontend)
+- [ ] New landing page after login:
+      - subject cards: Maths, Geography, History (coming soon)
+      - show progress bars and current level per subject
+- [ ] Subject home page:
+      - quest/unit list with progress and recommended next quest
+- [ ] Quest page:
+      - skills/subskills list (or a curated skill set)
+- [ ] Persistent top bar:
+      - current subject shown
+      - “Switch subject” dropdown or links
+      - does NOT auto-navigate away after each question
+- [ ] Ensure “Back” behaviour stays within subject:
+      question → quest → subject home (not global home unless explicitly clicked)
+
+### Tests
+- [ ] Backend tests:
+      - template loader backwards compatibility (maths still loads)
+      - subject/unit filtering selection
+      - progress rollups by subject
+- [ ] Frontend tests:
+      - smoke navigation: login → subject → quest → question → next question without losing context
+
+
+## EPIC 9 — Geography Content Pack (YAML + Generators + Renderers)
+Goal: Add KS3 Geography practice using template-driven generation and generated graphics (maps, contours, climographs).
+
+### Stories
+- [ ] Add Geography skills + templates YAML pack into repo
+- [ ] Implement required generators (seeded, deterministic)
+- [ ] Implement required renderers (SVG)
+- [ ] Implement marking modes for geo-specific answers
+- [ ] Add Geography quests/units and progress tracking
+
+### Tasks (content)
+- [ ] Add `skills_geography.yaml` and `templates_geography.yaml`
+- [ ] Decide units/quests naming (e.g. "Maps", "Weather", "Climate", "World")
+- [ ] Map templates to quest buckets
+
+### Tasks (generators)
+- [ ] Map/grid generator:
+      - deterministic point placement, labelled axes, feature names
+- [ ] Compass/bearing helpers:
+      - direction between points (8-point)
+      - bearing calculation (degrees from north clockwise)
+- [ ] Grid reference helpers:
+      - 4-figure grid refs (square)
+      - 6-figure grid refs (tenths within square)
+- [ ] Scale helpers:
+      - ratio-based and bar-scale-based conversions
+- [ ] Contour generators:
+      - synthetic hill contours (interval, peak)
+      - landform patterns (steep/gentle/valley/ridge)
+      - cutline generator for A–B
+      - cross-section option generator (correct + plausible distractors)
+- [ ] Climate generators:
+      - climograph dataset generator (temperate/tropical/med/etc)
+      - compare generator (identify which is tropical and why)
+- [ ] Weather generators:
+      - isobar chart generator (H/L + tight/loose spacing)
+      - rainfall diagram generator (relief/convectional/frontal)
+      - water cycle diagram generator
+      - cloud set generator (simple silhouettes)
+
+### Tasks (renderers: SVG)
+- [ ] `map_grid` renderer (SVG)
+- [ ] `compass_rose` renderer (SVG)
+- [ ] `scale_bar` renderer (SVG)
+- [ ] `contours` renderer (SVG)
+- [ ] `cross_section_set` renderer (SVG for answer options)
+- [ ] `climograph` renderer (SVG)
+- [ ] `synoptic_chart` renderer (SVG)
+- [ ] `diagram_label` renderer (SVG)
+
+### Tasks (marking)
+- [ ] New marking modes:
+      - gridref_4fig normalisation + validation
+      - gridref_6fig normalisation + validation
+      - bearing_3digit with tolerance
+      - label_match for diagram/map labels
+- [ ] Ensure marking returns structured feedback:
+      - correct/incorrect
+      - brief reason
+      - common mistake hint (optional)
+
+### Tasks (UI/UX)
+- [ ] New question components:
+      - map display (SVG)
+      - label-match / grid-fill UI
+      - cross-section MCQ with visuals
+      - climograph questions (read values)
+- [ ] Add Geography quest selection screens and progress bars
+- [ ] Add “Stephen running from what?” story mode (Phase 2):
+      - map-driven narrative questions (generated scenes, not copied text)
+
+### Tests
+- [ ] Determinism tests (same seed ⇒ identical SVG + answers)
+- [ ] Geometry sanity tests (bearing correctness, grid refs within bounds)
+- [ ] Renderer tests (snapshot-style or pixel hash for SVG output)
+- [ ] End-to-end smoke: start Geography quest → answer 5 Q → XP/gold updates
+
+
+## EPIC 10 — Subject Progress, Levels and Rewards Balancing
+Goal: Make XP/Gold feel fair across different subjects and question types.
+
+- [ ] Define per-subject level curves (or shared curve)
+- [ ] Normalise rewards by difficulty + time + hints used
+- [ ] Add per-subject streaks and per-subject weekly goals (optional)
+- [ ] Parent controls per subject (caps, multipliers)
+
+
+## EPIC 11 — History (Coming Soon) Framework Prep
+Goal: Prepare the structure so History can drop in cleanly.
+
+- [ ] Add placeholder subject card + “coming soon”
+- [ ] Extend feed spec to allow:
+      - timeline assets
+      - source interpretation (short extracts we write ourselves)
+      - cause/consequence matching
+- [ ] Add history renderer primitives:
+      - timeline SVG
+      - map (simple) for historical geography if needed

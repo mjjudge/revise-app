@@ -20,9 +20,11 @@ from sqlalchemy.pool import StaticPool
 from app.models.user import User, Role
 from app.services.questions import generate_question, check_answer, detect_milestone, milestone_message, MILESTONE_INTERVAL, get_mcq_options
 from app.templates.feed_loader import (
+    clear_cache,
     load_and_validate,
     load_skills,
     load_templates,
+    get_templates_by_subject,
     MarkingMode,
 )
 from app.core.logging import setup_logging, _JSONFormatter, _DevFormatter
@@ -62,6 +64,14 @@ def kid_fixture(session):
     return user
 
 
+@pytest.fixture(autouse=True)
+def _fresh_feed_cache():
+    """Clear feed-loader cache before every test."""
+    clear_cache()
+    yield
+    clear_cache()
+
+
 # ---------------------------------------------------------------------------
 # YAML Cross-Validation Tests
 # ---------------------------------------------------------------------------
@@ -80,10 +90,12 @@ class TestYAMLValidation:
             )
 
     def test_all_template_chapters_match_skill_chapters(self):
-        """Template chapter must match its skill's chapter."""
+        """For maths templates, chapter must match its skill's chapter."""
         skills_feed, templates_feed = load_and_validate()
         skill_chapters = {s.code: s.chapter for s in skills_feed.skills}
         for t in templates_feed.templates:
+            if t.chapter is None:
+                continue  # Non-maths templates don't use chapter
             expected_ch = skill_chapters.get(t.skill)
             assert t.chapter == expected_ch, (
                 f"Template '{t.id}' chapter {t.chapter} != "
@@ -108,14 +120,25 @@ class TestYAMLValidation:
                 f"Template '{t.id}' has empty solution steps"
             )
 
-    def test_all_template_ids_have_chapter_prefix(self):
-        """Template IDs should start with 'ch{N}_' matching their chapter."""
+    def test_maths_template_ids_have_chapter_prefix(self):
+        """Maths template IDs should start with 'ch{N}_' matching their chapter."""
         templates_feed = load_templates()
         for t in templates_feed.templates:
+            if t.chapter is None:
+                continue  # Non-maths templates use their own prefix
             expected_prefix = f"ch{t.chapter}_"
             assert t.id.startswith(expected_prefix), (
                 f"Template '{t.id}' should start with '{expected_prefix}'"
             )
+
+    def test_geography_template_ids_have_geog_prefix(self):
+        """Geography template IDs should start with 'geog_'."""
+        templates_feed = load_templates()
+        for t in templates_feed.templates:
+            if t.subject == "geography":
+                assert t.id.startswith("geog_"), (
+                    f"Geography template '{t.id}' should start with 'geog_'"
+                )
 
     def test_difficulty_distribution(self):
         """Templates should cover multiple difficulty levels."""
@@ -125,13 +148,13 @@ class TestYAMLValidation:
             f"Expected at least 2 difficulty levels, got {difficulties}"
         )
 
-    def test_all_chapters_have_templates(self):
-        """Each chapter (5-8) should have at least one template."""
-        templates_feed = load_templates()
-        chapters_with_templates = {t.chapter for t in templates_feed.templates}
+    def test_all_maths_chapters_have_templates(self):
+        """Each maths chapter (5-8) should have at least one template."""
+        maths = get_templates_by_subject("maths")
+        chapters_with_templates = {t.chapter for t in maths}
         for ch in (5, 6, 7, 8):
             assert ch in chapters_with_templates, (
-                f"Chapter {ch} has no templates"
+                f"Maths chapter {ch} has no templates"
             )
 
     def test_calculator_field_values(self):
@@ -143,11 +166,11 @@ class TestYAMLValidation:
             )
 
     def test_calculator_tagged_templates_exist(self):
-        """At least some templates should have a calculator."""
-        templates_feed = load_templates()
-        with_calc = [t for t in templates_feed.templates if t.calculator]
+        """At least some maths templates should have a calculator."""
+        maths = get_templates_by_subject("maths")
+        with_calc = [t for t in maths if t.calculator]
         assert len(with_calc) >= 8, (
-            f"Expected at least 8 calculator-tagged templates, got {len(with_calc)}"
+            f"Expected at least 8 calculator-tagged maths templates, got {len(with_calc)}"
         )
 
 
@@ -159,20 +182,25 @@ class TestYAMLValidation:
 class TestEndToEndGeneration:
     """Test that every template can generate a question and produce a valid answer."""
 
-    def test_every_template_generates_successfully(self, session, kid):
-        """Each template should generate a question without errors."""
-        templates_feed = load_templates()
-        for t in templates_feed.templates:
+    def test_every_maths_template_generates_successfully(self, session, kid):
+        """Each maths template should generate a question without errors.
+
+        Geography templates are excluded — their generators are not yet
+        implemented (EPIC 9).
+        """
+        maths = get_templates_by_subject("maths")
+        assert len(maths) > 0
+        for t in maths:
             instance = generate_question(session, kid, template_id=t.id, seed=42)
             assert instance.id is not None, f"Template '{t.id}' failed to generate"
             assert instance.prompt_rendered, f"Template '{t.id}' has empty prompt"
             assert instance.correct_json, f"Template '{t.id}' has no correct answer"
             assert instance.template_id == t.id
 
-    def test_every_template_correct_answer_marks_correctly(self, session, kid):
-        """Submitting the correct answer should mark as correct for every template."""
-        templates_feed = load_templates()
-        for t in templates_feed.templates:
+    def test_every_maths_template_correct_answer_marks_correctly(self, session, kid):
+        """Submitting the correct answer should mark as correct for every maths template."""
+        maths = get_templates_by_subject("maths")
+        for t in maths:
             instance = generate_question(session, kid, template_id=t.id, seed=42)
             correct = _decode_json(instance.correct_json)
             answer_str = _answer_to_str(correct)
@@ -183,21 +211,20 @@ class TestEndToEndGeneration:
                 f"Feedback: {result.feedback}"
             )
 
-    def test_every_template_wrong_answer_marks_incorrect(self, session, kid):
+    def test_every_maths_template_wrong_answer_marks_incorrect(self, session, kid):
         """Submitting a clearly wrong answer should be marked incorrect."""
-        templates_feed = load_templates()
-        for t in templates_feed.templates:
+        maths = get_templates_by_subject("maths")
+        for t in maths:
             instance = generate_question(session, kid, template_id=t.id, seed=42)
-            # Use a deliberately wrong answer
             attempt, result = check_answer(session, kid, instance.id, "WRONG_ANSWER_xyz")
             assert not result.correct, (
                 f"Template '{t.id}': 'WRONG_ANSWER_xyz' was incorrectly marked correct"
             )
 
     def test_deterministic_generation(self, session, kid):
-        """Same seed should produce the same question for each template."""
-        templates_feed = load_templates()
-        for t in templates_feed.templates:
+        """Same seed should produce the same question for each maths template."""
+        maths = get_templates_by_subject("maths")
+        for t in maths:
             q1 = generate_question(session, kid, template_id=t.id, seed=12345)
             q2 = generate_question(session, kid, template_id=t.id, seed=12345)
             assert q1.payload_json == q2.payload_json, (
@@ -209,15 +236,14 @@ class TestEndToEndGeneration:
 
     def test_different_seeds_produce_different_questions(self, session, kid):
         """Different seeds should (usually) produce different questions."""
-        templates_feed = load_templates()
+        maths = get_templates_by_subject("maths")
         different_count = 0
-        for t in templates_feed.templates:
+        for t in maths:
             q1 = generate_question(session, kid, template_id=t.id, seed=100)
             q2 = generate_question(session, kid, template_id=t.id, seed=999)
             if q1.payload_json != q2.payload_json:
                 different_count += 1
-        # Most templates should produce different results with different seeds
-        assert different_count > len(templates_feed.templates) // 2
+        assert different_count > len(maths) // 2
 
 
 # ---------------------------------------------------------------------------

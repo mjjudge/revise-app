@@ -1,0 +1,720 @@
+templates:
+
+  # ============================================================
+  # MAPS & SKILLS
+  # ============================================================
+
+  - id: geog_compass_direction_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.compass_points
+    difficulty: 1
+    type: multi_choice
+    prompt: "On the map, what direction is {to_feature} from {from_feature}?"
+    parameters:
+      map:
+        gen: simple_grid_map
+        grid_size: 10
+        features:
+          gen: named_points
+          count: 5
+          names: ["Farm", "Bridge", "School", "Wood", "Lake"]
+      from_feature:
+        gen: pick_one
+        from: map.features.names
+      to_feature:
+        gen: pick_one_distinct
+        from: map.features.names
+        not_equal_to: from_feature
+    assets:
+      - kind: map_grid
+        id: map1
+        grid_size_from: map.grid_size
+        points_from: map.features
+        show_grid_labels: true
+      - kind: compass_rose
+        id: compass1
+        style: simple_8_point
+    marking:
+      mode: mcq
+      mcq:
+        gen: compass_direction_options
+        correct_from: { gen: direction_between_points, map: map, a: from_feature, b: to_feature }
+    solution:
+      steps:
+        - "Find {from_feature} and {to_feature}."
+        - "Move from {from_feature} to {to_feature} and decide the compass direction."
+
+  - id: geog_map_symbols_match_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.map_symbols
+    difficulty: 2
+    type: grid_fill
+    prompt: "Match each map symbol to what it represents."
+    parameters:
+      symbols:
+        gen: symbol_set
+        set: basic
+        count: 5
+        # Example set includes: footpath, river, campsite, viewpoint, church
+    assets:
+      - kind: symbol_key
+        id: symkey1
+        symbols_from: symbols
+    marking:
+      mode: grid_match
+    solution:
+      steps:
+        - "Look at each symbol’s shape."
+        - "Match it to the correct meaning in the list."
+
+  - id: geog_gridref_4fig_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.gridref_4fig
+    difficulty: 2
+    type: short_text
+    prompt: "Give the 4-figure grid reference for {feature_name}."
+    parameters:
+      map:
+        gen: grid_map_with_points
+        grid_size: 10
+        square_size: 1
+        features:
+          gen: named_points
+          count: 6
+          names: ["Cave", "Hut", "Waterfall", "Tower", "Camp", "Beach"]
+        ensure:
+          points_in_distinct_squares: true
+      feature_name:
+        gen: pick_one
+        from: map.features.names
+    assets:
+      - kind: map_grid
+        id: map2
+        grid_size_from: map.grid_size
+        points_from: map.features
+        show_grid_labels: true
+        grid_reference_style: "os_like"
+    marking:
+      mode: gridref_4fig
+      normalise:
+        allow_spaces: true
+    solution:
+      steps:
+        - "Go along the corridor first (eastings)."
+        - "Then go up (northings)."
+        - "Write the two digits for the square."
+
+  - id: geog_gridref_6fig_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.gridref_6fig
+    difficulty: 3
+    type: short_text
+    prompt: "Give the 6-figure grid reference for {feature_name}."
+    parameters:
+      map:
+        gen: grid_map_with_points
+        grid_size: 10
+        features:
+          gen: named_points
+          count: 6
+          names: ["Tree", "Rock", "Old Well", "Bridge", "Jetty", "Lighthouse"]
+        ensure:
+          points_not_on_grid_lines: true
+      feature_name:
+        gen: pick_one
+        from: map.features.names
+    assets:
+      - kind: map_grid
+        id: map3
+        grid_size_from: map.grid_size
+        points_from: map.features
+        show_grid_labels: true
+        show_square_subdivisions: true
+        subdivisions: 10
+        grid_reference_style: "os_like"
+    marking:
+      mode: gridref_6fig
+      normalise:
+        allow_spaces: true
+    solution:
+      steps:
+        - "Find the 4-figure square first."
+        - "Estimate tenths across (easting) then tenths up (northing)."
+        - "Write 3 digits then 3 digits."
+
+  - id: geog_bearings_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.bearings
+    difficulty: 3
+    type: numeric
+    prompt: "What is the bearing of {to_feature} from {from_feature}? Give a 3-digit bearing."
+    parameters:
+      map:
+        gen: grid_map_with_points
+        grid_size: 10
+        features:
+          gen: named_points
+          count: 5
+          names: ["Start", "Bridge", "Hill", "Village", "Forest"]
+      from_feature:
+        gen: pick_one
+        from: map.features.names
+      to_feature:
+        gen: pick_one_distinct
+        from: map.features.names
+        not_equal_to: from_feature
+    assets:
+      - kind: map_grid
+        id: map4
+        grid_size_from: map.grid_size
+        points_from: map.features
+        show_grid_labels: true
+      - kind: compass_rose
+        id: compass2
+        style: bearing_ring
+        show_degrees: true
+    marking:
+      mode: bearing_3digit
+      tolerance_degrees: 2
+    solution:
+      steps:
+        - "Place north at the start point."
+        - "Measure clockwise from north to the line between the points."
+        - "Write as 3 digits (e.g. 065°)."
+
+  - id: geog_scale_real_distance_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.scale_distance
+    difficulty: 3
+    type: numeric
+    prompt: "The map has a scale of {scale_text}. The straight-line distance between A and B on the map is {map_cm} cm. What is the real distance in km?"
+    parameters:
+      scale:
+        gen: map_scale
+        type: ratio
+        choices:
+          - { ratio: 25000, text: "1 : 25,000" }
+          - { ratio: 50000, text: "1 : 50,000" }
+          - { ratio: 100000, text: "1 : 100,000" }
+      scale_text:
+        gen: from_object
+        object: scale
+        field: text
+      map_cm:
+        gen: decimal
+        range: { min: 1.2, max: 8.5 }
+        dp: 1
+    assets:
+      - kind: scale_bar
+        id: scalebar1
+        ratio_from: scale.ratio
+        show_km: true
+    marking:
+      mode: numeric_tolerance
+      tolerance: 0.02
+      unit_required: false
+    solution:
+      steps:
+        - "Convert the map distance to a real distance using the ratio."
+        - "Change metres to kilometres."
+
+  - id: geog_scale_map_distance_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.scale_map_distance
+    difficulty: 2
+    type: numeric
+    prompt: "A real walk is {real_km} km. On a map with scale {scale_text}, how many cm would that be on the map?"
+    parameters:
+      scale:
+        gen: map_scale
+        type: ratio
+        choices:
+          - { ratio: 25000, text: "1 : 25,000" }
+          - { ratio: 50000, text: "1 : 50,000" }
+      scale_text:
+        gen: from_object
+        object: scale
+        field: text
+      real_km:
+        gen: decimal
+        range: { min: 0.5, max: 12.0 }
+        dp: 1
+    assets:
+      - kind: scale_bar
+        id: scalebar2
+        ratio_from: scale.ratio
+        show_km: true
+    marking:
+      mode: numeric_tolerance
+      tolerance: 0.05
+      unit_required: false
+    solution:
+      steps:
+        - "Convert km to metres."
+        - "Use the ratio to find map distance in cm."
+
+  - id: geog_contours_height_point_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.contours_height
+    difficulty: 3
+    type: numeric
+    prompt: "Look at the contour map. Estimate the height at point P in metres."
+    parameters:
+      contour_map:
+        gen: synthetic_hill_contours
+        interval_m: { gen: pick_one, from: [10, 20, 25] }
+        peak_m: { gen: pick_one, from: [120, 180, 240, 300] }
+      point_p:
+        gen: point_on_contours
+        from: contour_map
+    assets:
+      - kind: contours
+        id: contours1
+        contour_map_from: contour_map
+        mark_point: point_p
+        label_some_contours: true
+    marking:
+      mode: numeric_tolerance
+      tolerance: 8
+      unit_required: false
+    solution:
+      steps:
+        - "Find the nearest contour lines around P."
+        - "Use the contour interval to estimate between them."
+
+  - id: geog_contours_shape_identify_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.landform_shape
+    difficulty: 3
+    type: multi_choice
+    prompt: "Which statement best describes the land at point P?"
+    parameters:
+      contour_map:
+        gen: synthetic_landforms
+        forms: ["steep_slope", "gentle_slope", "valley", "ridge"]
+      point_p:
+        gen: point_selected_for_form
+        from: contour_map
+    assets:
+      - kind: contours
+        id: contours2
+        contour_map_from: contour_map
+        mark_point: point_p
+        label_some_contours: false
+    marking:
+      mode: mcq
+      mcq:
+        gen: landform_description_options
+        correct_from: { gen: landform_at_point, map: contour_map, point: point_p }
+    solution:
+      steps:
+        - "Close contours mean a steep slope."
+        - "Wide spacing means a gentle slope."
+        - "V-shapes often show valleys (pointing uphill)."
+
+  - id: geog_cross_section_choose_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.cross_section
+    difficulty: 4
+    type: multi_choice
+    prompt: "A line A–B is drawn across the contour map. Which cross-section is correct?"
+    parameters:
+      contour_map:
+        gen: synthetic_hill_contours
+        interval_m: 20
+        peak_m: { gen: pick_one, from: [200, 260, 320] }
+      line_ab:
+        gen: cutline
+        from: contour_map
+        ensure: { crosses_peak: true }
+      options:
+        gen: cross_section_options
+        from: contour_map
+        line: line_ab
+        count: 4
+    assets:
+      - kind: contours
+        id: contours3
+        contour_map_from: contour_map
+        draw_line: line_ab
+        label_some_contours: true
+      - kind: cross_section_set
+        id: xs1
+        options_from: options
+        label_options: true
+    marking:
+      mode: mcq
+      correct_from: options.correct_index
+    solution:
+      steps:
+        - "Where contours are close, the cross-section is steep."
+        - "Where contours are far apart, the cross-section is gentle."
+        - "Match peaks/valleys along A–B."
+
+  - id: geog_continents_oceans_v1
+    subject: geography
+    unit: world
+    skill: geog.world.continents_oceans
+    difficulty: 1
+    type: grid_fill
+    prompt: "Label the continents and oceans on the world map."
+    parameters:
+      labels:
+        gen: continents_oceans_set
+        continents: true
+        oceans: true
+        count_continents: 7
+        count_oceans: 5
+    assets:
+      - kind: world_map_blank
+        id: world1
+        show_label_points: true
+        label_points_from: labels.points
+    marking:
+      mode: label_match
+    solution:
+      steps:
+        - "Match each label to the correct location."
+
+  # ============================================================
+  # WEATHER & CLIMATE
+  # ============================================================
+
+  - id: geog_weather_instruments_match_v1
+    subject: geography
+    unit: weather
+    skill: geog.weather.instruments
+    difficulty: 2
+    type: grid_fill
+    prompt: "Match each weather instrument to what it measures."
+    parameters:
+      instruments:
+        gen: instruments_set
+        include: ["Six's thermometer", "Rain gauge", "Campbell-Stokes sunshine recorder", "Anemometer", "Wind vane", "Barometer"]
+        pick: 5
+    assets:
+      - kind: matching_cards
+        id: inst1
+        left_from: instruments.names
+        right_from: instruments.measures
+        shuffle: true
+    marking:
+      mode: grid_match
+    solution:
+      steps:
+        - "Remember: barometer = air pressure, anemometer = wind speed, wind vane = wind direction."
+
+  - id: geog_troposphere_basic_v1
+    subject: geography
+    unit: weather
+    skill: geog.weather.troposphere
+    difficulty: 1
+    type: multi_choice
+    prompt: "Which statement about the troposphere is correct?"
+    parameters:
+      correct:
+        gen: pick_one
+        from:
+          - "It is the lowest layer of the atmosphere where most weather happens."
+      distractors:
+        gen: troposphere_distractors
+        count: 3
+    assets: []
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "The troposphere is the layer closest to Earth where weather forms."
+
+  - id: geog_pressure_isobars_wind_v1
+    subject: geography
+    unit: weather
+    skill: geog.weather.pressure_systems
+    difficulty: 3
+    type: multi_choice
+    prompt: "Look at the pressure map. Where will the wind be strongest?"
+    parameters:
+      chart:
+        gen: isobar_chart
+        highs_lows: true
+        tight_zone: true
+    assets:
+      - kind: synoptic_chart
+        id: syn1
+        chart_from: chart
+        show_isobars: true
+        show_hl: true
+    marking:
+      mode: mcq
+      mcq:
+        gen: isobar_wind_strength_options
+        correct_from: { gen: tightest_isobars_region, chart: chart }
+    solution:
+      steps:
+        - "Wind is strongest where isobars are closest together."
+
+  - id: geog_depression_weather_v1
+    subject: geography
+    unit: weather
+    skill: geog.weather.depressions
+    difficulty: 2
+    type: multi_choice
+    prompt: "A depression (low pressure) moves over the UK. What weather is most likely?"
+    parameters:
+      correct:
+        gen: pick_one
+        from:
+          - "Cloudy, windy and often rainy."
+      distractors:
+        gen: depression_distractors
+        count: 3
+    assets: []
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Low pressure means rising air, clouds and rain."
+
+  - id: geog_uk_air_masses_match_v1
+    subject: geography
+    unit: weather
+    skill: geog.weather.uk_air_masses
+    difficulty: 4
+    type: grid_fill
+    prompt: "Match each UK air mass to its typical weather."
+    parameters:
+      air_masses:
+        gen: uk_air_masses_set
+        pick: 4
+    assets:
+      - kind: matching_cards
+        id: airmass1
+        left_from: air_masses.names
+        right_from: air_masses.weather
+        shuffle: true
+    marking:
+      mode: grid_match
+    solution:
+      steps:
+        - "Maritime air masses are usually wetter."
+        - "Continental air masses are usually drier."
+
+  - id: geog_rainfall_types_diagram_v1
+    subject: geography
+    unit: weather
+    skill: geog.weather.rainfall_types
+    difficulty: 3
+    type: multi_choice
+    prompt: "Identify the type of rainfall shown in the diagram."
+    parameters:
+      rainfall:
+        gen: rainfall_diagram
+        type: { gen: pick_one, from: ["relief", "convectional", "frontal"] }
+      options:
+        gen: rainfall_type_options
+        correct_from: rainfall.type
+    assets:
+      - kind: rainfall_diagram
+        id: rain1
+        diagram_from: rainfall
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Relief: air forced over hills."
+        - "Convectional: sun heats ground, warm air rises."
+        - "Frontal: warm and cold air meet."
+
+  - id: geog_water_cycle_label_v1
+    subject: geography
+    unit: weather
+    skill: geog.weather.water_cycle
+    difficulty: 2
+    type: grid_fill
+    prompt: "Label the water cycle diagram."
+    parameters:
+      diagram:
+        gen: water_cycle_diagram
+        labels: ["evaporation", "condensation", "precipitation", "runoff", "transpiration"]
+        pick: 4
+    assets:
+      - kind: diagram_label
+        id: wc1
+        diagram_from: diagram
+        show_blank_labels: true
+    marking:
+      mode: label_match
+    solution:
+      steps:
+        - "Evaporation: liquid water to vapour."
+        - "Condensation: vapour to droplets (clouds)."
+        - "Precipitation: rain/snow/hail."
+
+  - id: geog_cloud_types_match_v1
+    subject: geography
+    unit: weather
+    skill: geog.weather.cloud_types
+    difficulty: 2
+    type: grid_fill
+    prompt: "Match the cloud picture to the cloud type."
+    parameters:
+      clouds:
+        gen: cloud_set
+        include: ["cumulus", "stratus", "cirrus", "cumulonimbus"]
+        pick: 3
+    assets:
+      - kind: cloud_cards
+        id: cloud1
+        clouds_from: clouds
+        style: simple_svg
+    marking:
+      mode: grid_match
+    solution:
+      steps:
+        - "Cumulus: fluffy heaps."
+        - "Stratus: flat layers."
+        - "Cirrus: wispy high clouds."
+
+  - id: geog_climograph_read_v1
+    subject: geography
+    unit: climate
+    skill: geog.climate.climograph_read
+    difficulty: 3
+    type: numeric
+    prompt: "Look at the climate graph. What is the total rainfall for the year (mm)?"
+    parameters:
+      climate:
+        gen: climograph_dataset
+        type: { gen: pick_one, from: ["temperate", "tropical_wet", "tropical_dry", "polar"] }
+        months: 12
+    assets:
+      - kind: climograph
+        id: clim1
+        months_from: climate.months
+        temp_c_from: climate.temp_c
+        rain_mm_from: climate.rain_mm
+    marking:
+      mode: numeric_tolerance
+      tolerance: 2
+    solution:
+      steps:
+        - "Add the rainfall bars for all 12 months."
+
+  - id: geog_climograph_range_v1
+    subject: geography
+    unit: climate
+    skill: geog.climate.climograph_read
+    difficulty: 3
+    type: numeric
+    prompt: "Look at the climate graph. What is the annual temperature range (°C)?"
+    parameters:
+      climate:
+        gen: climograph_dataset
+        type: { gen: pick_one, from: ["temperate", "tropical_wet", "mediterranean"] }
+        months: 12
+    assets:
+      - kind: climograph
+        id: clim2
+        months_from: climate.months
+        temp_c_from: climate.temp_c
+        rain_mm_from: climate.rain_mm
+    marking:
+      mode: numeric_tolerance
+      tolerance: 0.5
+    solution:
+      steps:
+        - "Find the highest monthly temperature."
+        - "Find the lowest monthly temperature."
+        - "Subtract to get the range."
+
+  - id: geog_climate_compare_v1
+    subject: geography
+    unit: climate
+    skill: geog.climate.compare
+    difficulty: 4
+    type: multi_choice
+    prompt: "Two climate graphs are shown. Which location is more likely to be tropical, and why?"
+    parameters:
+      a:
+        gen: climograph_dataset
+        type: { gen: pick_one, from: ["temperate", "mediterranean"] }
+      b:
+        gen: climograph_dataset
+        type: { gen: pick_one, from: ["tropical_wet", "tropical_dry"] }
+      options:
+        gen: climate_compare_options
+        correct_from: { gen: compare_result, a: a, b: b }
+    assets:
+      - kind: climograph
+        id: climA
+        months_from: a.months
+        temp_c_from: a.temp_c
+        rain_mm_from: a.rain_mm
+        title: "Location A"
+      - kind: climograph
+        id: climB
+        months_from: b.months
+        temp_c_from: b.temp_c
+        rain_mm_from: b.rain_mm
+        title: "Location B"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Tropical climates tend to have warm temperatures all year."
+        - "Look for higher rainfall (wet) or clear wet/dry seasons (dry)."
+
+  - id: geog_climate_impacts_v1
+    subject: geography
+    unit: climate
+    skill: geog.climate.impacts
+    difficulty: 3
+    type: multi_choice
+    prompt: "A place has long, cold winters and short summers. Which impact is most likely?"
+    parameters:
+      correct:
+        gen: pick_one
+        from:
+          - "Farming seasons are short, so fewer crops can grow outdoors."
+      distractors:
+        gen: climate_impacts_distractors
+        count: 3
+    assets: []
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Climate affects what can grow and how people travel, work and build homes."
+
+  - id: geog_heatwave_safety_v1
+    subject: geography
+    unit: climate
+    skill: geog.climate.heatwaves_safety
+    difficulty: 2
+    type: multi_choice
+    prompt: "During a heatwave, which action is safest?"
+    parameters:
+      correct:
+        gen: pick_one
+        from:
+          - "Drink water regularly and stay in the shade during the hottest part of the day."
+      distractors:
+        gen: heatwave_distractors
+        count: 3
+    assets: []
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Heatwaves increase the risk of dehydration and heat illness."
+        - "Shade, hydration and lighter activity help."

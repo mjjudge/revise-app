@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}{{ subject_title }} – Revise Quest{% endblock %}
+
+{% block body %}
+<div class="min-h-screen">
+  <!-- Top bar -->
+  <nav class="bg-realm-purple-800/80 backdrop-blur border-b border-realm-purple-600/50 px-4 py-3">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/" class="text-2xl hover:scale-110 transition-transform" title="Home">&#127968;</a>
+        <span class="text-realm-purple-400">›</span>
+        <span class="font-bold text-lg tier-accent">{{ subject_icon }} {{ subject_title }}</span>
+      </div>
+      <div class="flex items-center gap-4">
+        {% set tier = get_tier(user.xp) %}
+        <div class="flex items-center gap-1 tier-badge px-3 py-1 rounded-full">
+          <span class="text-sm">{{ tier.icon }}</span>
+          <span class="text-sm font-bold">{{ tier.title }}</span>
+        </div>
+        <div class="flex items-center gap-1 bg-realm-purple-700/60 px-3 py-1 rounded-full">
+          <span class="tier-accent text-sm">&#11088;</span>
+          <span class="text-sm font-bold">{{ user.xp }} XP</span>
+        </div>
+        <div class="flex items-center gap-1 bg-realm-purple-700/60 px-3 py-1 rounded-full">
+          <span class="text-realm-gold-400 text-sm gold-shimmer">&#129689;</span>
+          <span class="text-sm font-bold">{{ user.gold }} Gold</span>
+        </div>
+        <a href="/auth/logout" class="text-realm-purple-300 hover:text-white text-sm">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <div class="text-center mb-10">
+      <h1 class="text-3xl md:text-4xl font-bold mb-2">{{ subject_icon }} {{ subject_title }}</h1>
+      <p class="text-realm-purple-200 text-lg">Choose a unit to begin your quest</p>
+    </div>
+
+    <!-- Unit cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {% for unit in units %}
+      <a href="{{ unit.href }}"
+         class="bg-realm-purple-700/40 backdrop-blur rounded-xl p-6 border border-realm-purple-500/30 hover:border-realm-gold-400/50 transition-all cursor-pointer quest-glow block">
+        <div class="flex items-start gap-4">
+          <div class="w-14 h-14 rounded-lg {{ unit.bg_class }} flex items-center justify-center text-3xl shrink-0">
+            {{ unit.icon }}
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-realm-gold-400 mb-1">{{ unit.title }}</h2>
+            <p class="text-realm-purple-200 text-sm mb-3">{{ unit.description }}</p>
+            <div class="flex items-center gap-2">
+              <span class="text-xs bg-realm-green-600/40 text-realm-green-400 px-2 py-1 rounded">Ready</span>
+            </div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Back link -->
+    <div class="mt-8">
+      <a href="/" class="text-realm-purple-300 hover:text-realm-gold-400 transition-colors">&#8592; Back to subjects</a>
+    </div>
+  </main>
+</div>
+{% endblock %}

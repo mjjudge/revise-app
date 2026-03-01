@@ -16,6 +16,49 @@ router = APIRouter(tags=["pages"])
 
 templates = __import__("app.templates.shared", fromlist=["create_templates"]).create_templates()
 
+# ── Subject metadata (icons, unit definitions, etc.) ──────────────────────
+
+_SUBJECT_META: dict[str, dict] = {
+    "maths": {
+        "title": "Maths",
+        "icon": "🧮",
+        "units": [
+            {
+                "key": "data", "chapter": 5,
+                "title": "Data & Charts",
+                "icon": "📊",
+                "bg_class": "bg-blue-600/30",
+                "description": "Averages, pie charts, time series & more",
+                "href": "/quest/chapter/5",
+            },
+            {
+                "key": "algebra", "chapter": 6,
+                "title": "Expressions & Formulae",
+                "icon": "🧮",
+                "bg_class": "bg-emerald-600/30",
+                "description": "Substitution, simplify, like terms",
+                "href": "/quest/chapter/6",
+            },
+            {
+                "key": "calculation", "chapter": 7,
+                "title": "Calculation & Measure",
+                "icon": "🧠",
+                "bg_class": "bg-amber-600/30",
+                "description": "Conversions, rounding, BIDMAS, mental methods",
+                "href": "/quest/chapter/7",
+            },
+            {
+                "key": "probability", "chapter": 8,
+                "title": "Probability",
+                "icon": "🎲",
+                "bg_class": "bg-purple-600/30",
+                "description": "Scales, equally likely, experimental probability",
+                "href": "/quest/chapter/8",
+            },
+        ],
+    },
+}
+
 
 @router.get("/login", response_class=HTMLResponse)
 def login_page(request: Request, error: int = 0):
@@ -27,7 +70,7 @@ def login_page(request: Request, error: int = 0):
 
 @router.get("/", response_class=HTMLResponse)
 def home_page(request: Request, session: Session = Depends(get_session)):
-    """Child's home page — quest launcher."""
+    """Child's home page — subject dashboard."""
     user = get_current_user(request, session)
     if not user:
         return RedirectResponse(url="/login", status_code=303)
@@ -35,6 +78,25 @@ def home_page(request: Request, session: Session = Depends(get_session)):
     return templates.TemplateResponse(request, "home.html", {
         "user": user,
         "greeting": greeting(),
+    })
+
+
+@router.get("/subject/{name}", response_class=HTMLResponse)
+def subject_home(name: str, request: Request, session: Session = Depends(get_session)):
+    """Subject landing page — shows units for a subject."""
+    user = get_current_user(request, session)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    meta = _SUBJECT_META.get(name)
+    if not meta:
+        return RedirectResponse(url="/", status_code=303)
+
+    return templates.TemplateResponse(request, "subject_home.html", {
+        "user": user,
+        "subject_title": meta["title"],
+        "subject_icon": meta["icon"],
+        "units": meta["units"],
     })
 
 

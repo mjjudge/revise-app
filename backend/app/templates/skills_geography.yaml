@@ -1,0 +1,131 @@
+skills:
+  # -------------------------
+  # Geography: Maps & skills
+  # -------------------------
+  - code: geog.maps.compass_points
+    subject: geography
+    unit: maps
+    name: Compass directions (N, NE, E, etc)
+
+  - code: geog.maps.map_symbols
+    subject: geography
+    unit: maps
+    name: Map symbols and keys
+
+  - code: geog.maps.gridref_4fig
+    subject: geography
+    unit: maps
+    name: 4-figure grid references
+
+  - code: geog.maps.gridref_6fig
+    subject: geography
+    unit: maps
+    name: 6-figure grid references
+
+  - code: geog.maps.bearings
+    subject: geography
+    unit: maps
+    name: Bearings (3-digit)
+
+  - code: geog.maps.scale_distance
+    subject: geography
+    unit: maps
+    name: Using scale to calculate real distance
+
+  - code: geog.maps.scale_map_distance
+    subject: geography
+    unit: maps
+    name: Using scale to calculate map distance
+
+  - code: geog.maps.contours_height
+    subject: geography
+    unit: maps
+    name: Interpreting height from contours
+
+  - code: geog.maps.landform_shape
+    subject: geography
+    unit: maps
+    name: Identifying landform shape from contours
+
+  - code: geog.maps.cross_section
+    subject: geography
+    unit: maps
+    name: Cross-sections from contour maps
+
+  - code: geog.world.continents_oceans
+    subject: geography
+    unit: world
+    name: Continents and oceans
+
+  # -------------------------
+  # Geography: Weather & climate
+  # -------------------------
+  - code: geog.weather.instruments
+    subject: geography
+    unit: weather
+    name: Weather instruments (what they measure)
+
+  - code: geog.weather.troposphere
+    subject: geography
+    unit: weather
+    name: Troposphere (what/where)
+
+  - code: geog.weather.pressure_systems
+    subject: geography
+    unit: weather
+    name: Air pressure, highs/lows, isobars
+
+  - code: geog.weather.depressions
+    subject: geography
+    unit: weather
+    name: Depressions (low pressure systems)
+
+  - code: geog.weather.uk_air_masses
+    subject: geography
+    unit: weather
+    name: UK air masses and likely weather
+
+  - code: geog.weather.rainfall_types
+    subject: geography
+    unit: weather
+    name: Types of rainfall (relief, convectional, frontal)
+
+  - code: geog.weather.water_cycle
+    subject: geography
+    unit: weather
+    name: Water cycle processes
+
+  - code: geog.weather.cloud_types
+    subject: geography
+    unit: weather
+    name: Cloud types (basic identification)
+
+  - code: geog.weather.forecasts
+    subject: geography
+    unit: weather
+    name: Weather forecasts (interpreting simple charts)
+
+  - code: geog.climate.terms
+    subject: geography
+    unit: climate
+    name: Weather & climate terms (A–Z style)
+
+  - code: geog.climate.climograph_read
+    subject: geography
+    unit: climate
+    name: Reading climate graphs (climographs)
+
+  - code: geog.climate.compare
+    subject: geography
+    unit: climate
+    name: Comparing climates using graphs
+
+  - code: geog.climate.impacts
+    subject: geography
+    unit: climate
+    name: Impacts of climate on people and activities
+
+  - code: geog.climate.heatwaves_safety
+    subject: geography
+    unit: climate
+    name: Heatwaves and staying safe

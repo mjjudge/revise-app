@@ -4,7 +4,13 @@
 {% block body %}
 <!-- Navbar -->
 <nav class="flex items-center justify-between px-6 py-3 bg-realm-purple-800/80 border-b border-realm-purple-600">
-  <a href="/" class="tier-accent font-bold text-lg">⚔️ Revise Quest</a>
+  <div class="flex items-center gap-2">
+    <a href="/" class="text-2xl hover:scale-110 transition-transform" title="Home">🏠</a>
+    <span class="text-realm-purple-400">›</span>
+    <a href="/subject/maths" class="tier-accent hover:text-realm-gold-400">🧮 Maths</a>
+    <span class="text-realm-purple-400">›</span>
+    <span class="font-bold text-lg">Chapter {{ chapter }}</span>
+  </div>
   <div class="flex items-center gap-3">
     {% set tier = get_tier(user.xp) %}
     <span class="tier-badge px-2 py-0.5 rounded-full text-xs font-bold">{{ tier.icon }} {{ tier.title }}</span>
@@ -63,7 +69,7 @@
   </div>
 
   <div class="mt-8">
-    <a href="/" class="text-realm-purple-300 hover:text-realm-gold-400 transition-colors">← Back to quests</a>
+    <a href="/subject/maths" class="text-realm-purple-300 hover:text-realm-gold-400 transition-colors">← Back to Maths</a>
   </div>
 </main>
 {% endblock %}

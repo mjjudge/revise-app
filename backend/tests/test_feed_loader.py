@@ -1,18 +1,31 @@
-"""Tests for YAML feed loader and validation."""
+"""Tests for YAML feed loader and validation (multi-subject)."""
 
 import pytest
 
 from app.templates.feed_loader import (
+    clear_cache,
     load_and_validate,
     load_skills,
     load_templates,
     get_skill_map,
+    get_subjects,
     get_templates_by_chapter,
     get_templates_by_skill,
+    get_templates_by_subject,
+    get_templates_by_unit,
     get_template_by_id,
+    get_units_for_subject,
     SkillDef,
     TemplateDef,
 )
+
+
+@pytest.fixture(autouse=True)
+def _fresh_cache():
+    """Clear the feed-loader cache before every test."""
+    clear_cache()
+    yield
+    clear_cache()
 
 
 class TestLoadSkills:
@@ -25,21 +38,37 @@ class TestLoadSkills:
         for s in feed.skills:
             assert isinstance(s, SkillDef)
             assert s.code
-            assert s.chapter in (5, 6, 7, 8)
             assert s.name
+            # Every skill must have a subject (auto-mapped for maths)
+            assert s.subject, f"Skill '{s.code}' missing subject"
 
     def test_skill_codes_unique(self):
         feed = load_skills()
         codes = [s.code for s in feed.skills]
         assert len(codes) == len(set(codes)), "Skill codes must be unique"
 
-    def test_expected_chapters(self):
+    def test_expected_maths_chapters(self):
         feed = load_skills()
-        chapters = {s.chapter for s in feed.skills}
+        maths = [s for s in feed.skills if s.subject == "maths"]
+        chapters = {s.chapter for s in maths}
         assert 5 in chapters
         assert 6 in chapters
         assert 7 in chapters
         assert 8 in chapters
+
+    def test_geography_skills_loaded(self):
+        feed = load_skills()
+        geog = [s for s in feed.skills if s.subject == "geography"]
+        assert len(geog) > 0, "Should load geography skills"
+        for s in geog:
+            assert s.unit, f"Geography skill '{s.code}' missing unit"
+            assert s.chapter is None, "Geography skills should have no chapter"
+
+    def test_maths_auto_mapped_unit(self):
+        feed = load_skills()
+        maths = [s for s in feed.skills if s.subject == "maths"]
+        for s in maths:
+            assert s.unit is not None, f"Maths skill '{s.code}' should have auto-mapped unit"
 
 
 class TestLoadTemplates:
@@ -52,15 +81,29 @@ class TestLoadTemplates:
         for t in feed.templates:
             assert isinstance(t, TemplateDef)
             assert t.id
-            assert t.chapter in (5, 6, 7, 8)
             assert t.skill
             assert t.prompt
             assert t.marking
+            # Every template gets a subject (auto-mapped for maths)
+            assert t.subject, f"Template '{t.id}' missing subject"
+
+    def test_maths_templates_have_chapter(self):
+        feed = load_templates()
+        maths = [t for t in feed.templates if t.subject == "maths"]
+        for t in maths:
+            assert t.chapter in (5, 6, 7, 8), f"Maths template '{t.id}' has bad chapter"
 
     def test_template_ids_unique(self):
         feed = load_templates()
         ids = [t.id for t in feed.templates]
         assert len(ids) == len(set(ids)), "Template IDs must be unique"
+
+    def test_geography_templates_loaded(self):
+        feed = load_templates()
+        geog = [t for t in feed.templates if t.subject == "geography"]
+        assert len(geog) > 0, "Should load geography templates"
+        for t in geog:
+            assert t.unit, f"Geography template '{t.id}' missing unit"
 
 
 class TestCrossValidation:
@@ -80,7 +123,6 @@ class TestCrossValidation:
 
 class TestLookupHelpers:
     def test_get_skill_map(self):
-        # Ensure feeds are loaded first
         load_and_validate()
         sm = get_skill_map()
         assert isinstance(sm, dict)
@@ -111,3 +153,35 @@ class TestLookupHelpers:
     def test_get_template_by_id_not_found(self):
         load_and_validate()
         assert get_template_by_id("nonexistent_template") is None
+
+    def test_get_templates_by_subject(self):
+        load_and_validate()
+        maths = get_templates_by_subject("maths")
+        assert len(maths) > 0
+        for t in maths:
+            assert t.subject == "maths"
+
+    def test_get_templates_by_unit(self):
+        load_and_validate()
+        data = get_templates_by_unit("maths", "data")
+        assert len(data) > 0
+        for t in data:
+            assert t.subject == "maths"
+            assert t.unit == "data"
+
+    def test_get_subjects(self):
+        load_and_validate()
+        subjects = get_subjects()
+        assert "maths" in subjects
+        assert "geography" in subjects
+
+    def test_get_units_for_subject(self):
+        load_and_validate()
+        maths_units = get_units_for_subject("maths")
+        assert "data" in maths_units
+        assert "algebra" in maths_units
+        assert "calculation" in maths_units
+        assert "probability" in maths_units
+
+        geog_units = get_units_for_subject("geography")
+        assert "maps" in geog_units
