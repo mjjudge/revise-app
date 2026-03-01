@@ -295,8 +295,11 @@ def _render_prompt(template: TemplateDef, params: dict[str, Any]) -> str:
 
     # Build a flat dict for .format_map
     flat: dict[str, str] = {}
+    # Also track nested dicts so {scenario.context} attribute access works
+    _nested: dict[str, dict] = {}
     for key, val in params.items():
         if isinstance(val, dict):
+            _nested[key] = val
             for subkey, subval in val.items():
                 flat[f"{key}.{subkey}"] = str(subval)
                 flat[subkey] = str(subval)  # also allow bare name
@@ -308,14 +311,27 @@ def _render_prompt(template: TemplateDef, params: dict[str, Any]) -> str:
         else:
             flat[key] = str(val)
 
+    # Namespace wrapper so {scenario.context} works with format_map
+    class _Namespace:
+        """Allows attribute access on a dict for str.format_map."""
+        def __init__(self, d: dict):
+            self.__dict__.update({k: str(v) for k, v in d.items()})
+        def __str__(self):
+            return str(self.__dict__)
+
     # Use a safe formatter that leaves unknown placeholders
     class _SafeDict(dict):
         def __missing__(self, key):
             return "{" + key + "}"
 
+    # Inject namespace objects for nested dicts
+    safe = _SafeDict(flat)
+    for key, d in _nested.items():
+        safe[key] = _Namespace(d)
+
     try:
-        rendered = prompt.format_map(_SafeDict(flat))
-    except (KeyError, ValueError):
+        rendered = prompt.format_map(safe)
+    except (KeyError, ValueError, AttributeError):
         rendered = prompt  # fallback to raw prompt
 
     return rendered

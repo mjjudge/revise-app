@@ -175,6 +175,45 @@ def gen_categorical_counts(rng: _random_mod.Random, spec: dict, ctx: dict) -> di
 
 
 # ---------------------------------------------------------------------------
+# Context-aware dataset scenarios (for line graphs)
+# ---------------------------------------------------------------------------
+
+# Each scenario bundles a context label, sensible y-range, unit, and chart title.
+# Ranges are realistic for UK KS3 students.
+_LINE_GRAPH_SCENARIOS_WEEKLY = [
+    {"context": "daily step count",       "y_min": 2000, "y_max": 12000, "unit": "steps",    "title": "Steps per day"},
+    {"context": "number of visitors",     "y_min": 15,   "y_max": 90,    "unit": "",          "title": "Visitors per day"},
+    {"context": "temperature at noon",    "y_min": 5,    "y_max": 25,    "unit": "°C",        "title": "Noon temperature (°C)"},
+    {"context": "hours of sunshine",      "y_min": 0,    "y_max": 14,    "unit": "hours",     "title": "Hours of sunshine"},
+    {"context": "books borrowed",         "y_min": 3,    "y_max": 30,    "unit": "",          "title": "Books borrowed per day"},
+    {"context": "glasses of water drunk", "y_min": 2,    "y_max": 10,    "unit": "glasses",   "title": "Glasses of water per day"},
+]
+
+_LINE_GRAPH_SCENARIOS_MONTHLY = [
+    {"context": "monthly rainfall",       "y_min": 20,   "y_max": 120,   "unit": "mm",        "title": "Rainfall (mm)"},
+    {"context": "ice cream sales",        "y_min": 50,   "y_max": 500,   "unit": "£",         "title": "Ice cream sales (£)"},
+    {"context": "library visitors",       "y_min": 80,   "y_max": 350,   "unit": "",          "title": "Library visitors per month"},
+    {"context": "average temperature",    "y_min": 2,    "y_max": 22,    "unit": "°C",        "title": "Average temperature (°C)"},
+    {"context": "electricity usage",      "y_min": 150,  "y_max": 500,   "unit": "kWh",       "title": "Electricity usage (kWh)"},
+    {"context": "park visitors",          "y_min": 100,  "y_max": 800,   "unit": "",          "title": "Park visitors per month"},
+]
+
+
+@register_gen("context_dataset")
+def gen_context_dataset(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Pick a context-appropriate scenario with sensible data ranges.
+
+    The result dict contains: context, y_min, y_max, unit, title.
+    These values are placed into ctx so that downstream generators
+    (time_series, line_graph_statements) can use them.
+    """
+    period = spec.get("period", "weekly")
+    scenarios = _LINE_GRAPH_SCENARIOS_WEEKLY if period == "weekly" else _LINE_GRAPH_SCENARIOS_MONTHLY
+    chosen = rng.choice(scenarios)
+    return dict(chosen)
+
+
+# ---------------------------------------------------------------------------
 # Time series (for line graphs)
 # ---------------------------------------------------------------------------
 
@@ -182,8 +221,13 @@ def gen_categorical_counts(rng: _random_mod.Random, spec: dict, ctx: dict) -> di
 def gen_time_series(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
     n = spec.get("points", 6)
     x_labels = spec.get("x_labels", [f"T{i}" for i in range(n)])
+
+    # y_range can come from spec directly or from a context_dataset in ctx
     yr = spec.get("y_range", {})
-    lo, hi = yr.get("min", 10), yr.get("max", 60)
+    ctx_scenario = ctx.get(spec.get("scenario_from", ""), {})
+    lo = yr.get("min") or ctx_scenario.get("y_min", 10)
+    hi = yr.get("max") or ctx_scenario.get("y_max", 60)
+
     pattern = spec.get("pattern", {}).get("type", "random")
 
     if pattern == "single_peak":
@@ -219,7 +263,7 @@ def gen_line_graph_statements(rng: _random_mod.Random, spec: dict, ctx: dict) ->
     distractors = [
         f"The lowest value is on {x[max_idx]}.",  # deliberately wrong
         f"The value on {x[0]} is {y[0] + rng.randint(5, 15)}.",
-        f"The data stays the same throughout the week.",
+        f"The data stays the same throughout.",
     ]
     count = spec.get("count", 3)
     rng.shuffle(distractors)

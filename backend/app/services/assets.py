@@ -205,7 +205,16 @@ _PAD_B = 50
 
 def _render_line_chart(spec: dict, params: dict[str, Any]) -> str:
     """Render an SVG line chart."""
-    title = spec.get("title", "")
+    title_raw = spec.get("title", "")
+    title = _resolve_or_literal(title_raw, params) if title_raw else ""
+    if not isinstance(title, str):
+        title = str(title)
+
+    # Resolve optional y-axis unit label
+    y_label_raw = spec.get("y_label", "")
+    y_label = _resolve_or_literal(y_label_raw, params) if y_label_raw else ""
+    if not isinstance(y_label, str):
+        y_label = str(y_label)
 
     # Resolve x and y data
     x_ref = spec.get("x", "")
@@ -244,6 +253,15 @@ def _render_line_chart(spec: dict, params: dict[str, Any]) -> str:
     # Title
     if title:
         lines.append(f'  <text x="{_CHART_W / 2}" y="18" text-anchor="middle" fill="#f6b935" font-size="12" font-weight="bold">{title}</text>')
+
+    # Y-axis unit label (rotated, left side)
+    if y_label:
+        lines.append(
+            f'  <text x="12" y="{(_PAD_T + _CHART_H - _PAD_B) / 2}" '
+            f'text-anchor="middle" fill="#b89aff" font-size="10" '
+            f'transform="rotate(-90, 12, {(_PAD_T + _CHART_H - _PAD_B) / 2})">'
+            f'{y_label}</text>'
+        )
 
     # Grid lines + Y labels
     n_grid = 5

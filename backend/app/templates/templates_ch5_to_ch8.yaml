@@ -106,17 +106,17 @@ templates:
     skill: stats.line_graph.interpret
     difficulty: 3
     type: multi_choice
-    prompt: "The line graph shows {context}. Which statement is true?"
+    prompt: "The line graph shows {scenario.context} over the week. Which statement is true?"
     parameters:
+      scenario:
+        gen: context_dataset
+        period: weekly
       dataset:
         gen: time_series
         points: 6
         x_labels: ["Mon","Tue","Wed","Thu","Fri","Sat"]
-        y_range: { min: 10, max: 60 }
+        scenario_from: scenario
         pattern: { type: "single_peak" }
-      context:
-        gen: pick_one
-        from: ["daily step count", "numbers of visitors", "temperature at noon"]
       distractors:
         gen: line_graph_statements
         from: dataset
@@ -125,7 +125,8 @@ templates:
       - kind: chart
         id: line_chart
         chart_type: line
-        title: "Data over the week"
+        title: scenario.title
+        y_label: scenario.unit
         x: dataset.x
         y: dataset.y
     marking:
@@ -512,17 +513,17 @@ templates:
     skill: stats.line_graph.interpret
     difficulty: 2
     type: multi_choice
-    prompt: "The line graph shows {context} over six months. Which statement is correct?"
+    prompt: "The line graph shows {scenario.context} over six months. Which statement is correct?"
     parameters:
+      scenario:
+        gen: context_dataset
+        period: monthly
       dataset:
         gen: time_series
         points: 6
         x_labels: ["Jan","Feb","Mar","Apr","May","Jun"]
-        y_range: { min: 5, max: 80 }
+        scenario_from: scenario
         pattern: { type: "single_peak" }
-      context:
-        gen: pick_one
-        from: ["monthly rainfall (mm)", "ice cream sales", "library visitors"]
       distractors:
         gen: line_graph_statements
         from: dataset
@@ -531,7 +532,8 @@ templates:
       - kind: chart
         id: line_chart
         chart_type: line
-        title: "Data over six months"
+        title: scenario.title
+        y_label: scenario.unit
         x: dataset.x
         y: dataset.y
     marking:
