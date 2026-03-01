@@ -257,6 +257,23 @@ def get_mcq_options(instance: QuestionInstance) -> list[str] | None:
     return options
 
 
+def get_order_items(instance: QuestionInstance) -> list[str] | None:
+    """Return shuffled items for an order_match question, or None if not applicable.
+
+    Uses the question's seed for deterministic shuffle so items stay
+    stable across page reloads.
+    """
+    tpl = get_template_by_id(instance.template_id)
+    if not tpl or tpl.marking.mode != "order_match":
+        return None
+    payload = json.loads(instance.payload_json)
+    events = payload.get("events", {})
+    items = list(events.get("events", []))
+    rng = random.Random(instance.seed)
+    rng.shuffle(items)
+    return items
+
+
 # ---------------------------------------------------------------------------
 # JSON encoder for Fraction and other types
 # ---------------------------------------------------------------------------

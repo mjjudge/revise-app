@@ -22,7 +22,7 @@ from app.models.quest import QuestSession, Payout
 from app.models.question import QuestionInstance, Attempt
 from app.models.user import Role, User
 from app.services.auth import get_current_user
-from app.services.questions import generate_question, check_answer, detect_milestone, milestone_message, get_mcq_options
+from app.services.questions import generate_question, check_answer, detect_milestone, milestone_message, get_mcq_options, get_order_items
 from app.services.tiers import detect_tier_up
 from app.templates.feed_loader import get_templates_by_chapter, get_skill_map, get_template_by_id
 
@@ -114,6 +114,7 @@ def quest_start(
         "quest_progress": f"Question 1 of {quest.total_questions}",
         "calculator": tpl.calculator if tpl else None,
         "mcq_options": get_mcq_options(instance),
+        "order_items": get_order_items(instance),
     })
 
 
@@ -150,6 +151,7 @@ def quest_generate(
         "quest_progress": "",
         "calculator": tpl.calculator if tpl else None,
         "mcq_options": get_mcq_options(instance),
+        "order_items": get_order_items(instance),
     })
 
 
@@ -300,6 +302,7 @@ def quest_next(
         "quest_progress": f"Question {q_num} of {quest.total_questions}",
         "calculator": tpl.calculator if tpl else None,
         "mcq_options": get_mcq_options(instance),
+        "order_items": get_order_items(instance),
     })
 
 

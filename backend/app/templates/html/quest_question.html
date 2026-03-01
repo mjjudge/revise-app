@@ -138,6 +138,32 @@
             <span class="text-white text-lg group-hover:text-realm-gold-400 transition-colors">{{ opt }}</span>
           </label>
           {% endfor %}
+          {% elif order_items %}
+          <p class="block text-realm-purple-200 text-sm mb-3">
+            Click the events in order from <strong class="text-realm-gold-400">least likely</strong>
+            to <strong class="text-realm-gold-400">most likely</strong>:
+          </p>
+          <input type="hidden" name="answer" id="order-answer" value="" required>
+          <div id="order-list">
+            {% for item in order_items %}
+            <button type="button" data-event="{{ item }}"
+                    onclick="orderPick(this)"
+                    class="order-item flex items-center gap-3 w-full text-left p-3 mb-2 rounded-xl
+                           bg-realm-purple-800/80 border border-realm-purple-400
+                           hover:border-realm-gold-400 cursor-pointer transition-all group">
+              <span class="order-num w-8 h-8 flex items-center justify-center rounded-full
+                           bg-realm-purple-600 text-realm-purple-300 text-sm font-bold flex-shrink-0">?</span>
+              <span class="text-white text-lg group-hover:text-realm-gold-400 transition-colors">{{ item }}</span>
+            </button>
+            {% endfor %}
+          </div>
+          <div class="flex gap-2 mt-2">
+            <button type="button" onclick="orderReset()"
+                    class="text-xs text-realm-purple-300 hover:text-red-400 transition-colors">
+              🔄 Reset order
+            </button>
+            <span id="order-status" class="text-xs text-realm-purple-400 ml-auto"></span>
+          </div>
           {% else %}
           <label for="answer" class="block text-realm-purple-200 text-sm mb-2">Your answer:</label>
           <input type="text"
@@ -236,6 +262,49 @@
       var answerInput = document.getElementById('answer');
       if (answerInput) { answerInput.value = val; answerInput.focus(); }
     }
+  }
+</script>
+{% endif %}
+{% if order_items %}
+<script>
+  var orderPicked = [];
+  var orderTotal = document.querySelectorAll('.order-item').length;
+
+  function orderPick(btn) {
+    var ev = btn.getAttribute('data-event');
+    if (orderPicked.indexOf(ev) !== -1) return; // already picked
+    orderPicked.push(ev);
+    var num = orderPicked.length;
+    var numEl = btn.querySelector('.order-num');
+    numEl.textContent = num;
+    numEl.classList.remove('bg-realm-purple-600', 'text-realm-purple-300');
+    numEl.classList.add('bg-realm-gold-500', 'text-realm-purple-900');
+    btn.classList.remove('border-realm-purple-400');
+    btn.classList.add('border-realm-gold-400', 'opacity-80');
+    btn.style.cursor = 'default';
+
+    // Update hidden answer
+    document.getElementById('order-answer').value = orderPicked.join(', ');
+    document.getElementById('order-status').textContent = num + ' of ' + orderTotal + ' selected';
+
+    if (num === orderTotal) {
+      document.getElementById('order-status').textContent = '✅ All selected — ready to submit!';
+    }
+  }
+
+  function orderReset() {
+    orderPicked = [];
+    document.getElementById('order-answer').value = '';
+    document.getElementById('order-status').textContent = '';
+    document.querySelectorAll('.order-item').forEach(function(btn) {
+      var numEl = btn.querySelector('.order-num');
+      numEl.textContent = '?';
+      numEl.classList.remove('bg-realm-gold-500', 'text-realm-purple-900');
+      numEl.classList.add('bg-realm-purple-600', 'text-realm-purple-300');
+      btn.classList.remove('border-realm-gold-400', 'opacity-80');
+      btn.classList.add('border-realm-purple-400');
+      btn.style.cursor = 'pointer';
+    });
   }
 </script>
 {% endif %}
