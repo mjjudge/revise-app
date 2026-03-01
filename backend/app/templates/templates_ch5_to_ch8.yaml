@@ -73,7 +73,7 @@ templates:
     difficulty: 3
     type: numeric
     calculator: basic
-    prompt: "A pie chart shows favourite snacks. {table_title}.\nWhat angle (in degrees) represents {target_label}?"
+    prompt: "A pie chart shows favourite snacks chosen by a class.\nWhat angle (in degrees) represents {target_label}?"
     parameters:
       categories:
         gen: categorical_counts
@@ -90,6 +90,11 @@ templates:
         title: "Number of students choosing each snack"
         columns: ["Snack", "Count"]
         rows_from: categories
+      - kind: chart
+        chart_type: pie
+        id: snack_pie
+        title: "Favourite snacks"
+        data_from: categories
     marking:
       mode: exact_numeric
       units: degrees
@@ -499,6 +504,11 @@ templates:
         title: "Favourite sports"
         columns: ["Sport", "Votes"]
         rows_from: categories
+      - kind: chart
+        chart_type: pie
+        id: sport_pie
+        title: "Favourite sports"
+        data_from: categories
     marking:
       mode: exact_numeric
       units: degrees
