@@ -12,6 +12,25 @@
 </nav>
 
 <main class="max-w-2xl mx-auto px-4 py-8">
+  <!-- Quest progress bar -->
+  {% if quest %}
+  <div class="mb-6">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-sm text-realm-purple-300">{{ quest_progress }}</span>
+      {% if quest.streak >= 3 %}
+        <span class="text-sm text-realm-gold-400 font-bold animate-pulse">
+          🔥 {{ quest.streak }} streak{% if quest.streak >= 5 %} (2× XP!){% else %} (+50% XP){% endif %}
+        </span>
+      {% endif %}
+    </div>
+    <div class="w-full bg-realm-purple-800/60 rounded-full h-3 border border-realm-purple-600">
+      {% set pct = ((quest.completed) / quest.total_questions * 100) | int %}
+      <div class="bg-gradient-to-r from-realm-gold-500 to-realm-green-500 h-full rounded-full transition-all duration-500"
+           style="width: {{ pct }}%"></div>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Question card -->
   <div class="bg-realm-purple-700/60 border border-realm-purple-500 rounded-2xl p-6 quest-glow">
     <div class="flex items-center gap-2 text-sm text-realm-purple-300 mb-4">
@@ -40,6 +59,9 @@
             hx-target="#answer-area"
             hx-swap="outerHTML">
         <input type="hidden" name="question_id" value="{{ question.id }}">
+        {% if quest %}
+        <input type="hidden" name="quest_id" value="{{ quest.id }}">
+        {% endif %}
 
         <div class="mb-4">
           <label for="answer" class="block text-realm-purple-200 text-sm mb-2">Your answer:</label>

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Quest Complete – Revise Quest{% endblock %}
+
+{% block body %}
+<!-- Navbar -->
+<nav class="flex items-center justify-between px-6 py-3 bg-realm-purple-800/80 border-b border-realm-purple-600">
+  <a href="/" class="text-realm-gold-400 font-bold text-lg">⚔️ Revise Quest</a>
+  <div class="flex items-center gap-4">
+    <span class="text-realm-gold-400 gold-shimmer">💰 {{ user.gold }}</span>
+    <span class="text-realm-green-400">⭐ {{ user.xp }} XP</span>
+  </div>
+</nav>
+
+<main class="max-w-2xl mx-auto px-4 py-8">
+  <!-- Quest Complete banner -->
+  <div class="text-center mb-8">
+    <div class="text-6xl mb-4">🏆</div>
+    <h1 class="text-3xl font-bold text-realm-gold-400 mb-2">Quest Complete!</h1>
+    <p class="text-realm-purple-200">
+      {% if quest.skill %}
+        Skill Quest — {{ quest.skill }}
+      {% else %}
+        Chapter {{ quest.chapter }} Quest
+      {% endif %}
+    </p>
+  </div>
+
+  <!-- Results card -->
+  <div class="bg-realm-purple-700/60 border border-realm-purple-500 rounded-2xl p-6 quest-glow mb-6">
+    <!-- Rank -->
+    <div class="text-center mb-6 pb-6 border-b border-realm-purple-600">
+      <div class="text-5xl mb-2">{{ rank_emoji }}</div>
+      <h2 class="text-2xl font-bold
+        {% if accuracy >= 90 %}text-realm-gold-400{% elif accuracy >= 70 %}text-realm-green-400{% elif accuracy >= 50 %}text-white{% else %}text-realm-purple-300{% endif %}">
+        {{ rank }} Rank
+      </h2>
+    </div>
+
+    <!-- Stats grid -->
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="bg-realm-purple-800/60 rounded-xl p-4 text-center">
+        <p class="text-3xl font-bold text-white">{{ accuracy }}%</p>
+        <p class="text-sm text-realm-purple-300 mt-1">Accuracy</p>
+      </div>
+      <div class="bg-realm-purple-800/60 rounded-xl p-4 text-center">
+        <p class="text-3xl font-bold text-white">{{ quest.correct }}/{{ quest.total_questions }}</p>
+        <p class="text-sm text-realm-purple-300 mt-1">Correct</p>
+      </div>
+      <div class="bg-realm-purple-800/60 rounded-xl p-4 text-center">
+        <p class="text-3xl font-bold text-realm-green-400">⭐ {{ quest.xp_earned }}</p>
+        <p class="text-sm text-realm-purple-300 mt-1">XP Earned</p>
+      </div>
+      <div class="bg-realm-purple-800/60 rounded-xl p-4 text-center">
+        <p class="text-3xl font-bold text-realm-gold-400 gold-shimmer">💰 {{ quest.gold_earned }}</p>
+        <p class="text-sm text-realm-purple-300 mt-1">Gold Earned</p>
+      </div>
+    </div>
+
+    <!-- Best streak -->
+    {% if quest.best_streak >= 3 %}
+    <div class="text-center py-3 bg-realm-purple-800/40 rounded-xl mb-6">
+      <span class="text-realm-gold-400 font-bold text-lg">
+        🔥 Best streak: {{ quest.best_streak }} in a row!
+      </span>
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="flex gap-3">
+      <form method="post" action="/quest/start" class="flex-1">
+        {% if quest.skill %}
+          <input type="hidden" name="skill" value="{{ quest.skill }}">
+        {% endif %}
+        <input type="hidden" name="chapter" value="{{ quest.chapter }}">
+        <button type="submit"
+                class="w-full py-3 bg-realm-gold-500 hover:bg-realm-gold-400 text-realm-purple-900
+                       font-bold rounded-xl transition-colors text-lg">
+          ⚔️ Play Again
+        </button>
+      </form>
+
+      <a href="/quest/chapter/{{ quest.chapter }}"
+         class="flex-1 text-center py-3 border border-realm-purple-400 text-realm-purple-200
+                hover:bg-realm-purple-600/60 rounded-xl transition-colors flex items-center justify-center">
+        📖 Chapter {{ quest.chapter }}
+      </a>
+
+      <a href="/"
+         class="flex-1 text-center py-3 border border-realm-purple-400 text-realm-purple-200
+                hover:bg-realm-purple-600/60 rounded-xl transition-colors flex items-center justify-center">
+        🏠 Home
+      </a>
+    </div>
+  </div>
+</main>
+{% endblock %}

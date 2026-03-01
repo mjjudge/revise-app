@@ -16,6 +16,7 @@ from typing import Any, Optional
 from sqlmodel import Session, select
 
 from app.models.question import Attempt, QuestionInstance, UserSkillProgress
+from app.models.quest import QuestSession
 from app.models.user import User
 from app.services.generators import generate_param
 from app.services.marking import MarkResult, mark
@@ -26,6 +27,7 @@ from app.templates.feed_loader import (
     get_template_by_id,
     TemplateDef,
 )
+from app.core.config import settings
 
 
 # ---------------------------------------------------------------------------
@@ -327,8 +329,16 @@ def check_answer(
     user: User,
     question_id: int,
     student_answer: str,
+    *,
+    quest: QuestSession | None = None,
 ) -> tuple[Attempt, MarkResult]:
-    """Mark a student's answer against the stored correct answer."""
+    """Mark a student's answer against the stored correct answer.
+
+    When quest is provided, applies streak bonuses:
+      - 3+ in a row: +50% XP
+      - 5+ in a row: +100% XP
+    Also enforces the weekly gold cap from settings.
+    """
     instance = db.get(QuestionInstance, question_id)
     if instance is None:
         raise ValueError(f"Question {question_id} not found")
@@ -367,7 +377,28 @@ def check_answer(
             xp = base_xp // 2
         # 3rd+ attempt: no XP
 
-        # Update user totals
+        # Quest streak bonus (applied to XP)
+        if quest and attempt_num == 1:
+            quest.streak += 1
+            if quest.streak > quest.best_streak:
+                quest.best_streak = quest.streak
+            if quest.streak >= 5:
+                xp = int(xp * 2.0)  # +100%
+            elif quest.streak >= 3:
+                xp = int(xp * 1.5)  # +50%
+    else:
+        # Reset quest streak on wrong answer
+        if quest:
+            quest.streak = 0
+
+    # Weekly gold cap enforcement
+    if gold > 0:
+        gold_this_week = _gold_earned_this_week(db, user)
+        remaining = max(0, settings.weekly_gold_cap - gold_this_week)
+        gold = min(gold, remaining)
+
+    # Update user totals
+    if xp > 0 or gold > 0:
         user.xp += xp
         user.gold += gold
         db.add(user)
@@ -475,3 +506,20 @@ def _update_skill_progress(db: Session, user: User, skill: str, correct: bool) -
             progress.current_band -= 1
 
     db.add(progress)
+
+
+def _gold_earned_this_week(db: Session, user: User) -> int:
+    """Sum gold earned by user in the current ISO week (Mon-Sun)."""
+    from sqlmodel import func
+
+    now = datetime.now(timezone.utc)
+    # Monday of current week at 00:00 UTC
+    week_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_start = week_start - __import__("datetime").timedelta(days=now.weekday())
+
+    stmt = select(func.coalesce(func.sum(Attempt.gold_earned), 0)).where(
+        Attempt.user_id == user.id,
+        Attempt.created_at >= week_start,
+    )
+    result = db.exec(stmt).one()
+    return int(result)

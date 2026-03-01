@@ -12,6 +12,21 @@
 </nav>
 
 <main class="max-w-2xl mx-auto px-4 py-8">
+  <!-- Quest progress bar -->
+  {% if quest %}
+  <div class="mb-6">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-sm text-realm-purple-300">{{ quest.completed }} of {{ quest.total_questions }} answered</span>
+      <span class="text-sm text-realm-purple-300">{{ quest.correct }} correct</span>
+    </div>
+    <div class="w-full bg-realm-purple-800/60 rounded-full h-3 border border-realm-purple-600">
+      {% set pct = (quest.completed / quest.total_questions * 100) | int %}
+      <div class="bg-gradient-to-r from-realm-gold-500 to-realm-green-500 h-full rounded-full transition-all duration-500"
+           style="width: {{ pct }}%"></div>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Result card -->
   <div class="bg-realm-purple-700/60 border rounded-2xl p-6
               {% if result.correct %}border-realm-green-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]
@@ -59,29 +74,47 @@
     </div>
     {% endif %}
 
+    <!-- Streak indicator -->
+    {% if quest and quest.streak >= 3 %}
+    <div class="text-center py-2 mb-4">
+      <span class="text-realm-gold-400 font-bold animate-pulse">
+        🔥 {{ quest.streak }} in a row!
+        {% if quest.streak >= 5 %}Double XP!{% else %}+50% XP bonus!{% endif %}
+      </span>
+    </div>
+    {% endif %}
+
     <!-- Actions -->
     <div class="flex gap-3 mt-6">
-      {% if can_retry %}
-      <form method="post" action="/quest/answer" class="flex-1"
-            hx-post="/quest/answer" hx-target="body" hx-swap="outerHTML">
-        <!-- Retry shows the question again -->
-      </form>
-      <a href="/quest/generate?skill={{ question.skill }}&chapter={{ question.chapter }}"
-         class="flex-1 text-center py-3 border border-realm-purple-400 text-realm-purple-200
-                hover:bg-realm-purple-600/60 rounded-xl transition-colors">
-        Try Again
-      </a>
+      {% if quest and quest_finished %}
+        <!-- Quest complete — go to summary -->
+        <a href="/quest/summary/{{ quest.id }}"
+           class="flex-1 text-center py-3 bg-realm-gold-500 hover:bg-realm-gold-400 text-realm-purple-900
+                  font-bold rounded-xl transition-colors text-lg">
+          🏆 View Quest Results
+        </a>
+      {% elif quest and not quest_finished %}
+        <!-- Next question in quest -->
+        <form method="post" action="/quest/next" class="flex-1">
+          <input type="hidden" name="quest_id" value="{{ quest.id }}">
+          <button type="submit"
+                  class="w-full py-3 bg-realm-gold-500 hover:bg-realm-gold-400 text-realm-purple-900
+                         font-bold rounded-xl transition-colors text-lg">
+            ⚔️ Next Question
+          </button>
+        </form>
+      {% else %}
+        <!-- Single question mode (no quest) -->
+        <form method="post" action="/quest/generate" class="flex-1">
+          <input type="hidden" name="skill" value="{{ question.skill }}">
+          <input type="hidden" name="chapter" value="{{ question.chapter }}">
+          <button type="submit"
+                  class="w-full py-3 bg-realm-gold-500 hover:bg-realm-gold-400 text-realm-purple-900
+                         font-bold rounded-xl transition-colors">
+            ⚔️ Next Question
+          </button>
+        </form>
       {% endif %}
-
-      <form method="post" action="/quest/generate" class="flex-1">
-        <input type="hidden" name="skill" value="{{ question.skill }}">
-        <input type="hidden" name="chapter" value="{{ question.chapter }}">
-        <button type="submit"
-                class="w-full py-3 bg-realm-gold-500 hover:bg-realm-gold-400 text-realm-purple-900
-                       font-bold rounded-xl transition-colors">
-          ⚔️ Next Question
-        </button>
-      </form>
 
       <a href="/"
          class="flex-1 text-center py-3 border border-realm-purple-400 text-realm-purple-200

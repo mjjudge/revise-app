@@ -22,20 +22,20 @@
 - [x] Persistent SQLite setup
 
 ## EPIC 2 -- Template Question Engine (Ch5-8 core)
-- [ ] Skill taxonomy + difficulty bands
-- [ ] Template interface + registry
-- [ ] Implement template loader for YAML feeds (skills.yaml + templates_ch5_to_ch8.yaml)
-- [ ] Validate feed on startup (unique ids, skill exists, chapter match, supported types/marking modes)
-- [ ] Deterministic generator framework (seeded) to expand template parameters into an instance payload
-- [ ] Persist generated instance payload_json + correct_json for replay/review
-- [ ] Implement 8-12 templates spanning chapters 5-8
-- [ ] Deterministic answer keys + marking rules
-- [ ] Question persistence + attempt logging
-- [ ] Adaptive difficulty band adjustment
+- [x] Skill taxonomy + difficulty bands
+- [x] Template interface + registry
+- [x] Implement template loader for YAML feeds (skills.yaml + templates_ch5_to_ch8.yaml)
+- [x] Validate feed on startup (unique ids, skill exists, chapter match, supported types/marking modes)
+- [x] Deterministic generator framework (seeded) to expand template parameters into an instance payload
+- [x] Persist generated instance payload_json + correct_json for replay/review
+- [x] Implement 8-12 templates spanning chapters 5-8
+- [x] Deterministic answer keys + marking rules
+- [x] Question persistence + attempt logging
+- [x] Adaptive difficulty band adjustment
 ### EPIC 2 -- Tests
-- [ ] Tests: template loading + schema validation
-- [ ] Tests: generator determinism (same seed => same instance)
-- [ ] Tests: marking modes (numeric tolerance, rounding, fraction/decimal equivalence, remainder form, ordering)
+- [x] Tests: template loading + schema validation
+- [x] Tests: generator determinism (same seed => same instance)
+- [x] Tests: marking modes (numeric tolerance, rounding, fraction/decimal equivalence, remainder form, ordering)
 
 ## EPIC 3 -- Charts/Tables Assets
 - [x] SVG pie chart generator
@@ -48,10 +48,16 @@
 - [x] ADR 006: Charts/Tables Asset Rendering
 
 ## EPIC 4 -- Gamification + Rewards
-- [ ] Points model + streak rules + hint penalties
-- [ ] Wallet + payout ledger (admin)
-- [ ] Quest flow (8-12 Q loop) + summary screen
-- [ ] Weekly cap + admin controls
+- [x] QuestSession model (8Q skill / 10Q chapter loops)
+- [x] Quest flow: start → question → answer → result → next → summary
+- [x] Streak bonus: +50% XP at 3 correct, +100% at 5 correct (within quest)
+- [x] Weekly gold cap (admin-configurable, default 100)
+- [x] Payout model + admin payout API (gold → cash at 2p/gold)
+- [x] Admin dashboard: live stats, payout form, reward controls
+- [x] Quest summary screen with rank (Legendary/Epic/Brave/Apprentice)
+- [x] Config: gold_to_pence, weekly_gold_cap
+- [x] 16 gamification tests (106 total)
+- [x] ADR 007: Gamification & Rewards System
 
 ## EPIC 5 -- Tutor Mode (OpenAI)
 - [ ] Tutor API endpoint (payload + attempt + user question)

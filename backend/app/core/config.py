@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     kid_pin: str = "1234"      # default; override via env
     admin_pin: str = "9999"    # default; override via env
 
+    # Gamification
+    gold_to_pence: int = 2              # 1 Gold = 2p
+    weekly_gold_cap: int = 100          # Max gold earnable per week (admin can change)
+
     # Child personalisation
     child_name: str = "Anna"
     child_nicknames: str = "Chibs,Chibby"  # comma-separated

@@ -7,6 +7,7 @@ from app.core.config import settings
 # Import models so SQLModel.metadata knows about all tables
 import app.models.user  # noqa: F401
 import app.models.question  # noqa: F401
+import app.models.quest  # noqa: F401
 
 # SQLite needs check_same_thread=False for FastAPI's async context
 connect_args = {"check_same_thread": False}
