@@ -314,10 +314,20 @@ def _render_prompt(template: TemplateDef, params: dict[str, Any]) -> str:
     # Namespace wrapper so {scenario.context} works with format_map
     class _Namespace:
         """Allows attribute access on a dict for str.format_map."""
+        _DISPLAY_KEYS = ("expr_str", "text", "context", "title", "value")
+
         def __init__(self, d: dict):
             self.__dict__.update({k: str(v) for k, v in d.items()})
+
         def __str__(self):
-            return str(self.__dict__)
+            # Prefer a human-friendly display key
+            for k in self._DISPLAY_KEYS:
+                if k in self.__dict__:
+                    return self.__dict__[k]
+            return str({k: v for k, v in self.__dict__.items()})
+
+        def __format__(self, format_spec):
+            return format(str(self), format_spec)
 
     # Use a safe formatter that leaves unknown placeholders
     class _SafeDict(dict):

@@ -146,7 +146,7 @@ templates:
     difficulty: 2
     type: numeric
     calculator: basic
-    prompt: "Evaluate {expr} when {assignments}."
+    prompt: "Evaluate {expr.expr_str} when {assignments.text}."
     parameters:
       expr:
         gen: linear_expression
@@ -171,7 +171,7 @@ templates:
     skill: algebra.simplify.like_terms
     difficulty: 3
     type: short_text
-    prompt: "Simplify: {expr}"
+    prompt: "Simplify: {expr.expr_str}"
     parameters:
       expr:
         gen: like_terms_expression
@@ -250,7 +250,7 @@ templates:
     difficulty: 3
     type: numeric
     calculator: basic
-    prompt: "Work out: {expr}"
+    prompt: "Work out: {expr.expr_str}"
     parameters:
       expr:
         gen: arithmetic_expression
@@ -553,7 +553,7 @@ templates:
     difficulty: 3
     type: numeric
     calculator: basic
-    prompt: "Work out the value of {expr} when {assignments}."
+    prompt: "Work out the value of {expr.expr_str} when {assignments.text}."
     parameters:
       expr:
         gen: linear_expression
@@ -579,7 +579,7 @@ templates:
     skill: algebra.simplify.like_terms
     difficulty: 4
     type: short_text
-    prompt: "Collect like terms and simplify: {expr}"
+    prompt: "Collect like terms and simplify: {expr.expr_str}"
     parameters:
       expr:
         gen: like_terms_expression
@@ -661,7 +661,7 @@ templates:
     difficulty: 2
     type: numeric
     calculator: basic
-    prompt: "Calculate: {expr}"
+    prompt: "Calculate: {expr.expr_str}"
     parameters:
       expr:
         gen: arithmetic_expression
