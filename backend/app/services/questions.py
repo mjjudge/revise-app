@@ -19,6 +19,7 @@ from app.models.question import Attempt, QuestionInstance, UserSkillProgress
 from app.models.user import User
 from app.services.generators import generate_param
 from app.services.marking import MarkResult, mark
+from app.services.assets import render_assets
 from app.templates.feed_loader import (
     get_templates_by_chapter,
     get_templates_by_skill,
@@ -297,7 +298,12 @@ def generate_question(
     # 5. Render prompt
     prompt_rendered = _render_prompt(template, params)
 
-    # 6. Persist
+    # 6. Render assets
+    asset_specs = [a.model_dump() for a in template.assets]
+    rendered_assets = render_assets(asset_specs, params)
+    assets_html = "\n".join(a["html"] for a in rendered_assets)
+
+    # 7. Persist
     instance = QuestionInstance(
         template_id=template.id,
         skill=template.skill,
@@ -307,6 +313,7 @@ def generate_question(
         prompt_rendered=prompt_rendered,
         payload_json=_json_dumps(params),
         correct_json=_json_dumps(correct),
+        assets_html=assets_html,
         user_id=user.id,
     )
     db.add(instance)

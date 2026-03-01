@@ -23,8 +23,9 @@ class QuestionInstance(SQLModel, table=True):
     difficulty: int = Field(description="Template difficulty band 1-5")
     seed: int = Field(description="RNG seed for reproducibility")
     prompt_rendered: str = Field(description="Fully rendered question text")
-    payload_json: str = Field(description="JSON: generated parameters + assets")
+    payload_json: str = Field(description="JSON: generated parameters")
     correct_json: str = Field(description="JSON: expected answer(s)")
+    assets_html: str = Field(default="", description="Pre-rendered HTML/SVG assets")
     user_id: Optional[int] = Field(default=None, foreign_key="user.id", index=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

@@ -26,6 +26,13 @@
       {{ question.prompt_rendered }}
     </h2>
 
+    <!-- Assets (tables, charts) -->
+    {% if question.assets_html %}
+    <div class="mb-6">
+      {{ question.assets_html | safe }}
+    </div>
+    {% endif %}
+
     <!-- Answer form -->
     <div id="answer-area">
       <form method="post" action="/quest/answer"

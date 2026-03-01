@@ -38,10 +38,14 @@
 - [ ] Tests: marking modes (numeric tolerance, rounding, fraction/decimal equivalence, remainder form, ordering)
 
 ## EPIC 3 -- Charts/Tables Assets
-- [ ] SVG pie chart generator
-- [ ] Line graph generator (SVG/PNG)
-- [ ] Table rendering component
-- [ ] Asset caching + re-render from saved payload
+- [x] SVG pie chart generator
+- [x] Line graph generator (pure SVG)
+- [x] Table rendering component (HTML + Tailwind)
+- [x] Spinner renderer (SVG)
+- [x] Conditional asset rendering (when expressions)
+- [x] Assets wired into question generation + stored in DB
+- [x] 12 asset rendering tests
+- [x] ADR 006: Charts/Tables Asset Rendering
 
 ## EPIC 4 -- Gamification + Rewards
 - [ ] Points model + streak rules + hint penalties
