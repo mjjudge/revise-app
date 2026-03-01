@@ -438,8 +438,13 @@ def gen_arithmetic_expression(rng: _random_mod.Random, spec: dict, ctx: dict) ->
         expr_str, result = rng.choice(valid)
 
         if isinstance(result, int) or (isinstance(result, float) and result == int(result)):
-            # Replace ** with ^ for display
-            display = expr_str.replace("**", "^")
+            # Replace ** N with Unicode superscript for display
+            import re
+            def _superscript(m):
+                _map = {"0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴",
+                        "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹"}
+                return "".join(_map[ch] for ch in m.group(1))
+            display = re.sub(r"\*\*\s*(\d+)", _superscript, expr_str)
             return {"expr_str": display, "result": int(result)}
 
     # Fallback
