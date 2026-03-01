@@ -1,7 +1,7 @@
 # SESSION_STATE
 
 ## Current objective
-EPIC 10 — Per-Subject Progress Tracking: complete.
+EPIC 10 — Per-Subject Progress Tracking: complete. Bug fixes done. Contour cross-section bug deferred to next session.
 
 ## Completed this session
 
@@ -16,6 +16,10 @@ EPIC 10 — Per-Subject Progress Tracking: complete.
 - **Tests**: 15 new tests in `test_subject_progress.py` — model creation, `_update_subject_progress` upsert/increment, query helpers, integration with `check_answer`
 - **Docs**: ADR 018, SESSION_STATE.md updated
 - 288 tests passing (273 existing + 15 new)
+
+### Bug fixes (this session)
+- **Geography 500 error**: Live SQLite DB had NOT NULL on `question_instance.chapter`; added idempotent migration in `session.py` that recreates the table with nullable chapter column
+- **Back link on question page**: Was hardcoded to `/` (home); now uses `_quest_back_link()` helper to navigate to parent unit/chapter/subject page; also refactored quest_summary to reuse same helper
 
 ### Unit Quest Standardisation
 - **QuestSession model**: Added `subject` and `unit` optional fields; `chapter` now defaults to 0
@@ -78,6 +82,7 @@ EPIC 10 — Per-Subject Progress Tracking: complete.
 - None
 
 ## Next actions
+- [ ] **BUG: Contour cross-section answers don't match the generated SVG profile** — generator/renderer mismatch, MCQ answers are hallucinated/wrong
 - [ ] EPIC 10 continued: Normalised rewards balancing (per-subject XP rates, streaks/goals, parent caps)
 - [ ] EPIC 11: History subject pack (YAML templates + generators)
 - [ ] EPIC 12: Cross-subject features (combined leaderboard, subject streaks)
