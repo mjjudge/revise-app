@@ -61,6 +61,7 @@ Bug fixes and UX polish after live testing with Anna.
   - ADR 013: Context-Aware Data & Realistic Ranges
   - Hint scroll UX: clicking Hint now scrolls to the hint area so hints aren't missed when calculator is open
   - ADR 014: Hint Button Scroll-to-Top UX
+  - Algebra prompt fix: 6 YAML prompts were dumping raw Python dicts (e.g. `{'expr_str': '-2x - 5y - 5', ...}`); fixed to use `.expr_str` / `.text` sub-fields; improved `_Namespace.__str__` with `_DISPLAY_KEYS` fallback and `__format__` safety
 
 ## Decisions made
 - UI: HTMX + Tailwind CSS, server-rendered via Jinja2 (ADR 001)
