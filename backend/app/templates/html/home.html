@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Revise Quest{% endblock %}
+
+{% block body %}
+<div class="min-h-screen">
+  <!-- Top bar -->
+  <nav class="bg-realm-purple-800/80 backdrop-blur border-b border-realm-purple-600/50 px-4 py-3">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">&#9876;</span>
+        <span class="font-bold text-lg text-realm-gold-400">Revise Quest</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <!-- XP badge -->
+        <div class="flex items-center gap-1 bg-realm-purple-700/60 px-3 py-1 rounded-full">
+          <span class="text-realm-gold-400 text-sm">&#11088;</span>
+          <span class="text-sm font-bold">{{ user.xp }} XP</span>
+        </div>
+        <!-- Gold badge -->
+        <div class="flex items-center gap-1 bg-realm-purple-700/60 px-3 py-1 rounded-full">
+          <span class="text-realm-gold-400 text-sm gold-shimmer">&#129689;</span>
+          <span class="text-sm font-bold">{{ user.gold }} Gold</span>
+        </div>
+        <!-- Logout -->
+        <a href="/auth/logout" class="text-realm-purple-300 hover:text-white text-sm">
+          Logout
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Greeting -->
+    <div class="text-center mb-10">
+      <h1 class="text-3xl md:text-4xl font-bold mb-2">{{ greeting }}</h1>
+      <p class="text-realm-purple-200 text-lg">Choose your quest below</p>
+    </div>
+
+    <!-- Quest chapters grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Chapter 5: Data -->
+      <div class="bg-realm-purple-700/40 backdrop-blur rounded-xl p-6 border border-realm-purple-500/30 hover:border-realm-gold-400/50 transition-all cursor-pointer quest-glow">
+        <div class="flex items-start gap-4">
+          <div class="w-14 h-14 rounded-lg bg-blue-600/30 flex items-center justify-center text-3xl shrink-0">
+            &#128202;
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-realm-gold-400 mb-1">Data &amp; Charts</h2>
+            <p class="text-realm-purple-200 text-sm mb-3">Averages, pie charts, time series &amp; more</p>
+            <div class="flex items-center gap-2">
+              <span class="text-xs bg-realm-purple-600/60 px-2 py-1 rounded">Chapter 5</span>
+              <span class="text-xs bg-realm-green-600/40 text-realm-green-400 px-2 py-1 rounded">Coming Soon</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chapter 6: Algebra -->
+      <div class="bg-realm-purple-700/40 backdrop-blur rounded-xl p-6 border border-realm-purple-500/30 hover:border-realm-gold-400/50 transition-all cursor-pointer quest-glow">
+        <div class="flex items-start gap-4">
+          <div class="w-14 h-14 rounded-lg bg-emerald-600/30 flex items-center justify-center text-3xl shrink-0">
+            &#129518;
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-realm-gold-400 mb-1">Expressions &amp; Formulae</h2>
+            <p class="text-realm-purple-200 text-sm mb-3">Substitution, simplify, like terms</p>
+            <div class="flex items-center gap-2">
+              <span class="text-xs bg-realm-purple-600/60 px-2 py-1 rounded">Chapter 6</span>
+              <span class="text-xs bg-realm-green-600/40 text-realm-green-400 px-2 py-1 rounded">Coming Soon</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chapter 7: Calculation -->
+      <div class="bg-realm-purple-700/40 backdrop-blur rounded-xl p-6 border border-realm-purple-500/30 hover:border-realm-gold-400/50 transition-all cursor-pointer quest-glow">
+        <div class="flex items-start gap-4">
+          <div class="w-14 h-14 rounded-lg bg-amber-600/30 flex items-center justify-center text-3xl shrink-0">
+            &#129504;
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-realm-gold-400 mb-1">Calculation &amp; Measure</h2>
+            <p class="text-realm-purple-200 text-sm mb-3">Conversions, rounding, BIDMAS, mental methods</p>
+            <div class="flex items-center gap-2">
+              <span class="text-xs bg-realm-purple-600/60 px-2 py-1 rounded">Chapter 7</span>
+              <span class="text-xs bg-realm-green-600/40 text-realm-green-400 px-2 py-1 rounded">Coming Soon</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chapter 8: Probability -->
+      <div class="bg-realm-purple-700/40 backdrop-blur rounded-xl p-6 border border-realm-purple-500/30 hover:border-realm-gold-400/50 transition-all cursor-pointer quest-glow">
+        <div class="flex items-start gap-4">
+          <div class="w-14 h-14 rounded-lg bg-purple-600/30 flex items-center justify-center text-3xl shrink-0">
+            &#127922;
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-realm-gold-400 mb-1">Probability</h2>
+            <p class="text-realm-purple-200 text-sm mb-3">Scales, equally likely, experimental probability</p>
+            <div class="flex items-center gap-2">
+              <span class="text-xs bg-realm-purple-600/60 px-2 py-1 rounded">Chapter 8</span>
+              <span class="text-xs bg-realm-green-600/40 text-realm-green-400 px-2 py-1 rounded">Coming Soon</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="mt-10 bg-realm-purple-800/60 backdrop-blur rounded-xl p-6 border border-realm-purple-600/30">
+      <h3 class="text-lg font-bold text-realm-gold-400 mb-4">&#128081; Your Adventure Stats</h3>
+      <div class="grid grid-cols-3 gap-4 text-center">
+        <div>
+          <p class="text-2xl font-bold">{{ user.xp }}</p>
+          <p class="text-realm-purple-300 text-sm">Total XP</p>
+        </div>
+        <div>
+          <p class="text-2xl font-bold">{{ user.gold }}</p>
+          <p class="text-realm-purple-300 text-sm">Gold Coins</p>
+        </div>
+        <div>
+          <p class="text-2xl font-bold">0</p>
+          <p class="text-realm-purple-300 text-sm">Quests Done</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

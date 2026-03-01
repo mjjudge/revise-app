@@ -8,6 +8,11 @@ services:
       - DATABASE_URL=sqlite:////data/app.sqlite3
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - LAN_SUBNET_ALLOW=${LAN_SUBNET_ALLOW:-192.168.1.0/24}
+      - KID_PIN=${KID_PIN:-1234}
+      - ADMIN_PIN=${ADMIN_PIN:-9999}
+      - SECRET_KEY=${SECRET_KEY:-}
+      - CHILD_NAME=${CHILD_NAME:-Anna}
+      - CHILD_NICKNAMES=${CHILD_NICKNAMES:-Chibs,Chibby}
     volumes:
       - ./data:/data
       - ./logs:/logs

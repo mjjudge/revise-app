@@ -40,7 +40,7 @@ logs:
 	docker compose logs -f --tail=200
 
 test:
-	docker compose run --rm app uv run pytest
+	docker compose run --rm app uv run --extra dev pytest
 	cd frontend && npm test
 
 lint:

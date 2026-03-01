@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Revise Quest{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-sm">
+    <!-- Title -->
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold mb-2">
+        <span class="text-realm-gold-400">&#9876;</span>
+        Revise Quest
+        <span class="text-realm-gold-400">&#9876;</span>
+      </h1>
+      <p class="text-realm-purple-200 text-lg">Choose your hero</p>
+    </div>
+
+    {% if error %}
+    <div class="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg mb-4 text-center">
+      Wrong PIN! Try again, brave adventurer.
+    </div>
+    {% endif %}
+
+    <!-- User selection cards -->
+    <div class="space-y-4">
+      <!-- Anna (Kid) -->
+      <div class="bg-realm-purple-700/50 backdrop-blur rounded-xl p-6 border border-realm-purple-500/30 quest-glow cursor-pointer hover:bg-realm-purple-600/50 transition-all"
+           onclick="selectUser('Anna')" id="card-anna">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 rounded-full bg-realm-gold-400 flex items-center justify-center text-3xl">
+            &#129497;
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-realm-gold-400">Anna</h2>
+            <p class="text-realm-purple-200 text-sm">Young Adventurer</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parent (Admin) -->
+      <div class="bg-realm-purple-700/50 backdrop-blur rounded-xl p-6 border border-realm-purple-500/30 cursor-pointer hover:bg-realm-purple-600/50 transition-all"
+           onclick="selectUser('Parent')" id="card-parent">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 rounded-full bg-realm-green-500 flex items-center justify-center text-3xl">
+            &#129668;
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-realm-green-400">Parent</h2>
+            <p class="text-realm-purple-200 text-sm">Quest Master</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PIN entry (hidden until user selected) -->
+    <form id="pin-form" action="/auth/login" method="post"
+          class="mt-6 hidden">
+      <input type="hidden" name="display_name" id="selected-user" value="">
+
+      <label class="block text-center text-realm-purple-200 mb-3 text-lg" id="pin-label">
+        Enter your PIN
+      </label>
+
+      <div class="flex justify-center gap-3 mb-6">
+        <input type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+               class="w-14 h-14 text-center text-2xl font-bold rounded-lg bg-realm-purple-700/80 border-2 border-realm-purple-400 text-white focus:border-realm-gold-400 focus:outline-none"
+               data-pin="0" oninput="pinNext(this, 0)" autofocus>
+        <input type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+               class="w-14 h-14 text-center text-2xl font-bold rounded-lg bg-realm-purple-700/80 border-2 border-realm-purple-400 text-white focus:border-realm-gold-400 focus:outline-none"
+               data-pin="1" oninput="pinNext(this, 1)">
+        <input type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+               class="w-14 h-14 text-center text-2xl font-bold rounded-lg bg-realm-purple-700/80 border-2 border-realm-purple-400 text-white focus:border-realm-gold-400 focus:outline-none"
+               data-pin="2" oninput="pinNext(this, 2)">
+        <input type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"
+               class="w-14 h-14 text-center text-2xl font-bold rounded-lg bg-realm-purple-700/80 border-2 border-realm-purple-400 text-white focus:border-realm-gold-400 focus:outline-none"
+               data-pin="3" oninput="pinNext(this, 3)">
+      </div>
+
+      <!-- Hidden field to collect the full PIN -->
+      <input type="hidden" name="pin" id="full-pin" value="">
+
+      <button type="submit"
+              class="w-full py-3 bg-realm-gold-500 hover:bg-realm-gold-400 text-realm-purple-900 font-bold rounded-lg text-lg transition-colors">
+        Enter the Realm
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function selectUser(name) {
+    document.getElementById('selected-user').value = name;
+    document.getElementById('pin-form').classList.remove('hidden');
+    const label = name === 'Parent' ? 'Enter your secret code, Quest Master' : 'Enter your secret code, hero!';
+    document.getElementById('pin-label').textContent = label;
+    // Focus first PIN box
+    document.querySelector('[data-pin="0"]').focus();
+    // Highlight selected card
+    document.getElementById('card-anna').classList.toggle('ring-2', name === 'Anna');
+    document.getElementById('card-anna').classList.toggle('ring-realm-gold-400', name === 'Anna');
+    document.getElementById('card-parent').classList.toggle('ring-2', name === 'Parent');
+    document.getElementById('card-parent').classList.toggle('ring-realm-gold-400', name === 'Parent');
+  }
+
+  function pinNext(el, idx) {
+    if (el.value.length === 1 && idx < 3) {
+      document.querySelector(`[data-pin="${idx + 1}"]`).focus();
+    }
+    // Collect full PIN
+    const digits = Array.from(document.querySelectorAll('[data-pin]')).map(i => i.value);
+    document.getElementById('full-pin').value = digits.join('');
+  }
+
+  // Handle backspace navigation
+  document.querySelectorAll('[data-pin]').forEach((input, idx) => {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !input.value && idx > 0) {
+        document.querySelector(`[data-pin="${idx - 1}"]`).focus();
+      }
+    });
+  });
+</script>
+{% endblock %}

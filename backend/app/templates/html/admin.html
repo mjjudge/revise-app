@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Revise Quest{% endblock %}
+
+{% block body %}
+<div class="min-h-screen">
+  <!-- Top bar -->
+  <nav class="bg-realm-purple-800/80 backdrop-blur border-b border-realm-purple-600/50 px-4 py-3">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">&#129668;</span>
+        <span class="font-bold text-lg text-realm-green-400">Quest Master Dashboard</span>
+      </div>
+      <a href="/auth/logout" class="text-realm-purple-300 hover:text-white text-sm">
+        Logout
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Admin Dashboard</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Child progress card -->
+      <div class="bg-realm-purple-700/40 backdrop-blur rounded-xl p-6 border border-realm-purple-500/30">
+        <h2 class="text-xl font-bold text-realm-gold-400 mb-4">&#128202; Anna's Progress</h2>
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <span class="text-realm-purple-200">Total XP</span>
+            <span class="font-bold text-lg" hx-get="/api/admin/stats" hx-trigger="load" hx-target="#xp-val">
+              <span id="xp-val">--</span>
+            </span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-realm-purple-200">Gold Coins</span>
+            <span class="font-bold text-lg" id="gold-val">--</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-realm-purple-200">Quests Completed</span>
+            <span class="font-bold text-lg">0</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-realm-purple-200">Current Streak</span>
+            <span class="font-bold text-lg">0 days</span>
+          </div>
+        </div>
+        <p class="text-realm-purple-400 text-sm mt-4 italic">
+          Stats will populate once quests are available (EPIC 2+).
+        </p>
+      </div>
+
+      <!-- Reward controls card -->
+      <div class="bg-realm-purple-700/40 backdrop-blur rounded-xl p-6 border border-realm-purple-500/30">
+        <h2 class="text-xl font-bold text-realm-gold-400 mb-4">&#129689; Reward Controls</h2>
+        <div class="space-y-4">
+          <div>
+            <label class="text-realm-purple-200 text-sm">XP to Gold exchange rate</label>
+            <p class="text-white font-bold">100 XP = 1 Gold Coin</p>
+            <p class="text-realm-purple-400 text-xs mt-1">Configurable in EPIC 4</p>
+          </div>
+          <div>
+            <label class="text-realm-purple-200 text-sm">Weekly payout cap</label>
+            <p class="text-white font-bold">Not yet configured</p>
+            <p class="text-realm-purple-400 text-xs mt-1">Configurable in EPIC 4</p>
+          </div>
+          <div>
+            <label class="text-realm-purple-200 text-sm">Payout ledger</label>
+            <p class="text-white font-bold">No payouts yet</p>
+            <p class="text-realm-purple-400 text-xs mt-1">Will track pocket money payments (EPIC 4)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Difficulty controls -->
+      <div class="bg-realm-purple-700/40 backdrop-blur rounded-xl p-6 border border-realm-purple-500/30 md:col-span-2">
+        <h2 class="text-xl font-bold text-realm-gold-400 mb-4">&#127919; Difficulty Settings</h2>
+        <p class="text-realm-purple-200 mb-4">
+          Difficulty is <strong class="text-realm-green-400">adaptive</strong> — it auto-adjusts based on Anna's performance.
+          Override controls will be available once the question engine is built (EPIC 2).
+        </p>
+        <div class="grid grid-cols-3 gap-4 text-center">
+          <div class="bg-realm-green-600/20 rounded-lg p-3 border border-realm-green-600/30">
+            <p class="font-bold text-realm-green-400">Easy</p>
+            <p class="text-xs text-realm-purple-300">Accuracy &lt; 50%</p>
+          </div>
+          <div class="bg-realm-gold-500/20 rounded-lg p-3 border border-realm-gold-500/30">
+            <p class="font-bold text-realm-gold-400">Medium</p>
+            <p class="text-xs text-realm-purple-300">Accuracy 50-80%</p>
+          </div>
+          <div class="bg-red-600/20 rounded-lg p-3 border border-red-600/30">
+            <p class="font-bold text-red-400">Hard</p>
+            <p class="text-xs text-realm-purple-300">Accuracy &gt; 80%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

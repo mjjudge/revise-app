@@ -7,11 +7,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml /app/pyproject.toml
-COPY uv.lock /app/uv.lock
 
-# Use uv for fast installs (we’ll vendor it via pip)
+# Use uv for fast installs (we'll vendor it via pip)
 RUN pip install --no-cache-dir uv==0.5.30 \
- && uv sync --frozen --no-dev
+ && uv sync --no-dev
 
 COPY . /app
 

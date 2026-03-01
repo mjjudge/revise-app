@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Revise Quest{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            // Fantasy palette
+            'realm-purple': { 50: '#f5f0ff', 100: '#ede5ff', 200: '#d4c4ff', 300: '#b89aff', 400: '#9a6aff', 500: '#7c3aed', 600: '#6d28d9', 700: '#5b21b6', 800: '#4c1d95', 900: '#3b0f7a' },
+            'realm-gold':   { 50: '#fff9eb', 100: '#fef0c7', 200: '#fdd889', 400: '#f6b935', 500: '#f59e0b', 600: '#d97706' },
+            'realm-green':  { 50: '#ecfdf5', 100: '#d1fae5', 400: '#34d399', 500: '#10b981', 600: '#059669' },
+          },
+          fontFamily: {
+            quest: ['"Segoe UI"', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .quest-glow { box-shadow: 0 0 20px rgba(124, 58, 237, 0.3); }
+    .gold-shimmer { animation: shimmer 2s ease-in-out infinite; }
+    @keyframes shimmer {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body class="min-h-screen bg-gradient-to-br from-realm-purple-900 via-realm-purple-800 to-indigo-900 text-white font-quest">
+  {% block body %}{% endblock %}
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>
