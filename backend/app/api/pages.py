@@ -75,9 +75,17 @@ def home_page(request: Request, session: Session = Depends(get_session)):
     if not user:
         return RedirectResponse(url="/login", status_code=303)
 
+    quests_done = session.exec(
+        select(func.count(QuestSession.id)).where(
+            QuestSession.user_id == user.id,
+            QuestSession.finished == True,  # noqa: E712
+        )
+    ).one()
+
     return templates.TemplateResponse(request, "home.html", {
         "user": user,
         "greeting": greeting(),
+        "quests_done": quests_done,
     })
 
 
