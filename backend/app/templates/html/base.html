@@ -38,5 +38,21 @@
   {% block body %}{% endblock %}
 
   {% block scripts %}{% endblock %}
+
+  <script>
+    // HTMX: show friendly toast on server errors
+    document.body.addEventListener('htmx:responseError', function(e) {
+      var toast = document.getElementById('htmx-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'htmx-toast';
+        toast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-3 rounded-xl shadow-lg z-50 transition-opacity duration-500';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = '⚠️ Something went wrong. Please try again!';
+      toast.style.opacity = '1';
+      setTimeout(function() { toast.style.opacity = '0'; }, 4000);
+    });
+  </script>
 </body>
 </html>

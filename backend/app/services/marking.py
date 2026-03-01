@@ -136,10 +136,8 @@ def mark_numeric_tolerance(student: str, correct: Any, spec: dict) -> MarkResult
 
 @register_marker("rounding_dp")
 def mark_rounding_dp(student: str, correct: Any, spec: dict) -> MarkResult:
-    dp = spec.get("dp_from_param")
-    if dp is None:
-        dp = spec.get("dp", 2)
-    # dp may be the actual value (int) by this point after param substitution
+    # dp is resolved by check_answer into spec["dp"]; fall back to spec["dp"] default
+    dp = spec.get("dp", 2)
     dp = int(dp)
     expected_val = round(float(correct), dp)
     expected_str = f"{expected_val:.{dp}f}"
@@ -191,7 +189,7 @@ def mark_fraction_or_decimal(student: str, correct: Any, spec: dict) -> MarkResu
 
     expected_str = str(expected_frac)
     accepted = spec.get("accepted_forms", ["fraction_simplified", "decimal"])
-    rounding = spec.get("rounding", {})
+    rounding = spec.get("rounding") or {}
     decimal_places = rounding.get("decimal_places")
 
     # Try parsing student answer as fraction

@@ -7,7 +7,7 @@
 - [x] Git hygiene: .gitignore includes backups/data/logs
 - [x] Docs: TECH_SPEC, decisions folder, session tracking
 - [x] Add QUESTION_FEED spec and initial YAML feeds (skills + templates)
-- [ ] Add YAML validation test to ensure templates reference valid skills and supported marking modes
+- [x] Add YAML validation test to ensure templates reference valid skills and supported marking modes
 
 ## EPIC 1 -- MVP App Shell
 - [x] App config + env loading (Pydantic Settings)
@@ -70,10 +70,17 @@
 - [x] ADR 008: Tutor Mode — OpenAI Integration
 
 ## EPIC 6 -- Quality + Observability
-- [ ] Expand tests for templates + marking
-- [ ] Add basic structured logging
-- [ ] Error pages + retry UX
-- [ ] ADRs for design decisions
+- [x] Structured logging (JSON prod / coloured dev) with `core/logging.py`
+- [x] Request logging middleware (method, path, status, duration_ms)
+- [x] Themed error pages (404/500/403) with `error.html`
+- [x] HTMX error toast for failed AJAX requests
+- [x] Retry UX: HTML5 `required` + server-side empty-answer inline error
+- [x] YAML validation tests (skills, chapters, marking modes, solution steps, ID prefixes, difficulty)
+- [x] End-to-end template generation tests (generate, mark correct, mark wrong, determinism, seed variety)
+- [x] Logging + error page tests
+- [x] Bug fixes: `mark_rounding_dp` dp_from_param, `mark_fraction_or_decimal` rounding None
+- [x] 23 quality tests (151 total)
+- [x] ADR 009: Quality & Observability
 
 ## EPIC 7 -- Hardening (LAN-only, optional)
 - [ ] UFW rules for LAN subnet

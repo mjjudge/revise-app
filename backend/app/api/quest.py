@@ -154,7 +154,7 @@ def quest_generate(
 def quest_answer(
     request: Request,
     question_id: int = Form(...),
-    answer: str = Form(...),
+    answer: str = Form(""),
     quest_id: int = Form(default=0),
     session: Session = Depends(get_session),
 ):
@@ -162,6 +162,35 @@ def quest_answer(
     user = get_current_user(request, session)
     if not user or user.role != Role.kid:
         return RedirectResponse(url="/login", status_code=303)
+
+    # Validate non-empty answer
+    answer = answer.strip()
+    if not answer:
+        # Return inline error via HTMX swap
+        is_htmx = request.headers.get("hx-request") == "true"
+        error_html = (
+            '<div id="answer-area">'
+            '<p class="text-red-400 text-sm mb-3 font-medium">'
+            '⚠️ Please type an answer before submitting!</p>'
+            '<form method="post" action="/quest/answer"'
+            ' hx-post="/quest/answer" hx-target="#answer-area" hx-swap="outerHTML">'
+            f'<input type="hidden" name="question_id" value="{question_id}">'
+            f'<input type="hidden" name="quest_id" value="{quest_id}">'
+            '<div class="mb-4">'
+            '<label for="answer" class="block text-realm-purple-200 text-sm mb-2">Your answer:</label>'
+            '<input type="text" id="answer" name="answer" autocomplete="off" autofocus required'
+            ' class="w-full px-4 py-3 rounded-xl bg-realm-purple-800/80 border border-red-400'
+            ' text-white text-lg placeholder-realm-purple-400 focus:outline-none focus:border-realm-gold-400'
+            ' focus:ring-2 focus:ring-realm-gold-400/30"'
+            ' placeholder="Type your answer here...">'
+            '</div>'
+            '<button type="submit"'
+            ' class="w-full py-3 bg-realm-gold-500 hover:bg-realm-gold-400 text-realm-purple-900'
+            ' font-bold rounded-xl transition-colors text-lg">'
+            '⚔️ Submit Answer</button>'
+            '</form></div>'
+        )
+        return HTMLResponse(content=error_html, status_code=200)
 
     # Load quest session if present
     quest: QuestSession | None = None

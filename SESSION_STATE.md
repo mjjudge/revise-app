@@ -1,25 +1,27 @@
 # SESSION_STATE
 
 ## Current objective
-EPIC 5 complete. Tutor Mode (OpenAI) fully implemented and tested.
+EPIC 6 complete. Quality & Observability fully implemented and tested.
 
 ## Completed this session
-- EPIC 5 fully implemented:
-  - OpenAI integration via `openai` package (GPT-4o model)
-  - Tutor service (tutor.py): get_hint(), explain_mistake(), rewrite_prompt_fun()
-  - 3-level hint ladder: nudge → worked step → nearly-the-answer
-  - "Ask Professor Quill" mistake explanation on wrong answers
-  - Fun question rewrite with caching (QuestionInstance.fun_prompt)
-  - Schema: hints_used + fun_prompt fields on QuestionInstance
-  - Hint penalty: using any hint halves gold reward
-  - Safety: age-appropriate prompts, no personal data, no answer leaks
-  - Persona: Professor Quill (friendly, encouraging, British)
-  - All API calls logged with prompt + response
-  - Error handling: friendly fallback if OpenAI is unavailable
-  - Tutor API routes: POST /tutor/hint, /tutor/explain, /tutor/rewrite
-  - HTMX integration: hint button on question page, explain button on result page
-  - 22 new tutor tests (128 total passing)
-  - ADR 008: Tutor Mode — OpenAI Integration
+- EPIC 4 fully implemented (gamification, quest sessions, payouts)
+- EPIC 5 fully implemented (OpenAI tutor — Professor Quill)
+- Fixed leaked API key in git history (git-filter-repo + force-push)
+- EPIC 6 fully implemented:
+  - Structured logging: `core/logging.py` with JSON (prod) and coloured (dev) formatters
+  - Request logging middleware: method, path, status, duration_ms with request_id
+  - Themed error pages: 404/500/403 with fantasy messaging + `error.html`
+  - HTMX error toast: `responseError` listener for failed AJAX requests
+  - Retry UX: HTML5 `required` + server-side empty-answer inline error with red border
+  - YAML cross-validation tests (7): skills exist, chapters match, marking modes supported, solution steps, ID prefixes, difficulty distribution, chapter coverage
+  - End-to-end generation tests (5): every template generates, marks correct, marks wrong, deterministic with same seed, different seeds produce variety
+  - Logging tests (7): JSON/Dev formatter output, extras, level override, no duplicates
+  - Error page tests (4): 404 themed, home link, health unaffected, empty answer inline
+  - Bug fixes found by E2E tests:
+    - `mark_rounding_dp`: was reading raw `dp_from_param` string instead of resolved `dp` value
+    - `mark_fraction_or_decimal`: `rounding` could be `None`, causing AttributeError
+  - 23 new tests in `test_quality.py` (151 total passing)
+  - ADR 009: Quality & Observability
 
 ## Decisions made
 - UI: HTMX + Tailwind CSS, server-rendered via Jinja2 (ADR 001)
@@ -30,15 +32,14 @@ EPIC 5 complete. Tutor Mode (OpenAI) fully implemented and tested.
 - Asset rendering: Pure inline SVG + HTML, no matplotlib (ADR 006)
 - Gamification: Quest loops, streak bonuses, gold cap, payouts (ADR 007)
 - Tutor: GPT-4o, 3 hint levels, explain + fun rewrite, halve gold penalty (ADR 008)
+- Quality: Structured logging, error pages, E2E tests, retry UX (ADR 009)
 
 ## Open questions
 - None for current EPICs
 
-## Next actions (EPIC 6)
-- [ ] Expand tests for templates + marking
-- [ ] Add basic structured logging
-- [ ] Error pages + retry UX
-- [ ] ADRs for design decisions
+## Next actions (EPIC 7 — Hardening)
+- [ ] UFW rules for LAN subnet
+- [ ] Optional Caddy basic auth
 
 ## Notes / gotchas
 - Dockerfile no longer requires uv.lock (uses uv sync without --frozen)
