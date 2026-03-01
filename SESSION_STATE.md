@@ -1,7 +1,7 @@
 # SESSION_STATE
 
 ## Current objective
-EPIC 6.6 complete. Milestone celebrations with fireworks and mini Sudoku.
+EPIC 6.7 complete. Adventurer tier system with Greek mythology themes.
 
 ## Completed this session
 - EPIC 4 fully implemented (gamification, quest sessions, payouts)
@@ -44,6 +44,16 @@ EPIC 6.6 complete. Milestone celebrations with fireworks and mini Sudoku.
   - Wired into `quest_answer()` — captures `old_xp` before `check_answer()`, detects milestone, passes to template
   - 15 new milestone tests (detect_milestone, milestone_message, integration)
   - ADR 011: Milestone Celebrations
+- EPIC 6.7 fully implemented:
+  - `services/tiers.py`: 9-tier Greek mythology progression system (Mortal → Heir of Olympus)
+  - Each tier has unique colour scheme (accent, glow, gradient, badge)
+  - `base.html`: body gradient + CSS custom properties change per tier
+  - `templates/shared.py`: Jinja2 template factory with tier globals
+  - Tier badge in all page navbars (icon + title pill)
+  - Home page: tier progress card with progress bar, XP tracker, and full tier roadmap
+  - `detect_tier_up()` in `quest_answer` — banner celebration on tier crossings
+  - 28 new tests in `test_tiers.py` (get_tier, tier_progress, detect_tier_up, data integrity)
+  - ADR 012: Adventurer Tier System
 
 ## Decisions made
 - UI: HTMX + Tailwind CSS, server-rendered via Jinja2 (ADR 001)
@@ -57,6 +67,7 @@ EPIC 6.6 complete. Milestone celebrations with fireworks and mini Sudoku.
 - Quality: Structured logging, error pages, E2E tests, retry UX (ADR 009)
 - Calculator: On-screen basic calculator, template-level opt-in (ADR 010)
 - Milestones: Fireworks + mini Sudoku every 100 XP (ADR 011)
+- Tiers: 9-tier Greek mythology progression with dynamic theming (ADR 012)
 
 ## Open questions
 - None for current EPICs
@@ -67,6 +78,7 @@ EPIC 6.6 complete. Milestone celebrations with fireworks and mini Sudoku.
 - [ ] Optional Caddy basic auth
 - [ ] Consider adding more v3 templates for skills with low coverage
 - [ ] Consider adding more mini-games (word search, memory match) for milestone variety
+- [ ] Consider persisting highest tier reached for permanent badges
 
 ## Notes / gotchas
 - Dockerfile no longer requires uv.lock (uses uv sync without --frozen)

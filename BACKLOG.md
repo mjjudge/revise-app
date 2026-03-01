@@ -102,6 +102,16 @@
 - [x] 15 milestone tests (168 total passing)
 - [x] ADR 011: Milestone Celebrations
 
+## EPIC 6.7 -- Adventurer Tiers (Greek Mythology)
+- [x] 9-tier system: Mortal → Acolyte of Athena → Messenger of Hermes → Warrior of Ares → Artisan of Hephaestus → Hunter of Artemis → Champion of Apollo → Favoured of Poseidon → Heir of Olympus
+- [x] Dynamic theme colours per tier (body gradient + accent + glow via CSS custom properties)
+- [x] Shared Jinja2 template factory with tier globals (`get_tier`, `tier_progress`, `all_tiers`)
+- [x] Tier badge in navbar across all pages
+- [x] Home page: tier progress card with bar, XP tracker, full roadmap
+- [x] Tier-up celebration banner on result page
+- [x] 28 tier tests (196 total passing)
+- [x] ADR 012: Adventurer Tier System
+
 ## EPIC 7 -- Hardening (LAN-only, optional)
 - [ ] UFW rules for LAN subnet
 - [ ] Optional Caddy basic auth

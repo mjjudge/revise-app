@@ -25,16 +25,32 @@
   </script>
   <style>
     body { font-family: 'Segoe UI', system-ui, sans-serif; }
-    .quest-glow { box-shadow: 0 0 20px rgba(124, 58, 237, 0.3); }
+    .quest-glow { box-shadow: 0 0 20px var(--tier-glow, rgba(124, 58, 237, 0.3)); }
     .gold-shimmer { animation: shimmer 2s ease-in-out infinite; }
     @keyframes shimmer {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.7; }
     }
+    .tier-accent { color: var(--tier-accent, #a78bfa); }
+    .tier-badge { background: var(--tier-badge-bg, rgba(167,139,250,0.2)); color: var(--tier-badge-text, #a78bfa); }
+    .tier-glow { box-shadow: 0 0 25px var(--tier-glow, rgba(124,58,237,0.3)); }
+    .tier-border { border-color: var(--tier-accent, #a78bfa); }
+    .tier-progress-bar { background: var(--tier-accent, #a78bfa); }
   </style>
   {% block head %}{% endblock %}
 </head>
-<body class="min-h-screen bg-gradient-to-br from-realm-purple-900 via-realm-purple-800 to-indigo-900 text-white font-quest">
+{# Tier-driven dynamic background — falls back to default purple if user not set #}
+{% if user is defined and user %}
+  {% set _tier = get_tier(user.xp) %}
+  <body class="min-h-screen text-white font-quest"
+        style="background: linear-gradient(135deg, {{ _tier.gradient_from }}, {{ _tier.gradient_via }}, {{ _tier.gradient_to }});
+               --tier-accent: {{ _tier.accent }};
+               --tier-glow: {{ _tier.glow }};
+               --tier-badge-bg: {{ _tier.badge_bg }};
+               --tier-badge-text: {{ _tier.badge_text }};">
+{% else %}
+  <body class="min-h-screen bg-gradient-to-br from-realm-purple-900 via-realm-purple-800 to-indigo-900 text-white font-quest">
+{% endif %}
   {% block body %}{% endblock %}
 
   {% block scripts %}{% endblock %}

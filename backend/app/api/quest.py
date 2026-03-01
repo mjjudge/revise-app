@@ -23,11 +23,12 @@ from app.models.question import QuestionInstance, Attempt
 from app.models.user import Role, User
 from app.services.auth import get_current_user
 from app.services.questions import generate_question, check_answer, detect_milestone, milestone_message
+from app.services.tiers import detect_tier_up
 from app.templates.feed_loader import get_templates_by_chapter, get_skill_map, get_template_by_id
 
 router = APIRouter(prefix="/quest", tags=["quest"])
 
-templates = Jinja2Templates(directory="app/templates/html")
+templates = __import__("app.templates.shared", fromlist=["create_templates"]).create_templates()
 
 
 # ---------------------------------------------------------------------------
@@ -214,6 +215,17 @@ def quest_answer(
         title, body = milestone_message(milestone_xp)
         milestone = {"xp": milestone_xp, "title": title, "body": body}
 
+    # Tier-up detection
+    new_tier = detect_tier_up(old_xp, user.xp)
+    tier_up = None
+    if new_tier:
+        tier_up = {
+            "title": new_tier.title,
+            "icon": new_tier.icon,
+            "flavour": new_tier.flavour,
+            "accent": new_tier.accent,
+        }
+
     # Update quest session
     if quest:
         quest.completed += 1
@@ -243,6 +255,7 @@ def quest_answer(
         "quest": quest,
         "quest_finished": quest.finished if quest else False,
         "milestone": milestone,
+        "tier_up": tier_up,
     })
 
 

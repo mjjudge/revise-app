@@ -4,10 +4,12 @@
 {% block body %}
 <!-- Navbar -->
 <nav class="flex items-center justify-between px-6 py-3 bg-realm-purple-800/80 border-b border-realm-purple-600">
-  <a href="/" class="text-realm-gold-400 font-bold text-lg">⚔️ Revise Quest</a>
-  <div class="flex items-center gap-4">
+  <a href="/" class="tier-accent font-bold text-lg">⚔️ Revise Quest</a>
+  <div class="flex items-center gap-3">
+    {% set tier = get_tier(user.xp) %}
+    <span class="tier-badge px-2 py-0.5 rounded-full text-xs font-bold">{{ tier.icon }} {{ tier.title }}</span>
     <span class="text-realm-gold-400 gold-shimmer">💰 {{ user.gold }}</span>
-    <span class="text-realm-green-400">⭐ {{ user.xp }} XP</span>
+    <span class="tier-accent">⭐ {{ user.xp }} XP</span>
   </div>
 </nav>
 

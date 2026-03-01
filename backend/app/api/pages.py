@@ -14,7 +14,7 @@ from app.models.user import Role, User
 
 router = APIRouter(tags=["pages"])
 
-templates = Jinja2Templates(directory="app/templates/html")
+templates = __import__("app.templates.shared", fromlist=["create_templates"]).create_templates()
 
 
 @router.get("/login", response_class=HTMLResponse)

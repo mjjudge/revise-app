@@ -9,12 +9,18 @@
     <div class="max-w-4xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-3">
         <span class="text-2xl">&#9876;</span>
-        <span class="font-bold text-lg text-realm-gold-400">Revise Quest</span>
+        <span class="font-bold text-lg tier-accent">Revise Quest</span>
       </div>
       <div class="flex items-center gap-4">
+        <!-- Tier badge -->
+        {% set tier = get_tier(user.xp) %}
+        <div class="flex items-center gap-1 tier-badge px-3 py-1 rounded-full">
+          <span class="text-sm">{{ tier.icon }}</span>
+          <span class="text-sm font-bold">{{ tier.title }}</span>
+        </div>
         <!-- XP badge -->
         <div class="flex items-center gap-1 bg-realm-purple-700/60 px-3 py-1 rounded-full">
-          <span class="text-realm-gold-400 text-sm">&#11088;</span>
+          <span class="tier-accent text-sm">&#11088;</span>
           <span class="text-sm font-bold">{{ user.xp }} XP</span>
         </div>
         <!-- Gold badge -->
@@ -115,7 +121,7 @@
 
     <!-- Stats bar -->
     <div class="mt-10 bg-realm-purple-800/60 backdrop-blur rounded-xl p-6 border border-realm-purple-600/30">
-      <h3 class="text-lg font-bold text-realm-gold-400 mb-4">&#128081; Your Adventure Stats</h3>
+      <h3 class="text-lg font-bold tier-accent mb-4">&#128081; Your Adventure Stats</h3>
       <div class="grid grid-cols-3 gap-4 text-center">
         <div>
           <p class="text-2xl font-bold">{{ user.xp }}</p>
@@ -130,6 +136,60 @@
           <p class="text-realm-purple-300 text-sm">Quests Done</p>
         </div>
       </div>
+    </div>
+
+    <!-- Tier progress card -->
+    {% set tp = tier_progress(user.xp) %}
+    <div class="mt-6 bg-realm-purple-800/60 backdrop-blur rounded-xl p-6 border tier-border border-opacity-40 tier-glow">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="text-4xl">{{ tp.current.icon }}</div>
+        <div class="flex-1">
+          <h3 class="text-xl font-bold tier-accent">{{ tp.current.icon }} {{ tp.current.title }}</h3>
+          <p class="text-realm-purple-300 text-sm italic">{{ tp.current.flavour }}</p>
+        </div>
+      </div>
+
+      {% if tp.next %}
+      <!-- Progress toward next tier -->
+      <div class="mb-3">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-sm text-realm-purple-300">Next: <span class="tier-accent font-medium">{{ tp.next.icon }} {{ tp.next.title }}</span></span>
+          <span class="text-sm text-realm-purple-300">{{ tp.xp_into_tier }} / {{ tp.xp_needed }} XP</span>
+        </div>
+        <div class="w-full bg-realm-purple-900/60 rounded-full h-3 border border-realm-purple-600/40">
+          <div class="tier-progress-bar h-full rounded-full transition-all duration-700"
+               style="width: {{ tp.pct }}%"></div>
+        </div>
+      </div>
+
+      <!-- All tiers roadmap -->
+      <div class="mt-4 pt-4 border-t border-realm-purple-600/30">
+        <p class="text-xs text-realm-purple-400 mb-2 uppercase tracking-wider">Your Journey</p>
+        <div class="flex items-center gap-1 flex-wrap">
+          {% for t in all_tiers %}
+            {% if t.rank <= tp.current.rank %}
+              <div class="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
+                   style="background: {{ t.badge_bg }}; color: {{ t.badge_text }};">
+                {{ t.icon }} {{ t.title }}
+              </div>
+            {% else %}
+              <div class="flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-realm-purple-900/40 text-realm-purple-500">
+                {{ t.icon }} {{ t.title }}
+              </div>
+            {% endif %}
+            {% if not loop.last %}
+              <span class="text-realm-purple-600 text-xs">→</span>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <!-- Max tier reached -->
+      <div class="text-center py-4">
+        <p class="text-lg font-bold tier-accent">🏛️ You have reached the pinnacle of Olympus!</p>
+        <p class="text-realm-purple-300 text-sm">The gods celebrate your mastery.</p>
+      </div>
+      {% endif %}
     </div>
   </main>
 </div>

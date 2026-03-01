@@ -4,10 +4,12 @@
 {% block body %}
 <!-- Navbar -->
 <nav class="flex items-center justify-between px-6 py-3 bg-realm-purple-800/80 border-b border-realm-purple-600">
-  <a href="/" class="text-realm-gold-400 font-bold text-lg">⚔️ Revise Quest</a>
-  <div class="flex items-center gap-4">
+  <a href="/" class="tier-accent font-bold text-lg">⚔️ Revise Quest</a>
+  <div class="flex items-center gap-3">
+    {% set tier = get_tier(user.xp) %}
+    <span class="tier-badge px-2 py-0.5 rounded-full text-xs font-bold">{{ tier.icon }} {{ tier.title }}</span>
     <span class="text-realm-gold-400 gold-shimmer">💰 {{ user.gold }}</span>
-    <span class="text-realm-green-400">⭐ {{ user.xp }} XP</span>
+    <span class="tier-accent">⭐ {{ user.xp }} XP</span>
   </div>
 </nav>
 
@@ -96,6 +98,18 @@
         🔥 {{ quest.streak }} in a row!
         {% if quest.streak >= 5 %}Double XP!{% else %}+50% XP bonus!{% endif %}
       </span>
+    </div>
+    {% endif %}
+
+    <!-- ⬆️ Tier-up celebration ⬆️ -->
+    {% if tier_up %}
+    <div id="tierup-banner" class="relative overflow-hidden rounded-2xl mb-4 p-6 text-center
+                border-2 bg-gradient-to-br from-realm-purple-900 via-realm-purple-800 to-realm-purple-900"
+         style="border-color: {{ tier_up.accent }}; box-shadow: 0 0 50px {{ tier_up.accent }}40;">
+      <div class="text-5xl mb-3 animate-bounce">{{ tier_up.icon }}</div>
+      <p class="text-sm uppercase tracking-widest mb-1" style="color: {{ tier_up.accent }};">⚡ New Title Unlocked ⚡</p>
+      <h3 class="text-3xl font-extrabold mb-2" style="color: {{ tier_up.accent }};">{{ tier_up.title }}</h3>
+      <p class="text-realm-purple-200 text-lg italic">{{ tier_up.flavour }}</p>
     </div>
     {% endif %}
 
