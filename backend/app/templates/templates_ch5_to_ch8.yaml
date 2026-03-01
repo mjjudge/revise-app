@@ -1,0 +1,397 @@
+templates:
+
+  # -------------------------
+  # Chapter 5: Statistics
+  # -------------------------
+
+  - id: ch5_mean_from_list_v1
+    chapter: 5
+    skill: stats.mean.basic
+    difficulty: 2
+    type: numeric
+    prompt: "Find the mean of the numbers: {values}."
+    parameters:
+      values:
+        gen: int_list
+        count: { min: 6, max: 9 }
+        range: { min: 4, max: 25 }
+        ensure:
+          divisible_mean: true
+    marking:
+      mode: exact_numeric
+    solution:
+      steps:
+        - "Add all the numbers."
+        - "Divide by how many numbers there are."
+    assets: []
+
+  - id: ch5_median_from_list_v1
+    chapter: 5
+    skill: stats.median.basic
+    difficulty: 2
+    type: numeric
+    prompt: "Work out the median of: {values}."
+    parameters:
+      values:
+        gen: int_list
+        count: { min: 7, max: 9 }
+        range: { min: 1, max: 30 }
+        ensure:
+          odd_count: true
+    marking:
+      mode: exact_numeric
+    solution:
+      steps:
+        - "Order the numbers."
+        - "Take the middle value."
+    assets: []
+
+  - id: ch5_mode_from_list_v1
+    chapter: 5
+    skill: stats.mode.basic
+    difficulty: 1
+    type: short_text
+    prompt: "What is the mode of: {values}?"
+    parameters:
+      values:
+        gen: int_list_with_mode
+        count: { min: 7, max: 10 }
+        range: { min: 1, max: 15 }
+        ensure:
+          unique_mode: true
+    marking:
+      mode: exact_text_normalised
+    solution:
+      steps:
+        - "Find the number that appears most often."
+    assets: []
+
+  - id: ch5_pie_chart_angle_one_slice_v1
+    chapter: 5
+    skill: stats.pie_chart.angles
+    difficulty: 3
+    type: numeric
+    prompt: "A pie chart shows favourite snacks. {table_title}.\nWhat angle (in degrees) represents {target_label}?"
+    parameters:
+      categories:
+        gen: categorical_counts
+        labels: ["Fruit", "Crisps", "Chocolate", "Biscuits"]
+        count_range: { min: 4, max: 18 }
+        ensure:
+          total_min: 24
+      target_label:
+        gen: pick_one
+        from: categories.labels
+    assets:
+      - kind: table
+        id: snack_table
+        title: "Number of students choosing each snack"
+        columns: ["Snack", "Count"]
+        rows_from: categories
+    marking:
+      mode: exact_numeric
+      units: degrees
+    solution:
+      steps:
+        - "Add all counts to get the total."
+        - "Work out the fraction for the target category."
+        - "Multiply by 360 to get the angle."
+    notes:
+      accepted_equivalents: []
+
+  - id: ch5_line_graph_trend_v1
+    chapter: 5
+    skill: stats.line_graph.interpret
+    difficulty: 3
+    type: multi_choice
+    prompt: "The line graph shows {context}. Which statement is true?"
+    parameters:
+      dataset:
+        gen: time_series
+        points: 6
+        x_labels: ["Mon","Tue","Wed","Thu","Fri","Sat"]
+        y_range: { min: 10, max: 60 }
+        pattern: { type: "single_peak" }
+      context:
+        gen: pick_one
+        from: ["daily step count", "numbers of visitors", "temperature at noon"]
+      distractors:
+        gen: line_graph_statements
+        from: dataset
+        count: 3
+    assets:
+      - kind: chart
+        id: line_chart
+        chart_type: line
+        title: "Data over the week"
+        x: dataset.x
+        y: dataset.y
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Read the values carefully from the graph."
+        - "Check each statement against the plotted points."
+
+  # -------------------------
+  # Chapter 6: Algebra
+  # -------------------------
+
+  - id: ch6_substitution_linear_v1
+    chapter: 6
+    skill: algebra.substitution.eval
+    difficulty: 2
+    type: numeric
+    prompt: "Evaluate {expr} when {assignments}."
+    parameters:
+      expr:
+        gen: linear_expression
+        vars: ["x", "y"]
+        coeff_range: { min: -5, max: 8 }
+        const_range: { min: -10, max: 10 }
+        terms: 2
+      assignments:
+        gen: var_assignments
+        vars_from: expr.vars
+        value_range: { min: -6, max: 9 }
+    marking:
+      mode: exact_numeric
+    solution:
+      steps:
+        - "Replace each letter with its value."
+        - "Follow order of operations."
+    assets: []
+
+  - id: ch6_simplify_like_terms_v1
+    chapter: 6
+    skill: algebra.simplify.like_terms
+    difficulty: 3
+    type: short_text
+    prompt: "Simplify: {expr}"
+    parameters:
+      expr:
+        gen: like_terms_expression
+        var: "a"
+        term_count: { min: 4, max: 7 }
+        coeff_range: { min: -9, max: 9 }
+        ensure:
+          has_both_signs: true
+    marking:
+      mode: algebra_normal_form
+      variable: "a"
+    solution:
+      steps:
+        - "Group the terms with the same letter."
+        - "Add or subtract the coefficients."
+    assets: []
+
+  # -------------------------
+  # Chapter 7: Calculation & measure
+  # -------------------------
+
+  - id: ch7_metric_conversion_v1
+    chapter: 7
+    skill: measure.metric.convert
+    difficulty: 2
+    type: numeric
+    prompt: "Convert {value} {from_unit} to {to_unit}."
+    parameters:
+      conversion:
+        gen: metric_conversion
+        units: ["mm","cm","m","km","g","kg","ml","l"]
+        ensure:
+          same_dimension: true
+      value:
+        gen: int_or_decimal
+        range: { min: 2, max: 950 }
+        decimals: { allowed: [0,1,2], prefer: 0 }
+    marking:
+      mode: numeric_tolerance
+      tolerance: 0.000001
+      unit_required: false
+    solution:
+      steps:
+        - "Identify the conversion scale (×10, ×100, ×1000)."
+        - "Multiply or divide to change units."
+    assets: []
+
+  - id: ch7_rounding_dp_v1
+    chapter: 7
+    skill: measure.rounding.dp_sf
+    difficulty: 2
+    type: numeric
+    prompt: "Round {value} to {dp} decimal places."
+    parameters:
+      value:
+        gen: decimal
+        range: { min: 0.02, max: 999.98 }
+        dp: 4
+      dp:
+        gen: pick_one
+        from: [1,2,3]
+    marking:
+      mode: rounding_dp
+      dp_from_param: dp
+    solution:
+      steps:
+        - "Look at the digit after the last required decimal place."
+        - "Round up if it is 5 or more."
+    assets: []
+
+  - id: ch7_bidmas_eval_v1
+    chapter: 7
+    skill: calc.bidmas.evaluate
+    difficulty: 3
+    type: numeric
+    prompt: "Work out: {expr}"
+    parameters:
+      expr:
+        gen: arithmetic_expression
+        ops: ["+","-","*","/","^"]
+        max_depth: 3
+        ensure:
+          integer_result: true
+          includes_brackets: true
+    marking:
+      mode: exact_numeric
+    solution:
+      steps:
+        - "Do brackets first."
+        - "Then powers."
+        - "Then multiply/divide left to right."
+        - "Then add/subtract left to right."
+    assets: []
+
+  - id: ch7_written_division_v1
+    chapter: 7
+    skill: calc.division.written
+    difficulty: 3
+    type: short_text
+    prompt: "Calculate {dividend} ÷ {divisor}. Give your answer as a whole number with remainder (e.g. 23 r 4)."
+    parameters:
+      dividend:
+        gen: int
+        range: { min: 120, max: 999 }
+      divisor:
+        gen: int
+        range: { min: 6, max: 18 }
+        ensure:
+          not_factor_of_dividend: true
+    marking:
+      mode: remainder_form
+    solution:
+      steps:
+        - "Divide to get the whole number."
+        - "Multiply back and subtract to find the remainder."
+    assets: []
+
+  # -------------------------
+  # Chapter 8: Probability
+  # -------------------------
+
+  - id: ch8_probability_scale_v1
+    chapter: 8
+    skill: prob.scale
+    difficulty: 2
+    type: order_list
+    prompt: "Put these events in order from least likely to most likely:"
+    parameters:
+      events:
+        gen: probability_events
+        count: 4
+    marking:
+      mode: order_match
+    solution:
+      steps:
+        - "Decide if each event is impossible, unlikely, even chance, likely, or certain."
+        - "Order them from lowest probability to highest."
+    assets: []
+
+  - id: ch8_equally_likely_outcomes_v1
+    chapter: 8
+    skill: prob.equally_likely
+    difficulty: 2
+    type: numeric
+    prompt: "A fair {object} is used. What is the probability of {event}?"
+    parameters:
+      scenario:
+        gen: equally_likely_scenario
+        types: ["die", "coin", "spinner"]
+      object:
+        gen: from_scenario
+        field: object_name
+      event:
+        gen: from_scenario
+        field: event_description
+    marking:
+      mode: fraction_or_decimal
+      accepted_forms: ["fraction_simplified", "decimal"]
+    solution:
+      steps:
+        - "Count favourable outcomes."
+        - "Divide by total outcomes."
+        - "Simplify the fraction if needed."
+    assets:
+      - kind: chart
+        id: spinner
+        when: "scenario.object_name == 'spinner'"
+        chart_type: spinner
+        sectors_from: scenario.sectors
+
+  - id: ch8_mutually_exclusive_v1
+    chapter: 8
+    skill: prob.mutually_exclusive
+    difficulty: 3
+    type: numeric
+    prompt: "In one draw you cannot get both events at once. If P(A) = {pA} and P(B) = {pB}, what is P(A or B)?"
+    parameters:
+      pA:
+        gen: probability_fraction
+        denom: 10
+        ensure: { min: 1, max: 5 }
+      pB:
+        gen: probability_fraction
+        denom: 10
+        ensure: { min: 1, max: 5 }
+        ensure_sum_leq_1_with: pA
+    marking:
+      mode: fraction_or_decimal
+      accepted_forms: ["fraction_simplified", "decimal"]
+    solution:
+      steps:
+        - "For mutually exclusive events: P(A or B) = P(A) + P(B)."
+        - "Add the probabilities and simplify."
+
+  - id: ch8_experimental_probability_v1
+    chapter: 8
+    skill: prob.experimental
+    difficulty: 3
+    type: numeric
+    prompt: "A bag contains coloured counters. In {trials} draws with replacement, {successes} were {success_label}. Estimate the probability of {success_label}."
+    parameters:
+      trials:
+        gen: int
+        range: { min: 20, max: 80 }
+      successes:
+        gen: int_dependent
+        depends_on: trials
+        ensure: { min_ratio: 0.15, max_ratio: 0.85 }
+      success_label:
+        gen: pick_one
+        from: ["red", "blue", "green", "yellow"]
+    marking:
+      mode: fraction_or_decimal
+      accepted_forms: ["fraction_simplified", "decimal_2dp"]
+      rounding: { decimal_places: 2 }
+    solution:
+      steps:
+        - "Experimental probability ≈ successes ÷ trials."
+        - "Convert to a fraction or decimal. Round as required."
+    assets:
+      - kind: table
+        id: exp_table
+        title: "Results"
+        columns: ["Outcome", "Count"]
+        rows:
+          - ["{success_label}", "{successes}"]
+          - ["Other", "{trials - successes}"]

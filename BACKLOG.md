@@ -6,6 +6,8 @@
 - [x] Makefile commands: build/up/down/restart/logs/test/backup
 - [x] Git hygiene: .gitignore includes backups/data/logs
 - [x] Docs: TECH_SPEC, decisions folder, session tracking
+- [x] Add QUESTION_FEED spec and initial YAML feeds (skills + templates)
+- [ ] Add YAML validation test to ensure templates reference valid skills and supported marking modes
 
 ## EPIC 1 -- MVP App Shell
 - [x] App config + env loading (Pydantic Settings)
@@ -22,10 +24,18 @@
 ## EPIC 2 -- Template Question Engine (Ch5-8 core)
 - [ ] Skill taxonomy + difficulty bands
 - [ ] Template interface + registry
+- [ ] Implement template loader for YAML feeds (skills.yaml + templates_ch5_to_ch8.yaml)
+- [ ] Validate feed on startup (unique ids, skill exists, chapter match, supported types/marking modes)
+- [ ] Deterministic generator framework (seeded) to expand template parameters into an instance payload
+- [ ] Persist generated instance payload_json + correct_json for replay/review
 - [ ] Implement 8-12 templates spanning chapters 5-8
 - [ ] Deterministic answer keys + marking rules
 - [ ] Question persistence + attempt logging
 - [ ] Adaptive difficulty band adjustment
+### EPIC 2 -- Tests
+- [ ] Tests: template loading + schema validation
+- [ ] Tests: generator determinism (same seed => same instance)
+- [ ] Tests: marking modes (numeric tolerance, rounding, fraction/decimal equivalence, remainder form, ordering)
 
 ## EPIC 3 -- Charts/Tables Assets
 - [ ] SVG pie chart generator

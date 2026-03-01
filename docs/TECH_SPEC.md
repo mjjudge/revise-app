@@ -77,6 +77,32 @@ Responsibilities:
 - `GET /progress`
 
 ## Template engine
+
+See `docs/QUESTION_FEED_SPEC.md` for the full contract.
+
+### Data files
+- `backend/app/templates/skills.yaml` -- skill taxonomy (15 skills across Ch5-8)
+- `backend/app/templates/templates_ch5_to_ch8.yaml` -- template catalogue (14 question types)
+
+### Template types
+- `numeric`, `short_text`, `multi_choice`, `order_list`, `grid_fill`
+
+### Marking modes
+- `exact_numeric`, `exact_text_normalised`, `numeric_tolerance`, `rounding_dp`
+- `fraction_or_decimal`, `remainder_form`, `algebra_normal_form`
+- `order_match`, `mcq`
+
+### Generation flow
+1. Select template by skill + difficulty
+2. Sample parameters deterministically from a seed
+3. Compute answer_key (never OpenAI)
+4. Persist `payload_json` + `correct_json` for replay/review
+5. Mark by comparing user answer vs `correct_json` using the template's marking mode
+
+### Asset types
+- `table` (rendered from data rows)
+- `chart` (pie, line, bar, spinner -- generated SVG/PNG, not book images)
+
 Each template produces:
 - question stem
 - assets spec (table/chart)
@@ -85,12 +111,8 @@ Each template produces:
 - worked steps
 - difficulty band (easy / medium / hard)
 
-Examples:
-- mean/median/mode from list
-- pie chart angles from counts
-- time-series line graph interpretation
-- substitution into expression (incl negatives)
-- simplify like terms
-- unit conversion + rounding
-- BIDMAS evaluation
-- experimental probability from trials
+### Skill coverage (Ch5-8)
+- Ch5 Stats: mean, median, mode, pie chart angles, line graph interpretation
+- Ch6 Algebra: substitution, simplify like terms
+- Ch7 Calc/Measure: metric conversion, rounding dp/sf, BIDMAS, written division
+- Ch8 Probability: scale ordering, equally likely, mutually exclusive, experimental

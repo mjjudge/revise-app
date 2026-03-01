@@ -1,0 +1,46 @@
+skills:
+  - code: stats.mean.basic
+    chapter: 5
+    name: Mean of a data set
+  - code: stats.median.basic
+    chapter: 5
+    name: Median of a data set
+  - code: stats.mode.basic
+    chapter: 5
+    name: Mode of a data set
+  - code: stats.pie_chart.angles
+    chapter: 5
+    name: Pie chart angles from frequencies
+  - code: stats.line_graph.interpret
+    chapter: 5
+    name: Interpret a time series line graph
+  - code: algebra.substitution.eval
+    chapter: 6
+    name: Substitute values into expressions
+  - code: algebra.simplify.like_terms
+    chapter: 6
+    name: Simplify by collecting like terms
+  - code: measure.metric.convert
+    chapter: 7
+    name: Metric unit conversion
+  - code: measure.rounding.dp_sf
+    chapter: 7
+    name: Rounding to dp or sf
+  - code: calc.bidmas.evaluate
+    chapter: 7
+    name: Evaluate using order of operations
+  - code: calc.division.written
+    chapter: 7
+    name: Written division and remainders
+  - code: prob.scale
+    chapter: 8
+    name: Probability scale (0 to 1)
+  - code: prob.equally_likely
+    chapter: 8
+    name: Equally likely outcomes
+  - code: prob.mutually_exclusive
+    chapter: 8
+    name: Mutually exclusive events
+  - code: prob.experimental
+    chapter: 8
+    name: Experimental probability from trials
