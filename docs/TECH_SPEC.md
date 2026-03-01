@@ -82,10 +82,10 @@ See `docs/QUESTION_FEED_SPEC.md` for the full contract.
 
 ### Data files
 - `backend/app/templates/skills.yaml` -- skill taxonomy (15 skills across Ch5-8)
-- `backend/app/templates/templates_ch5_to_ch8.yaml` -- template catalogue (14 question types)
+- `backend/app/templates/templates_ch5_to_ch8.yaml` -- template catalogue (30 question types, v1+v2 per skill)
 
 ### Template types
-- `numeric`, `short_text`, `multi_choice`, `order_list`, `grid_fill`
+- `numeric`, `short_text`, `multi_choice` (rendered as radio buttons), `order_list`, `grid_fill`
 
 ### Marking modes
 - `exact_numeric`, `exact_text_normalised`, `numeric_tolerance`, `rounding_dp`

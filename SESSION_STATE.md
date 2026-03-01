@@ -1,7 +1,7 @@
 # SESSION_STATE
 
 ## Current objective
-EPIC 6.7 complete. Adventurer tier system with Greek mythology themes.
+Bug fixes and UX polish after live testing with Anna.
 
 ## Completed this session
 - EPIC 4 fully implemented (gamification, quest sessions, payouts)
@@ -54,6 +54,13 @@ EPIC 6.7 complete. Adventurer tier system with Greek mythology themes.
   - `detect_tier_up()` in `quest_answer` — banner celebration on tier crossings
   - 28 new tests in `test_tiers.py` (get_tier, tier_progress, detect_tier_up, data integrity)
   - ADR 012: Adventurer Tier System
+- Live bug fixes after Anna tested:
+  - DB migration: added idempotent `ALTER TABLE` system in `session.py` for `hints_used` and `fun_prompt` columns missing from existing SQLite DB
+  - MCQ rendering: line graph "which statement is true?" now shows 4 radio buttons instead of blank text input; `get_mcq_options()` helper with deterministic shuffle; 3 new tests
+  - Context-aware line graph data: replaced generic y_range (10-60) with scenario-bundled ranges (temperature 5-25°C, rainfall 20-120mm, sales £50-500, etc.); y-axis now shows unit labels; chart titles are context-specific; prompt renderer supports namespace attribute access
+  - ADR 013: Context-Aware Data & Realistic Ranges
+  - Hint scroll UX: clicking Hint now scrolls to the hint area so hints aren't missed when calculator is open
+  - ADR 014: Hint Button Scroll-to-Top UX
 
 ## Decisions made
 - UI: HTMX + Tailwind CSS, server-rendered via Jinja2 (ADR 001)
@@ -68,6 +75,8 @@ EPIC 6.7 complete. Adventurer tier system with Greek mythology themes.
 - Calculator: On-screen basic calculator, template-level opt-in (ADR 010)
 - Milestones: Fireworks + mini Sudoku every 100 XP (ADR 011)
 - Tiers: 9-tier Greek mythology progression with dynamic theming (ADR 012)
+- Context-aware data: sensible UK ranges + y-axis units on charts (ADR 013)
+- Hint UX: scroll-to-hint on button click for visibility (ADR 014)
 
 ## Open questions
 - None for current EPICs
@@ -88,7 +97,7 @@ EPIC 6.7 complete. Adventurer tier system with Greek mythology themes.
 - Never store or transmit any book page images/text to OpenAI
 - IMPORTANT: Rotate the OpenAI API key -- it was briefly in .env.example (now fixed)
 - Keep backups on second drive and outside git
-- Schema changes require deleting data/app.sqlite3 before restart
+- Schema changes are now handled by idempotent migrations in `session.py` (no need to delete DB)
 - Weekly gold cap is in-memory only — resets on container restart
 - OPENAI_API_KEY must be set in .env for tutor features to work
 - Tutor features degrade gracefully if API key is missing or API is down

@@ -166,6 +166,7 @@
                   hx-target="#hint-area"
                   hx-swap="innerHTML"
                   hx-vals='{"question_id": "{{ question.id }}", "hint_number": "1"}'
+                  onclick="setTimeout(function(){ document.getElementById('hint-area').scrollIntoView({behavior:'smooth', block:'center'}); }, 300)"
                   class="px-4 py-3 bg-realm-purple-600 hover:bg-realm-purple-500 text-realm-gold-400
                          font-medium rounded-xl transition-colors text-sm">
             💡 Hint

@@ -114,6 +114,7 @@ def tutor_hint(
         <input type="hidden" name="question_id" value="{question_id}">
         <input type="hidden" name="hint_number" value="{next_hint}">
         <button type="submit"
+                onclick="setTimeout(function(){{ document.getElementById('hint-area').scrollIntoView({{behavior:'smooth', block:'center'}}); }}, 300)"
                 class="px-4 py-2 bg-realm-purple-600 hover:bg-realm-purple-500 text-realm-gold-400
                        rounded-lg text-sm font-medium transition-colors">
           💡 Next Hint ({next_hint}/3)
