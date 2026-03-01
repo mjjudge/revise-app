@@ -51,7 +51,7 @@ EPIC 6.5 complete. On-screen calculator for arithmetic question templates.
 - None for current EPICs
 
 ## Next actions (EPIC 7 — Hardening)
-- [ ] Increase weekly gold cap to 500 (£10/week)
+- [x] Increase weekly gold cap to 500 (£10/week)
 - [ ] UFW rules for LAN subnet
 - [ ] Optional Caddy basic auth
 - [ ] Consider adding more v3 templates for skills with low coverage

@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # Gamification
     gold_to_pence: int = 2              # 1 Gold = 2p
-    weekly_gold_cap: int = 100          # Max gold earnable per week (admin can change)
+    weekly_gold_cap: int = 500          # Max gold earnable per week (£10 at 2p/gold)
 
     # Child personalisation
     child_name: str = "Anna"

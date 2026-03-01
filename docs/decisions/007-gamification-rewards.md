@@ -31,7 +31,7 @@ Consecutive correct answers (first try) build a streak counter on the quest sess
 
 ### Weekly Gold Cap
 Gold earnings are capped per ISO week (Monday–Sunday):
-- Default cap: **100 gold/week** (= £2.00 at 2p/gold)
+- Default cap: **500 gold/week** (= £10.00 at 2p/gold)
 - Admin can change the cap via `POST /admin/settings` (in-memory)
 - Enforcement happens in `check_answer()` — gold is clamped to remaining weekly allowance
 
