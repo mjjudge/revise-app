@@ -24,6 +24,8 @@ engine = create_engine(settings.database_url, echo=(settings.app_env == "dev"), 
 _MIGRATIONS: list[tuple[str, str, str]] = [
     ("question_instance", "hints_used", "INTEGER DEFAULT 0"),
     ("question_instance", "fun_prompt", "TEXT"),
+    ("quest_session", "subject", "TEXT"),
+    ("quest_session", "unit", "TEXT"),
 ]
 
 

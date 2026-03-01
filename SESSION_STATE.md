@@ -1,11 +1,23 @@
 # SESSION_STATE
 
 ## Current objective
-EPIC 9 — Geography Content Pack: complete.
+Unit Quest Standardisation: complete.
 
 ## Completed this session
 
-### EPIC 9: Geography Content Pack
+### Unit Quest Standardisation
+- **QuestSession model**: Added `subject` and `unit` optional fields; `chapter` now defaults to 0
+- **QuestionInstance model**: `chapter` changed from required `int` to `Optional[int]` for non-maths subjects
+- **DB migration**: Idempotent `ALTER TABLE ADD COLUMN` for `quest_session.subject` and `quest_session.unit`
+- **generate_question / _select_template**: Accept `subject`/`unit` params; priority: `template_id > skill > unit > chapter`; unit selection uses `get_templates_by_unit()`
+- **Quest routes**: `quest_start` accepts `subject`/`unit` form params; `quest_next` passes them through; `quest_summary` has dynamic back-link (unit page / chapter page / home)
+- **quest_unit.html**: Added "Unit Quest" button (10 Qs, gold gradient, ⚔️ icon) matching the Chapter Quest pattern; skill forms also pass `subject`/`unit` hidden fields
+- **quest_summary.html**: Dynamic back-link and play-again form include `subject`/`unit`/`chapter` as applicable
+- **Tests**: 9 new tests in `test_unit_quest.py` — model fields, template selection, E2E generation, multi-skill coverage
+- **Docs**: ADR 017, SESSION_STATE.md updated
+- 273 tests passing (264 existing + 9 new)
+
+### EPIC 9: Geography Content Pack (earlier this session)
 - **templates_geography.yaml**: 24 geography templates across 7 categories (knowledge MCQ, matching/grid-fill, scale calculations, map/grid ref, contours, climate graphs, weather diagrams)
 - **generators.py**: ~15 new geography generators added — `pick_one`, `pick_one_distinct`, `from_object`, `geog_knowledge_mcq` (with knowledge pools for 4 topics), 6 matching-set generators (instruments, air masses, clouds, symbols, water cycle, continents/oceans), `map_scale`, `grid_map_with_features` (computes 4-fig and 6-fig grid refs), `compass_direction_mcq`, `climograph_dataset` (5 climate profiles), `climate_compare_mcq`, `synthetic_contour_map`, `isobar_chart_data`, `rainfall_diagram_data`
 - **assets.py**: 9 new SVG renderers — `matching_cards`, `map_grid`, `compass_rose`, `scale_bar`, `climograph`, `contours`, `cross_section_set`, `synoptic_chart`, `rainfall_diagram`
@@ -48,6 +60,7 @@ EPIC 9 — Geography Content Pack: complete.
 - Hint UX: scroll-to-hint on button click for visibility (ADR 014)
 - Multi-subject: feed_loader multi-pack, subject/unit navigation, new marking modes (ADR 015)
 - Geography content pack: 24 templates, 15 generators, 9 renderers, 5 marking modes (ADR 016)
+- Unit quest standardisation: subject/unit fields on QuestSession, unit quest button, dynamic summary links (ADR 017)
 
 ## Open questions
 - None

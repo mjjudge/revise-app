@@ -19,7 +19,7 @@ class QuestionInstance(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     template_id: str = Field(index=True, description="Matches templates YAML id")
     skill: str = Field(index=True, description="Skill code, e.g. stats.mean.basic")
-    chapter: int = Field(description="Chapter number 5-8")
+    chapter: Optional[int] = Field(default=None, description="Chapter number (maths) or null for other subjects")
     difficulty: int = Field(description="Template difficulty band 1-5")
     seed: int = Field(description="RNG seed for reproducibility")
     prompt_rendered: str = Field(description="Fully rendered question text")

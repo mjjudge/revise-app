@@ -21,12 +21,37 @@
 
 <main class="max-w-2xl mx-auto px-4 py-8">
   <h1 class="text-3xl font-bold text-realm-gold-400 mb-2">{{ unit_icon }} {{ unit_title }}</h1>
-  <p class="text-realm-purple-200 mb-6">Choose a skill quest (8 questions each)</p>
+  <p class="text-realm-purple-200 mb-6">Choose a skill quest (8 Qs) or tackle the whole unit (10 Qs)!</p>
+
+  <!-- Start full unit quest -->
+  <form method="post" action="/quest/start" class="mb-8">
+    <input type="hidden" name="subject" value="{{ subject }}">
+    <input type="hidden" name="unit" value="{{ unit }}">
+    <button type="submit"
+            class="w-full text-left bg-gradient-to-r from-realm-gold-500/20 to-realm-purple-700/60
+                   hover:from-realm-gold-500/30 hover:to-realm-purple-600/80
+                   border border-realm-gold-500/50 rounded-xl p-5 transition-all
+                   hover:quest-glow group cursor-pointer">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-realm-gold-400 group-hover:text-realm-gold-300 transition-colors">
+            🏰 {{ unit_title }} Quest
+          </h3>
+          <p class="text-sm text-realm-purple-300 mt-1">10 questions across all skills — bigger rewards!</p>
+        </div>
+        <span class="text-2xl group-hover:translate-x-1 transition-transform">⚔️</span>
+      </div>
+    </button>
+  </form>
+
+  <p class="text-realm-purple-300 text-sm mb-4 uppercase tracking-wide">Or pick a skill:</p>
 
   <div class="space-y-4">
     {% for skill_code, skill_name in skills.items() %}
     <form method="post" action="/quest/start">
       <input type="hidden" name="skill" value="{{ skill_code }}">
+      <input type="hidden" name="subject" value="{{ subject }}">
+      <input type="hidden" name="unit" value="{{ unit }}">
       <button type="submit"
               class="w-full text-left bg-realm-purple-700/60 hover:bg-realm-purple-600/80
                      border border-realm-purple-500 rounded-xl p-5 transition-all

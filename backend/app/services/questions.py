@@ -24,6 +24,7 @@ from app.services.assets import render_assets
 from app.templates.feed_loader import (
     get_templates_by_chapter,
     get_templates_by_skill,
+    get_templates_by_unit,
     get_template_by_id,
     TemplateDef,
 )
@@ -480,16 +481,18 @@ def generate_question(
     *,
     skill: str | None = None,
     chapter: int | None = None,
+    subject: str | None = None,
+    unit: str | None = None,
     template_id: str | None = None,
     seed: int | None = None,
 ) -> QuestionInstance:
     """Generate a new question instance and persist it.
 
-    Priority: template_id > skill > chapter.
+    Priority: template_id > skill > unit > chapter.
     Uses adaptive difficulty band from UserSkillProgress if available.
     """
     # 1. Select template
-    template = _select_template(db, user, skill=skill, chapter=chapter, template_id=template_id)
+    template = _select_template(db, user, skill=skill, chapter=chapter, subject=subject, unit=unit, template_id=template_id)
 
     # 2. Seed
     if seed is None:
@@ -644,6 +647,8 @@ def _select_template(
     *,
     skill: str | None,
     chapter: int | None,
+    subject: str | None = None,
+    unit: str | None = None,
     template_id: str | None,
 ) -> TemplateDef:
     """Pick the right template, considering adaptive difficulty."""
@@ -663,6 +668,13 @@ def _select_template(
         rng = random.Random()
         return rng.choice(nearby)
 
+    if unit and subject:
+        templates = get_templates_by_unit(subject, unit)
+        if not templates:
+            raise ValueError(f"No templates for {subject}/{unit}")
+        rng = random.Random()
+        return rng.choice(templates)
+
     if chapter:
         templates = get_templates_by_chapter(chapter)
         if not templates:
@@ -670,7 +682,7 @@ def _select_template(
         rng = random.Random()
         return rng.choice(templates)
 
-    raise ValueError("Must specify skill, chapter, or template_id")
+    raise ValueError("Must specify skill, chapter, unit, or template_id")
 
 
 def _get_user_band(db: Session, user: User, skill: str) -> int:

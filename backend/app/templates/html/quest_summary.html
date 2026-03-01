@@ -21,6 +21,8 @@
     <p class="text-realm-purple-200">
       {% if quest.skill %}
         Skill Quest — {{ quest.skill }}
+      {% elif quest.unit %}
+        {{ quest.unit | replace("_", " ") | title }} Unit Quest
       {% else %}
         Chapter {{ quest.chapter }} Quest
       {% endif %}
@@ -73,7 +75,15 @@
         {% if quest.skill %}
           <input type="hidden" name="skill" value="{{ quest.skill }}">
         {% endif %}
-        <input type="hidden" name="chapter" value="{{ quest.chapter }}">
+        {% if quest.subject %}
+          <input type="hidden" name="subject" value="{{ quest.subject }}">
+        {% endif %}
+        {% if quest.unit %}
+          <input type="hidden" name="unit" value="{{ quest.unit }}">
+        {% endif %}
+        {% if quest.chapter %}
+          <input type="hidden" name="chapter" value="{{ quest.chapter }}">
+        {% endif %}
         <button type="submit"
                 class="w-full py-3 bg-realm-gold-500 hover:bg-realm-gold-400 text-realm-purple-900
                        font-bold rounded-xl transition-colors text-lg">
@@ -81,10 +91,10 @@
         </button>
       </form>
 
-      <a href="/quest/chapter/{{ quest.chapter }}"
+      <a href="{{ back_url }}"
          class="flex-1 text-center py-3 border border-realm-purple-400 text-realm-purple-200
                 hover:bg-realm-purple-600/60 rounded-xl transition-colors flex items-center justify-center">
-        📖 Chapter {{ quest.chapter }}
+        📖 {{ back_label }}
       </a>
 
       <a href="/"

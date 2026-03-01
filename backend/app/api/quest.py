@@ -97,6 +97,7 @@ def quest_unit(
     return templates.TemplateResponse(request, "quest_unit.html", {
         "user": user,
         "subject": subject,
+        "unit": unit,
         "subject_title": subject_meta.get("title", subject.title()),
         "subject_icon": subject_meta.get("icon", "📚"),
         "unit_title": unit_meta["title"] if unit_meta else unit.title(),
@@ -114,6 +115,8 @@ def quest_start(
     request: Request,
     skill: str = Form(default=None),
     chapter: int = Form(default=None),
+    subject: str = Form(default=None),
+    unit: str = Form(default=None),
     session: Session = Depends(get_session),
 ):
     """Start a new quest session and show the first question."""
@@ -121,7 +124,7 @@ def quest_start(
     if not user or user.role != Role.kid:
         return RedirectResponse(url="/login", status_code=303)
 
-    # Skill quest = 8 Qs, chapter quest = 10 Qs
+    # Skill quest = 8 Qs, chapter/unit quest = 10 Qs
     if skill:
         total_q = 8
     else:
@@ -131,6 +134,8 @@ def quest_start(
         user_id=user.id,
         chapter=chapter or 0,
         skill=skill,
+        subject=subject,
+        unit=unit,
         total_questions=total_q,
     )
     session.add(quest)
@@ -142,6 +147,8 @@ def quest_start(
         session, user,
         skill=skill,
         chapter=chapter,
+        subject=subject,
+        unit=unit,
     )
     quest.add_question_id(instance.id)
     quest.completed = 0  # not yet answered
@@ -330,7 +337,9 @@ def quest_next(
     instance = generate_question(
         session, user,
         skill=quest.skill,
-        chapter=quest.chapter if not quest.skill else None,
+        chapter=quest.chapter if not quest.skill and not quest.unit else None,
+        subject=quest.subject,
+        unit=quest.unit if not quest.skill else None,
     )
     quest.add_question_id(instance.id)
     session.add(quest)
@@ -388,10 +397,28 @@ def quest_summary(
         rank = "Apprentice"
         rank_emoji = "📖"
 
+    # Determine back-link context for subject/unit quests
+    back_url = f"/quest/chapter/{quest.chapter}" if quest.chapter else "/"
+    back_label = f"Chapter {quest.chapter}" if quest.chapter else "Home"
+    if quest.subject and quest.unit:
+        back_url = f"/quest/unit/{quest.subject}/{quest.unit}"
+        from app.api.pages import _SUBJECT_META
+        subject_meta = _SUBJECT_META.get(quest.subject, {})
+        unit_meta = next(
+            (u for u in subject_meta.get("units", []) if u["key"] == quest.unit),
+            None,
+        )
+        back_label = unit_meta["title"] if unit_meta else quest.unit.replace("_", " ").title()
+    elif quest.subject:
+        back_url = f"/subject/{quest.subject}"
+        back_label = quest.subject.title()
+
     return templates.TemplateResponse(request, "quest_summary.html", {
         "user": user,
         "quest": quest,
         "accuracy": int(accuracy),
         "rank": rank,
         "rank_emoji": rank_emoji,
+        "back_url": back_url,
+        "back_label": back_label,
     })

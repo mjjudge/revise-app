@@ -7,14 +7,16 @@ from sqlmodel import SQLModel, Field, Relationship
 
 
 class QuestSession(SQLModel, table=True):
-    """A quest is a loop of 8-10 questions from a chapter/skill."""
+    """A quest is a loop of 8-10 questions from a chapter/skill/unit."""
 
     __tablename__ = "quest_session"
 
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id", index=True)
-    chapter: int = Field(description="Chapter number")
-    skill: Optional[str] = Field(default=None, description="Skill code if skill quest, null for chapter quest")
+    chapter: int = Field(default=0, description="Chapter number (maths)")
+    skill: Optional[str] = Field(default=None, description="Skill code if skill quest, null for chapter/unit quest")
+    subject: Optional[str] = Field(default=None, description="Subject code (e.g. geography)")
+    unit: Optional[str] = Field(default=None, description="Unit key for unit quests")
     total_questions: int = Field(description="Target questions in this quest (8 or 10)")
     completed: int = Field(default=0, description="Questions answered so far")
     correct: int = Field(default=0, description="Questions answered correctly (first try)")
