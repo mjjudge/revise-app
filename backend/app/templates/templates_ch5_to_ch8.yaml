@@ -646,7 +646,7 @@ templates:
     difficulty: 3
     type: numeric
     calculator: basic
-    prompt: "A measurement reads {value}. Round this to {dp} decimal place(s)."
+    prompt: "A measurement reads {value}\nRound this to {dp} decimal place(s)."
     parameters:
       value:
         gen: decimal
