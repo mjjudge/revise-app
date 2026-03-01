@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Result – Revise Quest{% endblock %}
+
+{% block body %}
+<!-- Navbar -->
+<nav class="flex items-center justify-between px-6 py-3 bg-realm-purple-800/80 border-b border-realm-purple-600">
+  <a href="/" class="text-realm-gold-400 font-bold text-lg">⚔️ Revise Quest</a>
+  <div class="flex items-center gap-4">
+    <span class="text-realm-gold-400 gold-shimmer">💰 {{ user.gold }}</span>
+    <span class="text-realm-green-400">⭐ {{ user.xp }} XP</span>
+  </div>
+</nav>
+
+<main class="max-w-2xl mx-auto px-4 py-8">
+  <!-- Result card -->
+  <div class="bg-realm-purple-700/60 border rounded-2xl p-6
+              {% if result.correct %}border-realm-green-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]
+              {% else %}border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)]{% endif %}">
+
+    <!-- Status banner -->
+    <div class="text-center mb-6">
+      {% if result.correct %}
+        <div class="text-5xl mb-3">🎉</div>
+        <h2 class="text-2xl font-bold text-realm-green-400">Correct!</h2>
+      {% else %}
+        <div class="text-5xl mb-3">🤔</div>
+        <h2 class="text-2xl font-bold text-red-400">Not quite...</h2>
+      {% endif %}
+    </div>
+
+    <!-- Question reminder -->
+    <div class="bg-realm-purple-800/60 rounded-xl p-4 mb-4">
+      <p class="text-realm-purple-300 text-sm mb-1">Question:</p>
+      <p class="text-white">{{ question.prompt_rendered }}</p>
+    </div>
+
+    <!-- Feedback -->
+    <div class="mb-4">
+      <p class="text-lg text-white">{{ result.feedback }}</p>
+      <p class="text-realm-purple-300 text-sm mt-2">
+        Your answer: <span class="text-white font-mono">{{ attempt.answer_raw }}</span>
+      </p>
+      {% if not result.correct %}
+      <p class="text-realm-purple-300 text-sm mt-1">
+        Expected: <span class="text-realm-gold-400 font-mono">{{ result.expected }}</span>
+      </p>
+      {% endif %}
+    </div>
+
+    <!-- Rewards -->
+    {% if attempt.xp_earned > 0 or attempt.gold_earned > 0 %}
+    <div class="flex items-center justify-center gap-6 py-3 bg-realm-purple-800/40 rounded-xl mb-4">
+      {% if attempt.xp_earned > 0 %}
+        <span class="text-realm-green-400 text-lg font-bold">⭐ +{{ attempt.xp_earned }} XP</span>
+      {% endif %}
+      {% if attempt.gold_earned > 0 %}
+        <span class="text-realm-gold-400 text-lg font-bold gold-shimmer">💰 +{{ attempt.gold_earned }} Gold</span>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="flex gap-3 mt-6">
+      {% if can_retry %}
+      <form method="post" action="/quest/answer" class="flex-1"
+            hx-post="/quest/answer" hx-target="body" hx-swap="outerHTML">
+        <!-- Retry shows the question again -->
+      </form>
+      <a href="/quest/generate?skill={{ question.skill }}&chapter={{ question.chapter }}"
+         class="flex-1 text-center py-3 border border-realm-purple-400 text-realm-purple-200
+                hover:bg-realm-purple-600/60 rounded-xl transition-colors">
+        Try Again
+      </a>
+      {% endif %}
+
+      <form method="post" action="/quest/generate" class="flex-1">
+        <input type="hidden" name="skill" value="{{ question.skill }}">
+        <input type="hidden" name="chapter" value="{{ question.chapter }}">
+        <button type="submit"
+                class="w-full py-3 bg-realm-gold-500 hover:bg-realm-gold-400 text-realm-purple-900
+                       font-bold rounded-xl transition-colors">
+          ⚔️ Next Question
+        </button>
+      </form>
+
+      <a href="/"
+         class="flex-1 text-center py-3 border border-realm-purple-400 text-realm-purple-200
+                hover:bg-realm-purple-600/60 rounded-xl transition-colors flex items-center justify-center">
+        🏠 Home
+      </a>
+    </div>
+  </div>
+</main>
+{% endblock %}

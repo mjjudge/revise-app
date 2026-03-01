@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Chapter {{ chapter }} – Revise Quest{% endblock %}
+
+{% block body %}
+<!-- Navbar -->
+<nav class="flex items-center justify-between px-6 py-3 bg-realm-purple-800/80 border-b border-realm-purple-600">
+  <a href="/" class="text-realm-gold-400 font-bold text-lg">⚔️ Revise Quest</a>
+  <div class="flex items-center gap-4">
+    <span class="text-realm-gold-400 gold-shimmer">💰 {{ user.gold }}</span>
+    <span class="text-realm-green-400">⭐ {{ user.xp }} XP</span>
+  </div>
+</nav>
+
+<main class="max-w-2xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold text-realm-gold-400 mb-2">📖 Chapter {{ chapter }}</h1>
+  <p class="text-realm-purple-200 mb-8">Choose a skill to practise:</p>
+
+  <div class="space-y-4">
+    {% for skill_code, skill_name in skills.items() %}
+    <form method="post" action="/quest/generate">
+      <input type="hidden" name="skill" value="{{ skill_code }}">
+      <input type="hidden" name="chapter" value="{{ chapter }}">
+      <button type="submit"
+              class="w-full text-left bg-realm-purple-700/60 hover:bg-realm-purple-600/80
+                     border border-realm-purple-500 rounded-xl p-5 transition-all
+                     hover:quest-glow group cursor-pointer">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-semibold text-white group-hover:text-realm-gold-400 transition-colors">
+              🎯 {{ skill_name }}
+            </h3>
+            <p class="text-sm text-realm-purple-300 mt-1">{{ skill_code }}</p>
+          </div>
+          <span class="text-2xl group-hover:translate-x-1 transition-transform">▸</span>
+        </div>
+      </button>
+    </form>
+    {% endfor %}
+  </div>
+
+  <div class="mt-8">
+    <a href="/" class="text-realm-purple-300 hover:text-realm-gold-400 transition-colors">← Back to quests</a>
+  </div>
+</main>
+{% endblock %}
