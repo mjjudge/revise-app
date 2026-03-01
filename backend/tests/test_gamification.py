@@ -348,4 +348,4 @@ class TestGamificationConfig:
         assert settings.gold_to_pence == 2
 
     def test_weekly_gold_cap_default(self):
-        assert settings.weekly_gold_cap == 100
+        assert settings.weekly_gold_cap == 500

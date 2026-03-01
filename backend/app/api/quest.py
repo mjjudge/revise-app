@@ -22,7 +22,7 @@ from app.models.quest import QuestSession, Payout
 from app.models.question import QuestionInstance, Attempt
 from app.models.user import Role, User
 from app.services.auth import get_current_user
-from app.services.questions import generate_question, check_answer
+from app.services.questions import generate_question, check_answer, detect_milestone, milestone_message
 from app.templates.feed_loader import get_templates_by_chapter, get_skill_map, get_template_by_id
 
 router = APIRouter(prefix="/quest", tags=["quest"])
@@ -201,10 +201,18 @@ def quest_answer(
     if quest_id:
         quest = session.get(QuestSession, quest_id)
 
+    old_xp = user.xp  # snapshot for milestone detection
     attempt, result = check_answer(session, user, question_id, answer, quest=quest)
 
     # Refresh user for updated XP/gold
     session.refresh(user)
+
+    # Milestone detection
+    milestone_xp = detect_milestone(old_xp, user.xp)
+    milestone = None
+    if milestone_xp:
+        title, body = milestone_message(milestone_xp)
+        milestone = {"xp": milestone_xp, "title": title, "body": body}
 
     # Update quest session
     if quest:
@@ -234,6 +242,7 @@ def quest_answer(
         "can_retry": not result.correct and attempt.attempt_number < 3,
         "quest": quest,
         "quest_finished": quest.finished if quest else False,
+        "milestone": milestone,
     })
 
 

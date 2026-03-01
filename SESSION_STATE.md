@@ -1,7 +1,7 @@
 # SESSION_STATE
 
 ## Current objective
-EPIC 6.5 complete. On-screen calculator for arithmetic question templates.
+EPIC 6.6 complete. Milestone celebrations with fireworks and mini Sudoku.
 
 ## Completed this session
 - EPIC 4 fully implemented (gamification, quest sessions, payouts)
@@ -34,6 +34,16 @@ EPIC 6.5 complete. On-screen calculator for arithmetic question templates.
   - Calculator wired through `quest.py` — all 3 `quest_question.html` render calls pass `calculator` from template
   - 2 new calculator tests in `test_quality.py` (field values + tagged template count)
   - ADR 010: On-screen Calculator
+- Weekly gold cap increased from 100 to 500 (£10/week at 2p/gold)
+- EPIC 6.6 fully implemented:
+  - `detect_milestone(old_xp, new_xp)` helper in `questions.py` — detects 100-XP boundary crossings
+  - `milestone_message(xp)` — 6 rotating title/body pairs with fantasy theme
+  - Canvas fireworks animation: 8 staggered bursts, coloured particles with gravity decay
+  - Mini 4×4 Sudoku reward game: 6 pre-built puzzles, input validation (1-4 only), check/close
+  - Milestone banner on `quest_result.html` with "🧩 Play a Reward Game!" button
+  - Wired into `quest_answer()` — captures `old_xp` before `check_answer()`, detects milestone, passes to template
+  - 15 new milestone tests (detect_milestone, milestone_message, integration)
+  - ADR 011: Milestone Celebrations
 
 ## Decisions made
 - UI: HTMX + Tailwind CSS, server-rendered via Jinja2 (ADR 001)
@@ -46,6 +56,7 @@ EPIC 6.5 complete. On-screen calculator for arithmetic question templates.
 - Tutor: GPT-4o, 3 hint levels, explain + fun rewrite, halve gold penalty (ADR 008)
 - Quality: Structured logging, error pages, E2E tests, retry UX (ADR 009)
 - Calculator: On-screen basic calculator, template-level opt-in (ADR 010)
+- Milestones: Fireworks + mini Sudoku every 100 XP (ADR 011)
 
 ## Open questions
 - None for current EPICs
@@ -55,6 +66,7 @@ EPIC 6.5 complete. On-screen calculator for arithmetic question templates.
 - [ ] UFW rules for LAN subnet
 - [ ] Optional Caddy basic auth
 - [ ] Consider adding more v3 templates for skills with low coverage
+- [ ] Consider adding more mini-games (word search, memory match) for milestone variety
 
 ## Notes / gotchas
 - Dockerfile no longer requires uv.lock (uses uv sync without --frozen)

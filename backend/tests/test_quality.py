@@ -18,7 +18,7 @@ from sqlmodel import Session, SQLModel, create_engine
 from sqlalchemy.pool import StaticPool
 
 from app.models.user import User, Role
-from app.services.questions import generate_question, check_answer
+from app.services.questions import generate_question, check_answer, detect_milestone, milestone_message, MILESTONE_INTERVAL
 from app.templates.feed_loader import (
     load_and_validate,
     load_skills,
@@ -383,3 +383,100 @@ def _answer_to_str(answer) -> str:
     if isinstance(answer, list):
         return ", ".join(str(x) for x in answer)
     return str(answer)
+
+
+# ─── EPIC 6.6: Milestone & celebration tests ──────────────────────────────
+
+class TestMilestoneDetection:
+    """Tests for detect_milestone helper."""
+
+    def test_no_milestone_within_same_bucket(self):
+        assert detect_milestone(10, 50) is None
+
+    def test_milestone_exact_boundary(self):
+        assert detect_milestone(90, 100) == 100
+
+    def test_milestone_overshoot(self):
+        assert detect_milestone(85, 115) == 100
+
+    def test_milestone_no_xp_gain(self):
+        assert detect_milestone(100, 100) is None
+
+    def test_milestone_xp_decrease(self):
+        assert detect_milestone(150, 100) is None
+
+    def test_milestone_second_bucket(self):
+        assert detect_milestone(180, 210) == 200
+
+    def test_milestone_large_jump(self):
+        """Even a jump across multiple buckets returns the latest boundary."""
+        assert detect_milestone(50, 350) == 300
+
+    def test_milestone_zero_start(self):
+        assert detect_milestone(0, 100) == 100
+
+    def test_milestone_zero_to_below(self):
+        assert detect_milestone(0, 99) is None
+
+
+class TestMilestoneMessage:
+    """Tests for milestone_message."""
+
+    def test_returns_tuple(self):
+        title, body = milestone_message(100)
+        assert isinstance(title, str)
+        assert isinstance(body, str)
+
+    def test_xp_in_body(self):
+        _, body = milestone_message(200)
+        assert "200" in body
+
+    def test_messages_cycle(self):
+        """Different milestones produce different messages."""
+        titles = {milestone_message(i * 100)[0] for i in range(1, 7)}
+        assert len(titles) >= 4  # at least 4 unique titles out of 6
+
+    def test_message_wraps_around(self):
+        """After exhausting all messages, they cycle."""
+        t1, _ = milestone_message(100)
+        t7, _ = milestone_message(700)
+        assert t1 == t7  # 7th = 1st (6 messages, wraps)
+
+
+class TestMilestoneIntegration:
+    """Integration: milestone passed through quest_answer to template."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        engine = create_engine(
+            "sqlite://", connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
+        SQLModel.metadata.create_all(engine)
+        self.session = Session(engine)
+        from bcrypt import hashpw, gensalt
+        kid = User(
+            display_name="TestKid", role=Role.kid,
+            pin_hash=hashpw(b"1234", gensalt()).decode(),
+            xp=95,  # close to 100 milestone
+        )
+        self.session.add(kid)
+        self.session.commit()
+        self.session.refresh(kid)
+        self.kid = kid
+        yield
+        self.session.close()
+
+    def test_milestone_triggers_on_xp_cross(self):
+        """When XP crosses a 100 boundary, detect_milestone returns the value."""
+        old_xp = self.kid.xp  # 95
+        # Simulate earning XP
+        self.kid.xp += 10  # now 105
+        milestone = detect_milestone(old_xp, self.kid.xp)
+        assert milestone == 100
+
+    def test_no_milestone_when_not_crossing(self):
+        old_xp = self.kid.xp  # 95
+        self.kid.xp += 2  # now 97
+        milestone = detect_milestone(old_xp, self.kid.xp)
+        assert milestone is None

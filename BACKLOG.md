@@ -92,6 +92,16 @@
 - [x] 153 total tests passing
 - [x] ADR 010: On-screen Calculator
 
+## EPIC 6.6 -- Milestone Celebrations & Easter Eggs
+- [x] `detect_milestone()` helper: detects when XP crosses a 100-point boundary
+- [x] `milestone_message()`: 6 cycling congratulatory titles/messages
+- [x] Canvas-based fireworks animation (8 bursts, coloured particles, gravity)
+- [x] Mini 4×4 Sudoku reward game (6 pre-built puzzles, validation, themed UI)
+- [x] Milestone banner + "Play a Reward Game!" button on result page
+- [x] Wired into `quest_answer` flow (captures old_xp, detects crossing, passes to template)
+- [x] 15 milestone tests (168 total passing)
+- [x] ADR 011: Milestone Celebrations
+
 ## EPIC 7 -- Hardening (LAN-only, optional)
 - [ ] UFW rules for LAN subnet
 - [ ] Optional Caddy basic auth

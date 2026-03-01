@@ -37,6 +37,40 @@ from app.core.config import settings
 _XP_TABLE = {1: 5, 2: 10, 3: 15, 4: 25, 5: 40}
 _GOLD_FIRST_TRY = {1: 1, 2: 2, 3: 3, 4: 5, 5: 8}
 
+# Milestone interval (XP)
+MILESTONE_INTERVAL = 100
+
+# Messages rotate by milestone tier
+_MILESTONE_MESSAGES = [
+    ("🎆 Century Club!", "You just smashed {xp} XP! Time for a reward…"),
+    ("🌟 Star Power!", "{xp} XP — you're on fire!"),
+    ("🏰 Castle Conquered!", "{xp} XP — nothing can stop you!"),
+    ("🐉 Dragon Slayer!", "{xp} XP — legendary adventurer!"),
+    ("🔮 Arcane Master!", "{xp} XP — the realm bows before you!"),
+    ("⚡ Thunder Strike!", "{xp} XP — electrifying brilliance!"),
+]
+
+
+def detect_milestone(old_xp: int, new_xp: int, interval: int = MILESTONE_INTERVAL) -> int | None:
+    """Return the milestone XP value if a boundary was crossed, else None.
+
+    Example: old_xp=90, new_xp=115, interval=100 → returns 100
+    """
+    if new_xp <= old_xp:
+        return None
+    old_bucket = old_xp // interval
+    new_bucket = new_xp // interval
+    if new_bucket > old_bucket:
+        return new_bucket * interval
+    return None
+
+
+def milestone_message(xp: int) -> tuple[str, str]:
+    """Return (title, body) for a milestone, cycling through messages."""
+    idx = (xp // MILESTONE_INTERVAL - 1) % len(_MILESTONE_MESSAGES)
+    title, body = _MILESTONE_MESSAGES[idx]
+    return title, body.format(xp=xp)
+
 
 # ---------------------------------------------------------------------------
 # Parameter generation
