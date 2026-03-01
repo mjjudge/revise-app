@@ -18,7 +18,7 @@ from sqlmodel import Session, SQLModel, create_engine
 from sqlalchemy.pool import StaticPool
 
 from app.models.user import User, Role
-from app.services.questions import generate_question, check_answer, detect_milestone, milestone_message, MILESTONE_INTERVAL
+from app.services.questions import generate_question, check_answer, detect_milestone, milestone_message, MILESTONE_INTERVAL, get_mcq_options
 from app.templates.feed_loader import (
     load_and_validate,
     load_skills,
@@ -480,3 +480,47 @@ class TestMilestoneIntegration:
         self.kid.xp += 2  # now 97
         milestone = detect_milestone(old_xp, self.kid.xp)
         assert milestone is None
+
+
+# ---------------------------------------------------------------------------
+# MCQ Options Tests
+# ---------------------------------------------------------------------------
+
+
+class TestMCQOptions:
+    """Ensure MCQ questions produce shuffled options."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self, session, kid):
+        self.session = session
+        self.kid = kid
+
+    def test_mcq_template_returns_options(self):
+        """MCQ questions should return a list of shuffled options."""
+        instance = generate_question(
+            self.session, self.kid, template_id="ch5_line_graph_trend_v1",
+        )
+        options = get_mcq_options(instance)
+        assert options is not None
+        assert isinstance(options, list)
+        assert len(options) == 4  # 1 correct + 3 distractors
+        # The correct answer must be among the options
+        correct = json.loads(instance.correct_json)
+        assert correct in options
+
+    def test_non_mcq_template_returns_none(self):
+        """Non-MCQ questions should return None for options."""
+        instance = generate_question(
+            self.session, self.kid, template_id="ch5_mean_from_list_v1",
+        )
+        options = get_mcq_options(instance)
+        assert options is None
+
+    def test_mcq_options_deterministic_per_seed(self):
+        """Same seed should produce same option ordering."""
+        instance = generate_question(
+            self.session, self.kid, template_id="ch5_line_graph_trend_v1",
+        )
+        opts1 = get_mcq_options(instance)
+        opts2 = get_mcq_options(instance)
+        assert opts1 == opts2

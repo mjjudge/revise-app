@@ -239,6 +239,24 @@ def _compute_mcq(template: TemplateDef, params: dict[str, Any]) -> str:
     return distractors.get("correct", "")
 
 
+def get_mcq_options(instance: QuestionInstance) -> list[str] | None:
+    """Return shuffled MCQ options for a question, or None if not MCQ.
+
+    Uses the question's seed for deterministic shuffle so options stay
+    stable across page reloads.
+    """
+    tpl = get_template_by_id(instance.template_id)
+    if not tpl or tpl.marking.mode != "mcq":
+        return None
+    payload = json.loads(instance.payload_json)
+    dist = payload.get("distractors", {})
+    correct = dist.get("correct", "")
+    options = [correct] + list(dist.get("distractors", []))
+    rng = random.Random(instance.seed)
+    rng.shuffle(options)
+    return options
+
+
 # ---------------------------------------------------------------------------
 # JSON encoder for Fraction and other types
 # ---------------------------------------------------------------------------
