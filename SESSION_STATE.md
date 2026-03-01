@@ -22,6 +22,11 @@ EPIC 6 complete. Quality & Observability fully implemented and tested.
     - `mark_fraction_or_decimal`: `rounding` could be `None`, causing AttributeError
   - 23 new tests in `test_quality.py` (151 total passing)
   - ADR 009: Quality & Observability
+- Doubled question bank:
+  - 15 new v2 templates added (30 total across Ch5-8)
+  - Each skill now has 2 templates at different difficulty levels
+  - All 30 templates pass E2E generation, correct-marking, and wrong-marking tests
+  - Fixed `_compute_algebra` to include variable name in answer dict
 
 ## Decisions made
 - UI: HTMX + Tailwind CSS, server-rendered via Jinja2 (ADR 001)
@@ -40,6 +45,7 @@ EPIC 6 complete. Quality & Observability fully implemented and tested.
 ## Next actions (EPIC 7 — Hardening)
 - [ ] UFW rules for LAN subnet
 - [ ] Optional Caddy basic auth
+- [ ] Consider adding more v3 templates for skills with low coverage
 
 ## Notes / gotchas
 - Dockerfile no longer requires uv.lock (uses uv sync without --frozen)

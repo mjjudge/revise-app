@@ -189,7 +189,10 @@ def _compute_remainder(template: TemplateDef, params: dict[str, Any]) -> dict:
 
 def _compute_algebra(template: TemplateDef, params: dict[str, Any]) -> dict:
     expr = params.get("expr", {})
-    return {"total_coeff": expr.get("total_coeff", 0)}
+    return {
+        "total_coeff": expr.get("total_coeff", 0),
+        "variable": template.marking.variable or "a",
+    }
 
 
 def _compute_order(template: TemplateDef, params: dict[str, Any]) -> list:

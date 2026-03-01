@@ -394,4 +394,408 @@ templates:
         columns: ["Outcome", "Count"]
         rows:
           - ["{success_label}", "{successes}"]
+
+  # =========================================================================
+  # V2 templates — variant difficulty and wording for each skill
+  # =========================================================================
+
+  # -------------------------
+  # Chapter 5: Statistics  (v2)
+  # -------------------------
+
+  - id: ch5_mean_from_list_v2
+    chapter: 5
+    skill: stats.mean.basic
+    difficulty: 3
+    type: numeric
+    prompt: "Calculate the mean of these test scores: {values}."
+    parameters:
+      values:
+        gen: int_list
+        count: { min: 8, max: 12 }
+        range: { min: 10, max: 50 }
+        ensure:
+          divisible_mean: true
+    marking:
+      mode: exact_numeric
+    solution:
+      steps:
+        - "Add all the test scores together."
+        - "Count how many scores there are."
+        - "Divide the total by the count."
+    assets: []
+
+  - id: ch5_median_from_list_v2
+    chapter: 5
+    skill: stats.median.basic
+    difficulty: 3
+    type: numeric
+    prompt: "Find the median of this data set: {values}."
+    parameters:
+      values:
+        gen: int_list
+        count: { min: 6, max: 10 }
+        range: { min: 5, max: 45 }
+    marking:
+      mode: exact_numeric
+    solution:
+      steps:
+        - "Put the numbers in order from smallest to largest."
+        - "If there is an odd number of values, take the middle one."
+        - "If there is an even number, average the two middle values."
+    assets: []
+
+  - id: ch5_mode_from_list_v2
+    chapter: 5
+    skill: stats.mode.basic
+    difficulty: 2
+    type: short_text
+    prompt: "A class recorded these shoe sizes: {values}. What is the mode?"
+    parameters:
+      values:
+        gen: int_list_with_mode
+        count: { min: 9, max: 14 }
+        range: { min: 3, max: 12 }
+        ensure:
+          unique_mode: true
+    marking:
+      mode: exact_text_normalised
+    solution:
+      steps:
+        - "Count how many times each shoe size appears."
+        - "The mode is the size that appears most often."
+    assets: []
+
+  - id: ch5_pie_chart_angle_v2
+    chapter: 5
+    skill: stats.pie_chart.angles
+    difficulty: 4
+    type: numeric
+    prompt: "Students voted for their favourite sport. What angle (in degrees) represents {target_label} on a pie chart?"
+    parameters:
+      categories:
+        gen: categorical_counts
+        labels: ["Football", "Tennis", "Swimming", "Cricket", "Rugby"]
+        count_range: { min: 3, max: 15 }
+        ensure:
+          total_min: 30
+      target_label:
+        gen: pick_one
+        from: categories.labels
+    assets:
+      - kind: table
+        id: sport_table
+        title: "Favourite sports"
+        columns: ["Sport", "Votes"]
+        rows_from: categories
+    marking:
+      mode: exact_numeric
+      units: degrees
+    solution:
+      steps:
+        - "Find the total of all votes."
+        - "Calculate the fraction for the target sport."
+        - "Multiply the fraction by 360°."
+
+  - id: ch5_line_graph_trend_v2
+    chapter: 5
+    skill: stats.line_graph.interpret
+    difficulty: 2
+    type: multi_choice
+    prompt: "The line graph shows {context} over six months. Which statement is correct?"
+    parameters:
+      dataset:
+        gen: time_series
+        points: 6
+        x_labels: ["Jan","Feb","Mar","Apr","May","Jun"]
+        y_range: { min: 5, max: 80 }
+        pattern: { type: "single_peak" }
+      context:
+        gen: pick_one
+        from: ["monthly rainfall (mm)", "ice cream sales", "library visitors"]
+      distractors:
+        gen: line_graph_statements
+        from: dataset
+        count: 3
+    assets:
+      - kind: chart
+        id: line_chart
+        chart_type: line
+        title: "Data over six months"
+        x: dataset.x
+        y: dataset.y
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Read the values for each month from the graph."
+        - "Check each statement against the plotted data."
+
+  # -------------------------
+  # Chapter 6: Algebra  (v2)
+  # -------------------------
+
+  - id: ch6_substitution_linear_v2
+    chapter: 6
+    skill: algebra.substitution.eval
+    difficulty: 3
+    type: numeric
+    prompt: "Work out the value of {expr} when {assignments}."
+    parameters:
+      expr:
+        gen: linear_expression
+        vars: ["a", "b"]
+        coeff_range: { min: -8, max: 10 }
+        const_range: { min: -15, max: 15 }
+        terms: 2
+      assignments:
+        gen: var_assignments
+        vars_from: expr.vars
+        value_range: { min: -8, max: 12 }
+    marking:
+      mode: exact_numeric
+    solution:
+      steps:
+        - "Substitute each variable with its given value."
+        - "Be careful with negative numbers."
+        - "Follow the order of operations to simplify."
+    assets: []
+
+  - id: ch6_simplify_like_terms_v2
+    chapter: 6
+    skill: algebra.simplify.like_terms
+    difficulty: 4
+    type: short_text
+    prompt: "Collect like terms and simplify: {expr}"
+    parameters:
+      expr:
+        gen: like_terms_expression
+        var: "n"
+        term_count: { min: 5, max: 8 }
+        coeff_range: { min: -12, max: 12 }
+        ensure:
+          has_both_signs: true
+    marking:
+      mode: algebra_normal_form
+      variable: "n"
+    solution:
+      steps:
+        - "Identify each term and its coefficient."
+        - "Add the positive coefficients and subtract the negative ones."
+        - "Write the answer as a single term."
+    assets: []
+
+  # -------------------------
+  # Chapter 7: Calculation & measure  (v2)
+  # -------------------------
+
+  - id: ch7_metric_conversion_v2
+    chapter: 7
+    skill: measure.metric.convert
+    difficulty: 3
+    type: numeric
+    prompt: "A recipe needs {value} {from_unit} of flour. How much is that in {to_unit}?"
+    parameters:
+      conversion:
+        gen: metric_conversion
+        units: ["g","kg","ml","l"]
+        ensure:
+          same_dimension: true
+      value:
+        gen: int_or_decimal
+        range: { min: 1, max: 500 }
+        decimals: { allowed: [0,1,2], prefer: 1 }
+    marking:
+      mode: numeric_tolerance
+      tolerance: 0.000001
+      unit_required: false
+    solution:
+      steps:
+        - "Work out the conversion factor between the units."
+        - "Multiply or divide by the correct factor."
+        - "Check your answer makes sense."
+    assets: []
+
+  - id: ch7_rounding_dp_v2
+    chapter: 7
+    skill: measure.rounding.dp_sf
+    difficulty: 3
+    type: numeric
+    prompt: "A measurement reads {value}. Round this to {dp} decimal place(s)."
+    parameters:
+      value:
+        gen: decimal
+        range: { min: 10.0, max: 2000.0 }
+        dp: 4
+      dp:
+        gen: pick_one
+        from: [1,2,3]
+    marking:
+      mode: rounding_dp
+      dp_from_param: dp
+    solution:
+      steps:
+        - "Identify the digit in the required decimal place."
+        - "Look at the next digit to decide whether to round up or keep."
+        - "Round up if the next digit is 5 or more."
+    assets: []
+
+  - id: ch7_bidmas_eval_v2
+    chapter: 7
+    skill: calc.bidmas.evaluate
+    difficulty: 2
+    type: numeric
+    prompt: "Calculate: {expr}"
+    parameters:
+      expr:
+        gen: arithmetic_expression
+        ops: ["+","-","*"]
+        max_depth: 2
+        ensure:
+          integer_result: true
+          includes_brackets: true
+    marking:
+      mode: exact_numeric
+    solution:
+      steps:
+        - "Work out the brackets first."
+        - "Then multiply or divide."
+        - "Then add or subtract."
+    assets: []
+
+  - id: ch7_written_division_v2
+    chapter: 7
+    skill: calc.division.written
+    difficulty: 2
+    type: short_text
+    prompt: "Work out {dividend} ÷ {divisor}. Write your answer as a whole number with remainder (e.g. 15 r 3)."
+    parameters:
+      dividend:
+        gen: int
+        range: { min: 30, max: 150 }
+      divisor:
+        gen: int
+        range: { min: 3, max: 9 }
+        ensure:
+          not_factor_of_dividend: true
+    marking:
+      mode: remainder_form
+    solution:
+      steps:
+        - "Divide the larger number by the smaller."
+        - "Write down the whole number answer."
+        - "Multiply back and subtract to find the remainder."
+    assets: []
+
+  # -------------------------
+  # Chapter 8: Probability  (v2)
+  # -------------------------
+
+  - id: ch8_probability_scale_v2
+    chapter: 8
+    skill: prob.scale
+    difficulty: 3
+    type: order_list
+    prompt: "Arrange these events in order of likelihood, from least likely to most likely:"
+    parameters:
+      events:
+        gen: probability_events
+        count: 5
+    marking:
+      mode: order_match
+    solution:
+      steps:
+        - "Assign each event a rough probability (impossible, unlikely, even chance, likely, certain)."
+        - "Order from lowest probability to highest."
+        - "Check your ordering makes sense."
+    assets: []
+
+  - id: ch8_equally_likely_outcomes_v2
+    chapter: 8
+    skill: prob.equally_likely
+    difficulty: 3
+    type: numeric
+    prompt: "A fair {object} is used in an experiment. Find the probability of {event}. Give your answer as a fraction."
+    parameters:
+      scenario:
+        gen: equally_likely_scenario
+        types: ["spinner", "die"]
+      object:
+        gen: from_scenario
+        field: object_name
+      event:
+        gen: from_scenario
+        field: event_description
+    assets:
+      - kind: chart
+        id: spinner
+        when: "scenario.object_name == 'spinner'"
+        chart_type: spinner
+        sectors_from: scenario.sectors
+    marking:
+      mode: fraction_or_decimal
+      accepted_forms: ["fraction_simplified", "decimal"]
+    solution:
+      steps:
+        - "Count the total number of equally likely outcomes."
+        - "Count the number of favourable outcomes."
+        - "Write the probability as a fraction and simplify."
+
+  - id: ch8_mutually_exclusive_v2
+    chapter: 8
+    skill: prob.mutually_exclusive
+    difficulty: 2
+    type: numeric
+    prompt: "Events A and B cannot happen at the same time. P(A) = {pA} and P(B) = {pB}. What is P(A or B)?"
+    parameters:
+      pA:
+        gen: probability_fraction
+        denom: 8
+        ensure: { min: 1, max: 3 }
+      pB:
+        gen: probability_fraction
+        denom: 8
+        ensure: { min: 1, max: 3 }
+        ensure_sum_leq_1_with: pA
+    marking:
+      mode: fraction_or_decimal
+      accepted_forms: ["fraction_simplified", "decimal"]
+    solution:
+      steps:
+        - "Since A and B are mutually exclusive: P(A or B) = P(A) + P(B)."
+        - "Add the two fractions."
+        - "Simplify if possible."
+
+  - id: ch8_experimental_probability_v2
+    chapter: 8
+    skill: prob.experimental
+    difficulty: 2
+    type: numeric
+    prompt: "A spinner is spun {trials} times. It lands on {success_label} a total of {successes} times. Estimate the probability of landing on {success_label}."
+    parameters:
+      trials:
+        gen: int
+        range: { min: 10, max: 40 }
+      successes:
+        gen: int_dependent
+        depends_on: trials
+        ensure: { min_ratio: 0.2, max_ratio: 0.7 }
+      success_label:
+        gen: pick_one
+        from: ["red", "blue", "green", "yellow"]
+    marking:
+      mode: fraction_or_decimal
+      accepted_forms: ["fraction_simplified", "decimal_2dp"]
+      rounding: { decimal_places: 2 }
+    solution:
+      steps:
+        - "Experimental probability = number of successes ÷ total trials."
+        - "Write as a fraction or round to 2 decimal places."
+    assets:
+      - kind: table
+        id: exp_table
+        title: "Spinner Results"
+        columns: ["Colour", "Frequency"]
+        rows:
+          - ["{success_label}", "{successes}"]
           - ["Other", "{trials - successes}"]

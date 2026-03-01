@@ -29,6 +29,7 @@
 - [x] Deterministic generator framework (seeded) to expand template parameters into an instance payload
 - [x] Persist generated instance payload_json + correct_json for replay/review
 - [x] Implement 8-12 templates spanning chapters 5-8
+- [x] Doubled question bank: 15 v2 templates (30 total) with varied difficulty and wording
 - [x] Deterministic answer keys + marking rules
 - [x] Question persistence + attempt logging
 - [x] Adaptive difficulty band adjustment
