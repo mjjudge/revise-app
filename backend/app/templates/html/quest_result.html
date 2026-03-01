@@ -62,6 +62,21 @@
       {% endif %}
     </div>
 
+    <!-- Ask why? (wrong answers only) -->
+    {% if not result.correct %}
+    <div class="mb-4">
+      <button hx-post="/tutor/explain"
+              hx-target="#explain-area"
+              hx-swap="innerHTML"
+              hx-vals='{"question_id": "{{ question.id }}", "student_answer": "{{ attempt.answer_raw }}"}'
+              class="px-4 py-2 bg-blue-600/40 hover:bg-blue-600/60 text-blue-300
+                     rounded-lg text-sm font-medium transition-colors border border-blue-500/40">
+        🧙 Ask Professor Quill: "Why was I wrong?"
+      </button>
+      <div id="explain-area"></div>
+    </div>
+    {% endif %}
+
     <!-- Rewards -->
     {% if attempt.xp_earned > 0 or attempt.gold_earned > 0 %}
     <div class="flex items-center justify-center gap-6 py-3 bg-realm-purple-800/40 rounded-xl mb-4">

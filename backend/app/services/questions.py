@@ -393,6 +393,10 @@ def check_answer(
 
     # Weekly gold cap enforcement
     if gold > 0:
+        # Hint penalty: halve gold if any hints were used
+        if instance.hints_used > 0:
+            gold = gold // 2  # integer division — at least halved
+
         gold_this_week = _gold_earned_this_week(db, user)
         remaining = max(0, settings.weekly_gold_cap - gold_this_week)
         gold = min(gold, remaining)

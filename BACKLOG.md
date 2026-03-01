@@ -60,10 +60,14 @@
 - [x] ADR 007: Gamification & Rewards System
 
 ## EPIC 5 -- Tutor Mode (OpenAI)
-- [ ] Tutor API endpoint (payload + attempt + user question)
-- [ ] Prompt rules: age-appropriate, no personal data, don't jump to answer
-- [ ] Hint ladder generation (optional)
-- [ ] Logging + safety filters
+- [x] Tutor API endpoint (payload + attempt + user question)
+- [x] Prompt rules: age-appropriate, no personal data, don't jump to answer
+- [x] Hint ladder generation (3-level: nudge → worked step → nearly-the-answer)
+- [x] Fun rewrite of question stems (cached)
+- [x] Hint penalty (halves gold reward)
+- [x] Logging + safety filters
+- [x] 22 tutor tests (128 total)
+- [x] ADR 008: Tutor Mode — OpenAI Integration
 
 ## EPIC 6 -- Quality + Observability
 - [ ] Expand tests for templates + marking

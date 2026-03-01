@@ -10,6 +10,7 @@ from app.api.auth import router as auth_router
 from app.api.pages import router as pages_router
 from app.api.quest import router as quest_router
 from app.api.admin import router as admin_router
+from app.api.tutor import router as tutor_router
 from app.templates.feed_loader import load_and_validate
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,7 @@ app.include_router(auth_router)
 app.include_router(pages_router)
 app.include_router(quest_router)
 app.include_router(admin_router)
+app.include_router(tutor_router)
 
 
 @app.get("/health")

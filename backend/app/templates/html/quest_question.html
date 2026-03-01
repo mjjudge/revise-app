@@ -41,9 +41,23 @@
       <span>⚡ Difficulty {{ question.difficulty }}</span>
     </div>
 
-    <h2 class="text-xl font-bold text-white mb-6 leading-relaxed">
-      {{ question.prompt_rendered }}
-    </h2>
+    <!-- Question stem (with fun rewrite target) -->
+    <div id="question-stem">
+      <h2 class="text-xl font-bold text-white mb-2 leading-relaxed">
+        {{ question.prompt_rendered }}
+      </h2>
+    </div>
+
+    <!-- Fun rewrite button -->
+    <div class="mb-4">
+      <button hx-post="/tutor/rewrite"
+              hx-target="#question-stem"
+              hx-swap="innerHTML"
+              hx-vals='{"question_id": "{{ question.id }}"}'
+              class="text-xs text-realm-purple-400 hover:text-realm-gold-400 transition-colors">
+        ✨ Make it fun
+      </button>
+    </div>
 
     <!-- Assets (tables, charts) -->
     {% if question.assets_html %}
@@ -51,6 +65,9 @@
       {{ question.assets_html | safe }}
     </div>
     {% endif %}
+
+    <!-- Hint area -->
+    <div id="hint-area" class="mb-4"></div>
 
     <!-- Answer form -->
     <div id="answer-area">
@@ -76,11 +93,24 @@
                  placeholder="Type your answer here...">
         </div>
 
-        <button type="submit"
-                class="w-full py-3 bg-realm-gold-500 hover:bg-realm-gold-400 text-realm-purple-900
-                       font-bold rounded-xl transition-colors text-lg">
-          ⚔️ Submit Answer
-        </button>
+        <div class="flex gap-3">
+          <button type="submit"
+                  class="flex-1 py-3 bg-realm-gold-500 hover:bg-realm-gold-400 text-realm-purple-900
+                         font-bold rounded-xl transition-colors text-lg">
+            ⚔️ Submit Answer
+          </button>
+
+          <!-- Hint button -->
+          <button type="button"
+                  hx-post="/tutor/hint"
+                  hx-target="#hint-area"
+                  hx-swap="innerHTML"
+                  hx-vals='{"question_id": "{{ question.id }}", "hint_number": "1"}'
+                  class="px-4 py-3 bg-realm-purple-600 hover:bg-realm-purple-500 text-realm-gold-400
+                         font-medium rounded-xl transition-colors text-sm">
+            💡 Hint
+          </button>
+        </div>
       </form>
     </div>
   </div>
