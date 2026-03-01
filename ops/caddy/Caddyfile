@@ -1,0 +1,9 @@
+:80 {
+  # Internal LAN-only convenience reverse proxy
+  reverse_proxy app:8000
+
+  # Optional: basic auth in addition to app PINs (uncomment to enable)
+  # basicauth {
+  #   parent JDJhJDE0JHdCTmpZQnU1L0J4T2hQb3B0c1hFZS5UQ2dJcC5pQ0VQd1U1aW9aRGt0c0g5d3d1
+  # }
+}

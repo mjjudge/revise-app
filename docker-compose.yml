@@ -1,0 +1,27 @@
+services:
+  app:
+    build:
+      context: ./backend
+    container_name: revise_app_backend
+    environment:
+      - APP_ENV=dev
+      - DATABASE_URL=sqlite:////data/app.sqlite3
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LAN_SUBNET_ALLOW=${LAN_SUBNET_ALLOW:-192.168.1.0/24}
+    volumes:
+      - ./data:/data
+      - ./logs:/logs
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    container_name: revise_app_caddy
+    depends_on:
+      - app
+    ports:
+      - "8088:80"
+    volumes:
+      - ./ops/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+    restart: unless-stopped
