@@ -100,11 +100,19 @@ def subject_home(name: str, request: Request, session: Session = Depends(get_ses
     if not meta:
         return RedirectResponse(url="/", status_code=303)
 
+    quests_done = session.exec(
+        select(func.count(QuestSession.id)).where(
+            QuestSession.user_id == user.id,
+            QuestSession.finished == True,  # noqa: E712
+        )
+    ).one()
+
     return templates.TemplateResponse(request, "subject_home.html", {
         "user": user,
         "subject_title": meta["title"],
         "subject_icon": meta["icon"],
         "units": meta["units"],
+        "quests_done": quests_done,
     })
 
 
