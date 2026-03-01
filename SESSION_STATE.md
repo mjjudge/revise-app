@@ -1,25 +1,33 @@
 # SESSION_STATE
 
 ## Current objective
-EPIC 8 — Multi-subject navigation framework (Maths + Geography + History "Coming Soon").
+EPIC 9 — Geography Content Pack: complete.
 
 ## Completed this session
-- EPIC 8 Story 8.1: Multi-subject feed loader + subject dashboard UI
-  - **feed_loader.py**: Major refactor for multi-subject support:
-    - `SkillDef` and `TemplateDef` now have optional `subject`, `unit` fields; `chapter` is optional
-    - Auto-mapping for legacy maths: chapter 5→data, 6→algebra, 7→calculation, 8→probability
-    - New `MarkingMode` values: gridref_4fig, gridref_6fig, bearing_3digit, grid_match, label_match
-    - Loads multiple YAML packs: skills.yaml + templates_ch5_to_ch8.yaml AND skills_geography.yaml + templates_geography.yaml
-    - New query helpers: `get_templates_by_subject()`, `get_templates_by_unit()`, `get_subjects()`, `get_units_for_subject()`, `clear_cache()`
-    - Cross-validation updated for subject/unit consistency
-  - **Subject dashboard**: Home page (`/`) transformed from 4 maths chapter cards to 3 subject cards (Maths=ready, Geography=Coming Soon, History=Coming Soon greyed out)
-  - **Subject home page**: New `/subject/{name}` route + `subject_home.html` template showing unit cards per subject
-  - **Persistent breadcrumb**: Quest chapter page now has home → subject → chapter breadcrumb in nav
-  - **Tests**: Updated `test_feed_loader.py` (14 tests) and `test_quality.py` (43 tests) for multi-subject; E2E generation tests filtered to maths-only (geography generators are EPIC 9)
-  - **Docs**: BACKLOG updated, ADR 015 created, QUESTION_FEED_SPEC.md fully rewritten
-  - All 199 tests pass
+
+### EPIC 9: Geography Content Pack
+- **templates_geography.yaml**: 24 geography templates across 7 categories (knowledge MCQ, matching/grid-fill, scale calculations, map/grid ref, contours, climate graphs, weather diagrams)
+- **generators.py**: ~15 new geography generators added — `pick_one`, `pick_one_distinct`, `from_object`, `geog_knowledge_mcq` (with knowledge pools for 4 topics), 6 matching-set generators (instruments, air masses, clouds, symbols, water cycle, continents/oceans), `map_scale`, `grid_map_with_features` (computes 4-fig and 6-fig grid refs), `compass_direction_mcq`, `climograph_dataset` (5 climate profiles), `climate_compare_mcq`, `synthetic_contour_map`, `isobar_chart_data`, `rainfall_diagram_data`
+- **assets.py**: 9 new SVG renderers — `matching_cards`, `map_grid`, `compass_rose`, `scale_bar`, `climograph`, `contours`, `cross_section_set`, `synoptic_chart`, `rainfall_diagram`
+- **marking.py**: 5 new marking modes — `gridref_4fig`, `gridref_6fig`, `bearing_3digit` (±tolerance), `grid_match` (JSON mapping with partial credit), `label_match` (alias)
+- **questions.py**: Extended `_compute_answer` for geography modes + scale/contour/climograph numeric computation; added `_compute_grid_match`, `_compute_gridref`, `_compute_bearing`; added `get_grid_fill_data()` for matching UI
+- **quest_question.html**: New `grid_fill` UI with dropdown `<select>` elements for matching left→right items, JSON answer, reset button
+- **quest.py**: New `/quest/unit/{subject}/{unit}` route; `get_grid_fill_data` wired into all question-rendering routes
+- **quest_unit.html**: New template for unit-based skill selection with breadcrumb navigation
+- **pages.py**: Added geography to `_SUBJECT_META` with 4 units (maps, weather, climate, world)
+- **home.html**: Geography card now active (no longer "Coming Soon")
+- **quest_question.html**: Fixed chapter display for non-maths questions (conditional `Ch` label)
+- **tests**: 56 new geography tests in `test_geography.py` — generator determinism, marking modes, E2E template generation, structure validation
+- **Docs**: ADR 016, SESSION_STATE.md updated
+- 264 tests passing (208 existing + 56 new)
+
+### Bug fixes (earlier this session)
+- Quests Done counter: fixed hardcoded `0` on home page
+- Docker rebuild: `make restart` now includes `docker compose build`
+- Stats on subject page: added quests_done query + stats bar
 
 ## Previous session work
+- EPIC 8 — Multi-subject navigation framework (committed `85dc65b`)
 - EPICs 0-6.7 fully implemented (Docker/Caddy, auth, 30 maths templates, gamification, tutor, calculator, milestones, tiers)
 - Live bug fixes: DB migration, MCQ radios, context-aware data, hint scroll, algebra prompts, pie charts, probability ordering, rounding dots, BIDMAS superscript
 
@@ -39,27 +47,31 @@ EPIC 8 — Multi-subject navigation framework (Maths + Geography + History "Comi
 - Context-aware data: sensible UK ranges + y-axis units on charts (ADR 013)
 - Hint UX: scroll-to-hint on button click for visibility (ADR 014)
 - Multi-subject: feed_loader multi-pack, subject/unit navigation, new marking modes (ADR 015)
+- Geography content pack: 24 templates, 15 generators, 9 renderers, 5 marking modes (ADR 016)
 
 ## Open questions
-- None for EPIC 8.1
+- None
 
-## Next actions (EPIC 8 continued + EPIC 9)
+## Next actions
 - [ ] EPIC 8.2: Subject-scoped progress tracking (per-subject XP/stats)
-- [ ] EPIC 9: Geography generators + renderers (map_grid, compass_rose, contour assets)
 - [ ] EPIC 10: History subject pack (YAML templates + generators)
 - [ ] EPIC 11: Cross-subject features (combined leaderboard, subject streaks)
 - [ ] UFW rules for LAN subnet
 - [ ] Optional Caddy basic auth
 
 ## Notes / gotchas
-- Geography YAML files exist but generators are NOT implemented yet (EPIC 9 work)
-- E2E quality tests correctly filter to maths-only to avoid geography generator failures
+- Geography uses unit-based routing (`/quest/unit/geography/{unit}`) not chapter-based
+- Grid-fill UI uses `<select>` dropdowns → JSON answer in hidden field → `grid_match` marker
+- All matching-set generators return `{left, right, correct_mapping}` structure
+- `grid_map_with_features` computes both 4-fig and 6-fig grid refs per feature point
+- Climograph dataset supports 5 climate profiles (temperate, tropical, mediterranean, polar, tropical_dry)
+- Contour map generator supports 3 styles (hill, landform, cross_section)
+- Bearing marker supports wrapping around 360°/0°
 - feed_loader cache must be cleared between tests (autouse fixture handles this)
-- Maths chapter routes (`/quest/chapter/{N}`) remain fully backward-compatible
-- Subject dashboard is at `/` → `/subject/maths` → `/quest/chapter/{N}` → questions
+- E2E quality tests cover both maths and geography templates
 - Dockerfile no longer requires uv.lock (uses uv sync without --frozen)
 - Tests require --extra dev flag: uv run --extra dev pytest
 - The app auto-seeds users on first startup; delete data/app.sqlite3 to re-seed
 - Never store or transmit any book page images/text to OpenAI
-- Schema changes are handled by idempotent migrations in `session.py`
+- Schema changes are handled by idempotent migrations in session.py
 - OPENAI_API_KEY must be set in .env for tutor features to work

@@ -22,9 +22,9 @@ from app.models.quest import QuestSession, Payout
 from app.models.question import QuestionInstance, Attempt
 from app.models.user import Role, User
 from app.services.auth import get_current_user
-from app.services.questions import generate_question, check_answer, detect_milestone, milestone_message, get_mcq_options, get_order_items
+from app.services.questions import generate_question, check_answer, detect_milestone, milestone_message, get_mcq_options, get_order_items, get_grid_fill_data
 from app.services.tiers import detect_tier_up
-from app.templates.feed_loader import get_templates_by_chapter, get_skill_map, get_template_by_id
+from app.templates.feed_loader import get_templates_by_chapter, get_templates_by_unit, get_skill_map, get_template_by_id
 
 router = APIRouter(prefix="/quest", tags=["quest"])
 
@@ -59,6 +59,49 @@ def quest_chapter(
         "user": user,
         "chapter": chapter,
         "skills": skills_in_chapter,
+    })
+
+
+# ---------------------------------------------------------------------------
+# GET /quest/unit/{subject}/{unit} — pick skill within a unit
+# ---------------------------------------------------------------------------
+
+@router.get("/unit/{subject}/{unit}", response_class=HTMLResponse)
+def quest_unit(
+    subject: str,
+    unit: str,
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    """Show available skills for a subject unit."""
+    user = get_current_user(request, session)
+    if not user or user.role != Role.kid:
+        return RedirectResponse(url="/login", status_code=303)
+
+    unit_templates = get_templates_by_unit(subject, unit)
+    if not unit_templates:
+        return RedirectResponse(url=f"/subject/{subject}", status_code=303)
+
+    skill_map = get_skill_map()
+    skills_in_unit: dict[str, str] = {}
+    for t in unit_templates:
+        if t.skill not in skills_in_unit:
+            skill_def = skill_map.get(t.skill)
+            skills_in_unit[t.skill] = skill_def.name if skill_def else t.skill
+
+    # Look up unit metadata for display titles
+    from app.api.pages import _SUBJECT_META
+    subject_meta = _SUBJECT_META.get(subject, {})
+    unit_meta = next((u for u in subject_meta.get("units", []) if u["key"] == unit), None)
+
+    return templates.TemplateResponse(request, "quest_unit.html", {
+        "user": user,
+        "subject": subject,
+        "subject_title": subject_meta.get("title", subject.title()),
+        "subject_icon": subject_meta.get("icon", "📚"),
+        "unit_title": unit_meta["title"] if unit_meta else unit.title(),
+        "unit_icon": unit_meta["icon"] if unit_meta else "📖",
+        "skills": skills_in_unit,
     })
 
 
@@ -115,6 +158,7 @@ def quest_start(
         "calculator": tpl.calculator if tpl else None,
         "mcq_options": get_mcq_options(instance),
         "order_items": get_order_items(instance),
+        "grid_fill_data": get_grid_fill_data(instance),
     })
 
 
@@ -152,6 +196,7 @@ def quest_generate(
         "calculator": tpl.calculator if tpl else None,
         "mcq_options": get_mcq_options(instance),
         "order_items": get_order_items(instance),
+        "grid_fill_data": get_grid_fill_data(instance),
     })
 
 
@@ -303,6 +348,7 @@ def quest_next(
         "calculator": tpl.calculator if tpl else None,
         "mcq_options": get_mcq_options(instance),
         "order_items": get_order_items(instance),
+        "grid_fill_data": get_grid_fill_data(instance),
     })
 
 

@@ -556,3 +556,670 @@ def gen_int_dependent(rng: _random_mod.Random, spec: dict, ctx: dict) -> int:
     lo = max(1, int(base_val * min_ratio))
     hi = int(base_val * max_ratio)
     return rng.randint(lo, hi)
+
+
+# ===================================================================
+# Geography generators
+# ===================================================================
+
+
+# ---------------------------------------------------------------------------
+# pick_one_distinct  (pick from a list, excluding a value)
+# ---------------------------------------------------------------------------
+
+@register_gen("pick_one_distinct")
+def gen_pick_one_distinct(rng: _random_mod.Random, spec: dict, ctx: dict) -> Any:
+    """Pick one item from a list, excluding the value of another param."""
+    options = spec.get("from", [])
+    if isinstance(options, str):
+        options = _resolve_ctx_ref(options, ctx)
+
+    exclude_key = spec.get("not_equal_to", "")
+    exclude_val = ctx.get(exclude_key, None)
+
+    filtered = [o for o in options if o != exclude_val]
+    if not filtered:
+        return rng.choice(options) if options else ""
+    return rng.choice(filtered)
+
+
+# ---------------------------------------------------------------------------
+# from_object  (extract a field from a previously-generated object)
+# ---------------------------------------------------------------------------
+
+@register_gen("from_object")
+def gen_from_object(rng: _random_mod.Random, spec: dict, ctx: dict) -> Any:
+    """Extract a field from a previously-generated context object."""
+    obj_name = spec.get("object", "")
+    field = spec.get("field", "")
+    obj = ctx.get(obj_name, {})
+    if isinstance(obj, dict):
+        return obj.get(field, "")
+    return getattr(obj, field, "")
+
+
+# ---------------------------------------------------------------------------
+# Helper: resolve a dotted context reference
+# ---------------------------------------------------------------------------
+
+def _resolve_ctx_ref(ref: str, ctx: dict) -> Any:
+    """Resolve a dotted reference like 'map.feature_names' from context."""
+    parts = ref.split(".")
+    val: Any = ctx
+    for p in parts:
+        if isinstance(val, dict):
+            val = val[p]
+        elif isinstance(val, list):
+            val = val[int(p)]
+        else:
+            val = getattr(val, p, None)
+    return val
+
+
+# ---------------------------------------------------------------------------
+# Geography knowledge MCQ
+# ---------------------------------------------------------------------------
+
+_KNOWLEDGE_POOLS: dict[str, dict[str, list[str]]] = {
+    "troposphere": {
+        "correct": [
+            "It is the lowest layer of the atmosphere where most weather happens.",
+        ],
+        "distractors": [
+            "It is the outermost layer of the atmosphere.",
+            "It contains the ozone layer that blocks UV rays.",
+            "It is where satellites orbit the Earth.",
+            "It starts at 50 km above the surface.",
+            "It has no clouds or wind.",
+        ],
+    },
+    "depression": {
+        "correct": [
+            "Cloudy, windy and often rainy.",
+        ],
+        "distractors": [
+            "Dry, sunny and very hot.",
+            "Clear skies with heavy frost.",
+            "Light winds and no clouds.",
+            "Thunderstorms only at night.",
+            "Snow and ice for weeks.",
+        ],
+    },
+    "climate_impacts": {
+        "correct": [
+            "Farming seasons are short, so fewer crops can grow outdoors.",
+        ],
+        "distractors": [
+            "There are more daylight hours for tourism.",
+            "Rivers never freeze so transport is easy.",
+            "People wear light clothing all year round.",
+            "Tropical fruits can be grown easily.",
+            "Solar panels produce the most electricity here.",
+        ],
+    },
+    "heatwave": {
+        "correct": [
+            "Drink water regularly and stay in the shade during the hottest part of the day.",
+        ],
+        "distractors": [
+            "Exercise hard outside at midday to build heat resistance.",
+            "Keep all windows sealed shut to block the heat.",
+            "Wear dark, heavy clothing to absorb the sun.",
+            "Drink very cold fizzy drinks instead of water.",
+            "Spend the hottest hours sunbathing to get a tan.",
+        ],
+    },
+}
+
+
+@register_gen("geog_knowledge_mcq")
+def gen_geog_knowledge_mcq(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Pick a correct answer and random distractors for a knowledge MCQ."""
+    topic = spec.get("topic", "troposphere")
+    pool = _KNOWLEDGE_POOLS.get(topic, _KNOWLEDGE_POOLS["troposphere"])
+    correct = rng.choice(pool["correct"])
+    count = spec.get("count", 3)
+    distractors = rng.sample(pool["distractors"], min(count, len(pool["distractors"])))
+    return {"correct": correct, "distractors": distractors}
+
+
+# ---------------------------------------------------------------------------
+# Matching-set generators (for grid_fill templates)
+# ---------------------------------------------------------------------------
+
+@register_gen("instruments_set")
+def gen_instruments_set(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Return a set of weather instrument → measurement pairs."""
+    all_items = [
+        {"left": "Six's thermometer", "right": "Highest and lowest temperature"},
+        {"left": "Rain gauge", "right": "Amount of rainfall"},
+        {"left": "Campbell-Stokes sunshine recorder", "right": "Hours of sunshine"},
+        {"left": "Anemometer", "right": "Wind speed"},
+        {"left": "Wind vane", "right": "Wind direction"},
+        {"left": "Barometer", "right": "Air pressure"},
+        {"left": "Stevenson screen", "right": "Shelters instruments from direct sunlight"},
+        {"left": "Hygrometer", "right": "Humidity (moisture in the air)"},
+    ]
+    pick = min(spec.get("pick", 5), len(all_items))
+    chosen = rng.sample(all_items, pick)
+    return {
+        "left": [i["left"] for i in chosen],
+        "right": [i["right"] for i in chosen],
+        "correct_mapping": {i["left"]: i["right"] for i in chosen},
+    }
+
+
+@register_gen("uk_air_masses_set")
+def gen_uk_air_masses_set(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Return a set of UK air mass → typical weather pairs."""
+    all_items = [
+        {"left": "Tropical Maritime (Tm)", "right": "Warm, moist, cloudy — rain in the west"},
+        {"left": "Tropical Continental (Tc)", "right": "Hot, dry — summer heatwaves"},
+        {"left": "Polar Maritime (Pm)", "right": "Cool, moist — showers"},
+        {"left": "Polar Continental (Pc)", "right": "Very cold, dry — winter snow possible"},
+        {"left": "Arctic Maritime (Am)", "right": "Very cold, snow showers in the north"},
+    ]
+    pick = min(spec.get("pick", 4), len(all_items))
+    chosen = rng.sample(all_items, pick)
+    return {
+        "left": [i["left"] for i in chosen],
+        "right": [i["right"] for i in chosen],
+        "correct_mapping": {i["left"]: i["right"] for i in chosen},
+    }
+
+
+@register_gen("cloud_set")
+def gen_cloud_set(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Return a set of cloud type → description pairs."""
+    all_items = [
+        {"left": "Cumulus", "right": "Fluffy, heaped clouds — fair weather"},
+        {"left": "Stratus", "right": "Flat, layered clouds — overcast/drizzle"},
+        {"left": "Cirrus", "right": "Thin, wispy clouds high up — fair weather"},
+        {"left": "Cumulonimbus", "right": "Tall, towering clouds — thunderstorms"},
+        {"left": "Nimbostratus", "right": "Thick, dark layers — steady rain"},
+    ]
+    pick = min(spec.get("pick", 3), len(all_items))
+    chosen = rng.sample(all_items, pick)
+    return {
+        "left": [i["left"] for i in chosen],
+        "right": [i["right"] for i in chosen],
+        "correct_mapping": {i["left"]: i["right"] for i in chosen},
+    }
+
+
+@register_gen("symbol_set")
+def gen_symbol_set(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Return a set of OS map symbol → meaning pairs."""
+    all_items = [
+        {"left": "PO", "right": "Post Office"},
+        {"left": "▲", "right": "Triangulation pillar / summit"},
+        {"left": "⛪", "right": "Church with tower"},
+        {"left": "🅿", "right": "Parking"},
+        {"left": "⌂", "right": "Youth hostel"},
+        {"left": "—·—·—", "right": "Footpath"},
+        {"left": "====", "right": "Main road"},
+        {"left": "~~~~", "right": "River"},
+        {"left": "🏕", "right": "Campsite"},
+        {"left": "ℹ", "right": "Information centre"},
+    ]
+    pick = min(spec.get("pick", 5), len(all_items))
+    chosen = rng.sample(all_items, pick)
+    return {
+        "left": [i["left"] for i in chosen],
+        "right": [i["right"] for i in chosen],
+        "correct_mapping": {i["left"]: i["right"] for i in chosen},
+    }
+
+
+@register_gen("water_cycle_set")
+def gen_water_cycle_set(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Return a set of water cycle process → description pairs."""
+    all_items = [
+        {"left": "Evaporation", "right": "Liquid water heated and turns to water vapour"},
+        {"left": "Condensation", "right": "Water vapour cools and forms tiny droplets (clouds)"},
+        {"left": "Precipitation", "right": "Water falls as rain, snow, sleet or hail"},
+        {"left": "Runoff", "right": "Water flows over the surface into streams and rivers"},
+        {"left": "Transpiration", "right": "Water released from plants through their leaves"},
+        {"left": "Infiltration", "right": "Water soaks into the ground through soil"},
+    ]
+    pick = min(spec.get("pick", 4), len(all_items))
+    chosen = rng.sample(all_items, pick)
+    return {
+        "left": [i["left"] for i in chosen],
+        "right": [i["right"] for i in chosen],
+        "correct_mapping": {i["left"]: i["right"] for i in chosen},
+    }
+
+
+@register_gen("continents_oceans_set")
+def gen_continents_oceans_set(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Return a set of continent/ocean → description pairs."""
+    all_items = [
+        {"left": "Africa", "right": "Second-largest continent, home to the Sahara Desert"},
+        {"left": "Asia", "right": "Largest continent, contains China and India"},
+        {"left": "Europe", "right": "Continent that includes the UK, France and Germany"},
+        {"left": "North America", "right": "Continent with the USA, Canada and Mexico"},
+        {"left": "South America", "right": "Continent with Brazil and the Amazon Rainforest"},
+        {"left": "Antarctica", "right": "Frozen continent at the South Pole"},
+        {"left": "Oceania", "right": "Region including Australia and New Zealand"},
+        {"left": "Pacific Ocean", "right": "Largest and deepest ocean"},
+        {"left": "Atlantic Ocean", "right": "Ocean between Europe/Africa and the Americas"},
+        {"left": "Indian Ocean", "right": "Warm ocean south of Asia"},
+        {"left": "Arctic Ocean", "right": "Smallest, shallowest ocean around the North Pole"},
+        {"left": "Southern Ocean", "right": "Ocean surrounding Antarctica"},
+    ]
+    pick = min(spec.get("pick", 6), len(all_items))
+    chosen = rng.sample(all_items, pick)
+    return {
+        "left": [i["left"] for i in chosen],
+        "right": [i["right"] for i in chosen],
+        "correct_mapping": {i["left"]: i["right"] for i in chosen},
+    }
+
+
+# ---------------------------------------------------------------------------
+# Map scale generator
+# ---------------------------------------------------------------------------
+
+@register_gen("map_scale")
+def gen_map_scale(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Pick a map scale ratio."""
+    choices = [
+        {"ratio": 25000, "text": "1 : 25,000"},
+        {"ratio": 50000, "text": "1 : 50,000"},
+        {"ratio": 100000, "text": "1 : 100,000"},
+    ]
+    chosen = rng.choice(choices)
+    return chosen
+
+
+# ---------------------------------------------------------------------------
+# Grid map generator (for compass, grid ref, bearing questions)
+# ---------------------------------------------------------------------------
+
+@register_gen("grid_map_with_features")
+def gen_grid_map_with_features(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Generate a grid map with named features placed on it.
+
+    Returns:
+        {
+            grid_size: int,
+            features: [{name, x, y}, ...],
+            feature_names: [str, ...],
+            grid_ref_4fig: {name: "XXYY", ...},
+            grid_ref_6fig: {name: "XXXYYYY", ...},
+        }
+    Coordinates use 10-based grid labels starting from random offset.
+    """
+    grid_size = spec.get("grid_size", 8)
+    feature_count = spec.get("feature_count", 5)
+    feature_names = list(spec.get("feature_names", [f"Point {i + 1}" for i in range(feature_count)]))[:feature_count]
+    precise = spec.get("precise", False)
+
+    # Grid label offsets (e.g. grid starts at easting 30, northing 50)
+    east_offset = rng.randint(10, 90)
+    north_offset = rng.randint(10, 90)
+
+    features = []
+    used_squares: set[tuple[int, int]] = set()
+    grid_ref_4fig: dict[str, str] = {}
+    grid_ref_6fig: dict[str, str] = {}
+
+    for name in feature_names:
+        # Place in distinct grid squares
+        for _ in range(100):
+            sq_e = rng.randint(0, grid_size - 2)  # square easting index
+            sq_n = rng.randint(0, grid_size - 2)  # square northing index
+            if (sq_e, sq_n) not in used_squares:
+                break
+        used_squares.add((sq_e, sq_n))
+
+        # Precise placement within the square (tenths)
+        if precise:
+            tenth_e = rng.randint(1, 9)
+            tenth_n = rng.randint(1, 9)
+        else:
+            tenth_e = rng.randint(2, 8)
+            tenth_n = rng.randint(2, 8)
+
+        # Absolute coordinates for rendering (0-based, in grid units)
+        abs_x = sq_e + tenth_e / 10.0
+        abs_y = sq_n + tenth_n / 10.0
+
+        # Grid reference labels
+        easting_label = east_offset + sq_e
+        northing_label = north_offset + sq_n
+
+        ref_4 = f"{easting_label:02d}{northing_label:02d}"
+        ref_6 = f"{easting_label:02d}{tenth_e}{northing_label:02d}{tenth_n}"
+
+        features.append({
+            "name": name,
+            "x": round(abs_x, 1),
+            "y": round(abs_y, 1),
+            "easting": easting_label,
+            "northing": northing_label,
+            "tenth_e": tenth_e,
+            "tenth_n": tenth_n,
+        })
+        grid_ref_4fig[name] = ref_4
+        grid_ref_6fig[name] = ref_6
+
+    return {
+        "grid_size": grid_size,
+        "east_offset": east_offset,
+        "north_offset": north_offset,
+        "features": features,
+        "feature_names": feature_names,
+        "grid_ref_4fig": grid_ref_4fig,
+        "grid_ref_6fig": grid_ref_6fig,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Compass direction MCQ
+# ---------------------------------------------------------------------------
+
+_COMPASS_DIRS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+
+
+def _compass_direction(dx: float, dy: float) -> str:
+    """Return the 8-point compass direction from (dx, dy) offset."""
+    angle = math.atan2(dx, dy)  # note: dy=north is up, dx=east is right
+    deg = math.degrees(angle) % 360
+    idx = int((deg + 22.5) / 45) % 8
+    return _COMPASS_DIRS[idx]
+
+
+def _bearing_degrees(dx: float, dy: float) -> int:
+    """Return the bearing in degrees (0-359) from (dx, dy) offset."""
+    angle = math.atan2(dx, dy)
+    deg = math.degrees(angle) % 360
+    return round(deg) % 360
+
+
+@register_gen("compass_direction_mcq")
+def gen_compass_direction_mcq(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Generate MCQ options for compass direction between two features."""
+    map_data = ctx.get(spec.get("map_ref", "map"), {})
+    from_name = ctx.get(spec.get("from_name", "from_feature"), "")
+    to_name = ctx.get(spec.get("to_name", "to_feature"), "")
+
+    features = map_data.get("features", [])
+    from_pt = next((f for f in features if f["name"] == from_name), None)
+    to_pt = next((f for f in features if f["name"] == to_name), None)
+
+    if from_pt and to_pt:
+        dx = to_pt["x"] - from_pt["x"]
+        dy = to_pt["y"] - from_pt["y"]
+        correct = _compass_direction(dx, dy)
+    else:
+        correct = "N"
+
+    # Build distractors (other compass directions, excluding correct)
+    others = [d for d in _COMPASS_DIRS if d != correct]
+    rng.shuffle(others)
+    distractors = others[:3]
+    return {"correct": correct, "distractors": distractors}
+
+
+# ---------------------------------------------------------------------------
+# Climograph dataset
+# ---------------------------------------------------------------------------
+
+_CLIMOGRAPH_PROFILES: dict[str, dict] = {
+    "temperate": {
+        "temp_base": [4, 5, 7, 9, 12, 15, 17, 17, 14, 10, 7, 5],
+        "rain_base": [60, 45, 50, 45, 50, 55, 50, 60, 55, 65, 70, 65],
+        "label": "Temperate",
+    },
+    "tropical": {
+        "temp_base": [26, 27, 27, 28, 28, 27, 26, 26, 27, 27, 27, 26],
+        "rain_base": [250, 240, 280, 200, 130, 60, 40, 50, 80, 160, 220, 260],
+        "label": "Tropical wet",
+    },
+    "mediterranean": {
+        "temp_base": [8, 9, 11, 14, 18, 22, 25, 25, 21, 16, 12, 9],
+        "rain_base": [70, 60, 55, 40, 25, 10, 5, 8, 30, 55, 65, 75],
+        "label": "Mediterranean",
+    },
+    "polar": {
+        "temp_base": [-25, -27, -24, -16, -5, 3, 7, 5, -1, -12, -20, -24],
+        "rain_base": [10, 8, 10, 12, 18, 25, 30, 28, 20, 15, 12, 10],
+        "label": "Polar/tundra",
+    },
+    "tropical_dry": {
+        "temp_base": [25, 26, 28, 30, 31, 30, 28, 27, 28, 28, 27, 25],
+        "rain_base": [5, 3, 8, 25, 60, 120, 180, 200, 150, 80, 20, 5],
+        "label": "Tropical dry/savanna",
+    },
+}
+
+_MONTHS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
+
+
+@register_gen("climograph_dataset")
+def gen_climograph_dataset(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Generate a 12-month temperature + rainfall dataset."""
+    climate_type = spec.get("climate_type", "random")
+    if climate_type == "random":
+        climate_type = rng.choice(list(_CLIMOGRAPH_PROFILES.keys()))
+
+    profile = _CLIMOGRAPH_PROFILES.get(climate_type, _CLIMOGRAPH_PROFILES["temperate"])
+    # Add small random variation
+    temp_c = [t + rng.randint(-2, 2) for t in profile["temp_base"]]
+    rain_mm = [max(0, r + rng.randint(-10, 10)) for r in profile["rain_base"]]
+
+    return {
+        "months": list(_MONTHS),
+        "temp_c": temp_c,
+        "rain_mm": rain_mm,
+        "climate_type": climate_type,
+        "label": profile["label"],
+        "total_rain": sum(rain_mm),
+        "temp_range": max(temp_c) - min(temp_c),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Climate compare MCQ
+# ---------------------------------------------------------------------------
+
+@register_gen("climate_compare_mcq")
+def gen_climate_compare_mcq(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Generate MCQ options for comparing two climate graphs."""
+    a_data = ctx.get(spec.get("a_ref", "climate_a"), {})
+    b_data = ctx.get(spec.get("b_ref", "climate_b"), {})
+
+    a_type = a_data.get("climate_type", "temperate")
+    b_type = b_data.get("climate_type", "tropical")
+
+    # Determine which is tropical
+    tropical_types = {"tropical", "tropical_dry"}
+    if b_type in tropical_types:
+        correct = "Location B — it has consistently warm temperatures and higher rainfall."
+    elif a_type in tropical_types:
+        correct = "Location A — it has consistently warm temperatures and higher rainfall."
+    else:
+        correct = "Location B — it has a smaller temperature range, typical of the tropics."
+
+    distractors = [
+        "Location A — it has the coldest winter month.",
+        "Location B — it has the most sunshine hours.",
+        "Neither — both have the same climate.",
+    ]
+    return {"correct": correct, "distractors": distractors}
+
+
+# ---------------------------------------------------------------------------
+# Synthetic contour map
+# ---------------------------------------------------------------------------
+
+@register_gen("synthetic_contour_map")
+def gen_synthetic_contour_map(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Generate a simplified contour map data structure.
+
+    Styles: hill, landform, cross_section.
+    """
+    style = spec.get("style", "hill")
+    interval = rng.choice([10, 20, 25])
+    peak = rng.choice([120, 160, 200, 240, 300])
+
+    # Generate concentric elliptical contour lines
+    num_contours = peak // interval
+    contours = []
+    cx, cy = 150, 130  # centre of the map
+    for i in range(1, num_contours + 1):
+        height = i * interval
+        rx = 120 - (i * 12) + rng.randint(-5, 5)
+        ry = 100 - (i * 10) + rng.randint(-5, 5)
+        rx = max(rx, 10)
+        ry = max(ry, 8)
+        contours.append({"height": height, "cx": cx, "cy": cy, "rx": rx, "ry": ry})
+
+    # Place marked point P between two contour lines
+    if len(contours) >= 2:
+        lower_c = contours[len(contours) // 2 - 1]
+        upper_c = contours[len(contours) // 2]
+        frac = rng.uniform(0.3, 0.7)
+        point_height = round(
+            lower_c["height"] + frac * (upper_c["height"] - lower_c["height"])
+        )
+        p_rx = lower_c["rx"] + frac * (upper_c["rx"] - lower_c["rx"])
+        angle_deg = rng.randint(0, 359)
+        angle_rad = math.radians(angle_deg)
+        px = cx + p_rx * math.cos(angle_rad) * 0.6
+        py = cy + (lower_c["ry"] + frac * (upper_c["ry"] - lower_c["ry"])) * math.sin(angle_rad) * 0.6
+    else:
+        point_height = interval
+        px, py = cx + 30, cy + 20
+
+    marked_point = {"x": round(px), "y": round(py), "height": point_height}
+
+    result = {
+        "contours": contours,
+        "interval": interval,
+        "peak": peak,
+        "map_width": 300,
+        "map_height": 260,
+        "marked_point": marked_point,
+        "style": style,
+    }
+
+    if style == "landform":
+        # Pick a landform and set MCQ data
+        forms = ["steep slope", "gentle slope", "valley", "ridge"]
+        chosen_form = rng.choice(forms)
+        result["landform"] = chosen_form
+        correct_desc = {
+            "steep slope": "The contours are very close together, showing a steep slope.",
+            "gentle slope": "The contours are spaced far apart, showing a gentle slope.",
+            "valley": "The contours form a V-shape pointing uphill, indicating a valley.",
+            "ridge": "The contours form a V-shape pointing downhill, indicating a ridge.",
+        }
+        others = [f for f in forms if f != chosen_form]
+        distractor_descs = [correct_desc[f] for f in rng.sample(others, 3)]
+        result["mcq"] = {
+            "correct": correct_desc[chosen_form],
+            "distractors": distractor_descs,
+        }
+
+    if style == "cross_section":
+        # Generate profile data along line A-B
+        num_pts = 8
+        profile = []
+        for i in range(num_pts):
+            h = rng.randint(20, peak)
+            profile.append(h)
+        # Make a peak shape
+        mid = num_pts // 2
+        profile[mid] = peak
+        profile[mid - 1] = peak - interval
+        profile[mid + 1] = peak - interval
+
+        # Correct cross-section label
+        correct_label = "A"
+        # Generate 3 wrong profiles
+        wrong_profiles = []
+        for _ in range(3):
+            wp = [rng.randint(20, peak) for _ in range(num_pts)]
+            wrong_profiles.append(wp)
+
+        result["profile"] = profile
+        result["wrong_profiles"] = wrong_profiles
+        result["line_ab"] = {"ax": 20, "ay": 130, "bx": 280, "by": 130}
+        result["mcq"] = {
+            "correct": "Profile A",
+            "distractors": ["Profile B", "Profile C", "Profile D"],
+        }
+        result["cross_sections"] = {
+            "correct": profile,
+            "options": [profile] + wrong_profiles,
+            "labels": ["A", "B", "C", "D"],
+        }
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Isobar chart data
+# ---------------------------------------------------------------------------
+
+@register_gen("isobar_chart_data")
+def gen_isobar_chart_data(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Generate simplified isobar chart data with high/low pressure centers."""
+    regions = ["North-west", "North-east", "South-west", "South-east"]
+    tight_region = rng.choice(regions)
+
+    # Generate pressure centers
+    centers = []
+    for r in regions:
+        is_low = rng.random() < 0.5
+        pressure = rng.randint(980, 1000) if is_low else rng.randint(1015, 1035)
+        centers.append({
+            "region": r,
+            "pressure": pressure,
+            "type": "L" if is_low else "H",
+            "tight": r == tight_region,
+        })
+
+    mcq = {
+        "correct": tight_region,
+        "distractors": [r for r in regions if r != tight_region][:3],
+    }
+
+    return {
+        "centers": centers,
+        "tight_region": tight_region,
+        "mcq": mcq,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Rainfall diagram data
+# ---------------------------------------------------------------------------
+
+@register_gen("rainfall_diagram_data")
+def gen_rainfall_diagram_data(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
+    """Generate data for a rainfall type identification diagram."""
+    rainfall_type = rng.choice(["relief", "convectional", "frontal"])
+
+    descriptions = {
+        "relief": "Air is forced to rise over a hill or mountain, cools and condenses.",
+        "convectional": "The sun heats the ground, warm air rises, cools and condenses.",
+        "frontal": "A warm air mass meets a cold air mass; warm air is forced to rise.",
+    }
+
+    mcq = {
+        "correct": rainfall_type.capitalize(),
+        "distractors": [t.capitalize() for t in ["relief", "convectional", "frontal"]
+                        if t != rainfall_type],
+    }
+    # Add an extra distractor
+    mcq["distractors"].append("Orographic recycling")
+
+    return {
+        "type": rainfall_type,
+        "description": descriptions[rainfall_type],
+        "mcq": mcq,
+    }

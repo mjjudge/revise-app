@@ -116,6 +116,15 @@ def _compute_answer(template: TemplateDef, params: dict[str, Any]) -> Any:
         return _compute_order(template, params)
     elif mode == "mcq":
         return _compute_mcq(template, params)
+    # ── Geography modes ──────────────────────────────
+    elif mode in ("grid_match", "label_match"):
+        return _compute_grid_match(template, params)
+    elif mode == "gridref_4fig":
+        return _compute_gridref(template, params, digits=4)
+    elif mode == "gridref_6fig":
+        return _compute_gridref(template, params, digits=6)
+    elif mode == "bearing_3digit":
+        return _compute_bearing(template, params)
     else:
         raise ValueError(f"No answer computation for mode: {mode}")
 
@@ -163,6 +172,42 @@ def _compute_numeric(template: TemplateDef, params: dict[str, Any]) -> float:
         value = params.get("value", 0)
         factor = conv.get("factor", 1)
         return value * factor
+
+    # ── Geography numeric ────────────────────────────
+    if "scale_distance" in skill or "scale_map_distance" in skill:
+        scale = params.get("scale", {})
+        ratio = scale.get("ratio", 50000)
+        if "scale_map_distance" in skill:
+            # Real km → map cm
+            real_km = float(params.get("real_km", 0))
+            return round(real_km * 100_000 / ratio, 2)
+        else:
+            # Map cm → real km
+            map_cm = float(params.get("map_cm", 0))
+            return round(map_cm * ratio / 100_000, 2)
+
+    if "contours_height" in skill:
+        point_p = params.get("point_p", {})
+        return float(point_p.get("height", 0))
+
+    if "climograph_read" in skill:
+        climate = params.get("climate", {})
+        rain = climate.get("rain_mm", [])
+        temp = climate.get("temp_c", [])
+        # Decide by prompt context: if template asks for range, compute range
+        if temp and not rain:
+            return float(max(temp) - min(temp))
+        if rain:
+            # Could be total rainfall or temp range; use template prompt
+            total = sum(rain)
+            t_range = float(max(temp) - min(temp)) if temp else 0
+            # Heuristic: if tolerance <5 and total > 100 → total; else range
+            # Actually, templates are separate IDs — distinguish by template id
+            tpl_id = template.id
+            if "range" in tpl_id:
+                return t_range
+            return float(total)
+        return 0.0
 
     return 0.0
 
@@ -239,6 +284,47 @@ def _compute_mcq(template: TemplateDef, params: dict[str, Any]) -> str:
     return distractors.get("correct", "")
 
 
+# ── Geography compute helpers ────────────────────────────
+
+def _compute_grid_match(template: TemplateDef, params: dict[str, Any]) -> dict:
+    """Extract correct_mapping from pairs parameter."""
+    pairs = params.get("pairs", {})
+    return pairs.get("correct_mapping", {})
+
+
+def _compute_gridref(template: TemplateDef, params: dict[str, Any], *, digits: int) -> str:
+    """Compute the grid reference for a named feature on the map."""
+    map_data = params.get("map", {})
+    feature_name = params.get("feature_name", "")
+
+    if digits == 4:
+        refs = map_data.get("grid_ref_4fig", {})
+    else:
+        refs = map_data.get("grid_ref_6fig", {})
+
+    return refs.get(feature_name, "0000")
+
+
+def _compute_bearing(template: TemplateDef, params: dict[str, Any]) -> int:
+    """Compute the bearing from one feature to another on the map."""
+    import math as _math
+
+    map_data = params.get("map", {})
+    from_name = params.get("from_feature", "")
+    to_name = params.get("to_feature", "")
+
+    features = {f["name"]: f for f in map_data.get("features", [])}
+    f_from = features.get(from_name, {})
+    f_to = features.get(to_name, {})
+
+    dx = f_to.get("x", 0) - f_from.get("x", 0)
+    dy = f_to.get("y", 0) - f_from.get("y", 0)
+
+    angle = _math.degrees(_math.atan2(dx, dy))  # atan2(east, north)
+    bearing = int(round(angle % 360))
+    return bearing
+
+
 def get_mcq_options(instance: QuestionInstance) -> list[str] | None:
     """Return shuffled MCQ options for a question, or None if not MCQ.
 
@@ -272,6 +358,26 @@ def get_order_items(instance: QuestionInstance) -> list[str] | None:
     rng = random.Random(instance.seed)
     rng.shuffle(items)
     return items
+
+
+def get_grid_fill_data(instance: QuestionInstance) -> dict | None:
+    """Return data for a grid_fill question, or None if not applicable.
+
+    Returns {left: [str], right_shuffled: [str]} where right is shuffled
+    deterministically using the question seed.
+    """
+    tpl = get_template_by_id(instance.template_id)
+    if not tpl or tpl.marking.mode not in ("grid_match", "label_match"):
+        return None
+    payload = json.loads(instance.payload_json)
+    pairs = payload.get("pairs", {})
+    left = pairs.get("left", [])
+    right = list(pairs.get("right", []))
+
+    rng = random.Random(instance.seed)
+    rng.shuffle(right)
+
+    return {"left": left, "right_shuffled": right}
 
 
 # ---------------------------------------------------------------------------

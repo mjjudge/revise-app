@@ -408,3 +408,147 @@ def mark_mcq(student: str, correct: Any, spec: dict) -> MarkResult:
             return MarkResult(True, 1.0, "Correct!", expected_str)
 
     return MarkResult(False, 0.0, f"Not quite.", expected_str)
+
+
+# ===================================================================
+# Geography marking modes
+# ===================================================================
+
+
+# ---------------------------------------------------------------------------
+# Mode: gridref_4fig
+# ---------------------------------------------------------------------------
+
+@register_marker("gridref_4fig")
+def mark_gridref_4fig(student: str, correct: Any, spec: dict) -> MarkResult:
+    """4-figure grid reference – e.g. '1523'. Strips spaces."""
+    expected_str = str(correct).replace(" ", "")
+    norm = student.replace(" ", "")
+
+    if not re.fullmatch(r"\d{4}", norm):
+        return MarkResult(False, 0.0,
+                          "Write a 4-figure grid reference, e.g. 1523.",
+                          expected_str)
+
+    if norm == expected_str:
+        return MarkResult(True, 1.0, "Correct!", expected_str)
+
+    return MarkResult(False, 0.0,
+                      f"Not quite. The grid reference is {expected_str}.",
+                      expected_str)
+
+
+# ---------------------------------------------------------------------------
+# Mode: gridref_6fig
+# ---------------------------------------------------------------------------
+
+@register_marker("gridref_6fig")
+def mark_gridref_6fig(student: str, correct: Any, spec: dict) -> MarkResult:
+    """6-figure grid reference – e.g. '152234'. Strips spaces."""
+    expected_str = str(correct).replace(" ", "")
+    norm = student.replace(" ", "")
+
+    if not re.fullmatch(r"\d{6}", norm):
+        return MarkResult(False, 0.0,
+                          "Write a 6-figure grid reference, e.g. 152234.",
+                          expected_str)
+
+    if norm == expected_str:
+        return MarkResult(True, 1.0, "Correct!", expected_str)
+
+    return MarkResult(False, 0.0,
+                      f"Not quite. The grid reference is {expected_str}.",
+                      expected_str)
+
+
+# ---------------------------------------------------------------------------
+# Mode: bearing_3digit
+# ---------------------------------------------------------------------------
+
+@register_marker("bearing_3digit")
+def mark_bearing_3digit(student: str, correct: Any, spec: dict) -> MarkResult:
+    """3-digit bearing, with ±tolerance_degrees (default 2)."""
+    tol = spec.get("tolerance_degrees", 2)
+    expected_val = int(float(correct))
+    expected_str = f"{expected_val:03d}°"
+
+    # Strip °, spaces
+    norm = student.replace("°", "").replace(" ", "")
+    student_val = _try_float(norm)
+
+    if student_val is None:
+        return MarkResult(False, 0.0,
+                          "Write a bearing as a 3-digit number, e.g. 045.",
+                          expected_str)
+
+    diff = abs(student_val - expected_val) % 360
+    diff = min(diff, 360 - diff)
+
+    if diff <= tol:
+        return MarkResult(True, 1.0, "Correct!", expected_str)
+
+    return MarkResult(False, 0.0,
+                      f"Not quite. The bearing is {expected_str}.",
+                      expected_str)
+
+
+# ---------------------------------------------------------------------------
+# Mode: grid_match (and label_match alias)
+# ---------------------------------------------------------------------------
+
+@register_marker("grid_match")
+def mark_grid_match(student: str, correct: Any, spec: dict) -> MarkResult:
+    """Match left items to right items. Student submits JSON mapping."""
+    import json
+
+    if isinstance(correct, str):
+        try:
+            correct = json.loads(correct)
+        except json.JSONDecodeError:
+            correct = {}
+
+    expected_mapping: dict[str, str] = {
+        k.strip().lower(): v.strip().lower()
+        for k, v in correct.items()
+    }
+    expected_str = ", ".join(f"{k} → {v}" for k, v in correct.items())
+
+    try:
+        student_mapping = json.loads(student)
+    except (json.JSONDecodeError, TypeError):
+        return MarkResult(False, 0.0,
+                          "Could not parse your answer.",
+                          expected_str)
+
+    if not isinstance(student_mapping, dict):
+        return MarkResult(False, 0.0,
+                          "Could not parse your answer.",
+                          expected_str)
+
+    norm_student = {
+        k.strip().lower(): v.strip().lower()
+        for k, v in student_mapping.items()
+    }
+
+    total = len(expected_mapping)
+    if total == 0:
+        return MarkResult(True, 1.0, "Correct!", expected_str)
+
+    hits = sum(
+        1 for k, v in expected_mapping.items()
+        if norm_student.get(k) == v
+    )
+
+    score = hits / total
+    if hits == total:
+        return MarkResult(True, 1.0, "All correct!", expected_str)
+
+    return MarkResult(False, score,
+                      f"{hits}/{total} matched correctly.",
+                      expected_str)
+
+
+@register_marker("label_match")
+def mark_label_match(student: str, correct: Any, spec: dict) -> MarkResult:
+    """Alias for grid_match."""
+    return mark_grid_match(student, correct, spec)

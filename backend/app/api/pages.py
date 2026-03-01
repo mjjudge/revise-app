@@ -57,6 +57,44 @@ _SUBJECT_META: dict[str, dict] = {
             },
         ],
     },
+    "geography": {
+        "title": "Geography",
+        "icon": "🌍",
+        "units": [
+            {
+                "key": "maps",
+                "title": "Maps & Navigation",
+                "icon": "🗺️",
+                "bg_class": "bg-emerald-600/30",
+                "description": "Grid refs, compass, scale, contours & cross-sections",
+                "href": "/quest/unit/geography/maps",
+            },
+            {
+                "key": "weather",
+                "title": "Weather",
+                "icon": "🌦️",
+                "bg_class": "bg-blue-600/30",
+                "description": "Instruments, air masses, clouds, pressure & rainfall",
+                "href": "/quest/unit/geography/weather",
+            },
+            {
+                "key": "climate",
+                "title": "Climate",
+                "icon": "🌡️",
+                "bg_class": "bg-amber-600/30",
+                "description": "Climate graphs, impacts & heatwaves",
+                "href": "/quest/unit/geography/climate",
+            },
+            {
+                "key": "world",
+                "title": "World Knowledge",
+                "icon": "🌐",
+                "bg_class": "bg-purple-600/30",
+                "description": "Continents, oceans & global features",
+                "href": "/quest/unit/geography/world",
+            },
+        ],
+    },
 }
 
 

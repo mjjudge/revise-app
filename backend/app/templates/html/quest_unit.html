@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ unit_title }} – Revise Quest{% endblock %}
+
+{% block body %}
+<!-- Navbar -->
+<nav class="flex items-center justify-between px-6 py-3 bg-realm-purple-800/80 border-b border-realm-purple-600">
+  <div class="flex items-center gap-2">
+    <a href="/" class="text-2xl hover:scale-110 transition-transform" title="Home">🏠</a>
+    <span class="text-realm-purple-400">›</span>
+    <a href="/subject/{{ subject }}" class="tier-accent hover:text-realm-gold-400">{{ subject_icon }} {{ subject_title }}</a>
+    <span class="text-realm-purple-400">›</span>
+    <span class="font-bold text-lg">{{ unit_title }}</span>
+  </div>
+  <div class="flex items-center gap-3">
+    {% set tier = get_tier(user.xp) %}
+    <span class="tier-badge px-2 py-0.5 rounded-full text-xs font-bold">{{ tier.icon }} {{ tier.title }}</span>
+    <span class="text-realm-gold-400 gold-shimmer">💰 {{ user.gold }}</span>
+    <span class="tier-accent">⭐ {{ user.xp }} XP</span>
+  </div>
+</nav>
+
+<main class="max-w-2xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold text-realm-gold-400 mb-2">{{ unit_icon }} {{ unit_title }}</h1>
+  <p class="text-realm-purple-200 mb-6">Choose a skill quest (8 questions each)</p>
+
+  <div class="space-y-4">
+    {% for skill_code, skill_name in skills.items() %}
+    <form method="post" action="/quest/start">
+      <input type="hidden" name="skill" value="{{ skill_code }}">
+      <button type="submit"
+              class="w-full text-left bg-realm-purple-700/60 hover:bg-realm-purple-600/80
+                     border border-realm-purple-500 rounded-xl p-5 transition-all
+                     hover:quest-glow group cursor-pointer">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-semibold text-white group-hover:text-realm-gold-400 transition-colors">
+              🎯 {{ skill_name }}
+            </h3>
+            <p class="text-sm text-realm-purple-300 mt-1">8 questions • {{ skill_code }}</p>
+          </div>
+          <span class="text-2xl group-hover:translate-x-1 transition-transform">▸</span>
+        </div>
+      </button>
+    </form>
+    {% endfor %}
+  </div>
+
+  <div class="mt-8">
+    <a href="/subject/{{ subject }}" class="text-realm-purple-300 hover:text-realm-gold-400 transition-colors">← Back to {{ subject_title }}</a>
+  </div>
+</main>
+{% endblock %}

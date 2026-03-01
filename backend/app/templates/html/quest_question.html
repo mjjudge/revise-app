@@ -36,8 +36,10 @@
   <!-- Question card -->
   <div class="bg-realm-purple-700/60 border border-realm-purple-500 rounded-2xl p-6 quest-glow">
     <div class="flex items-center gap-2 text-sm text-realm-purple-300 mb-4">
+      {% if question.chapter %}
       <span>📖 Ch{{ question.chapter }}</span>
       <span>•</span>
+      {% endif %}
       <span>{{ question.skill }}</span>
       <span>•</span>
       <span>⚡ Difficulty {{ question.difficulty }}</span>
@@ -163,6 +165,35 @@
               🔄 Reset order
             </button>
             <span id="order-status" class="text-xs text-realm-purple-400 ml-auto"></span>
+          </div>
+          {% elif grid_fill_data %}
+          <p class="block text-realm-purple-200 text-sm mb-3">
+            Match each item on the left to the correct option from the dropdown:
+          </p>
+          <input type="hidden" name="answer" id="grid-fill-answer" value="" required>
+          <div id="grid-fill-list" class="space-y-3">
+            {% for item in grid_fill_data.left %}
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-realm-purple-800/80 border border-realm-purple-600">
+              <span class="text-white font-medium flex-1 text-sm">{{ item }}</span>
+              <span class="text-realm-purple-400 text-lg mx-2">→</span>
+              <select data-left="{{ item }}" onchange="gridFillUpdate()"
+                      class="flex-1 px-3 py-2 rounded-lg bg-realm-purple-900 border border-realm-purple-400
+                             text-white text-sm focus:outline-none focus:border-realm-gold-400
+                             focus:ring-2 focus:ring-realm-gold-400/30 cursor-pointer">
+                <option value="">Choose…</option>
+                {% for opt in grid_fill_data.right_shuffled %}
+                <option value="{{ opt }}">{{ opt }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="flex gap-2 mt-2">
+            <button type="button" onclick="gridFillReset()"
+                    class="text-xs text-realm-purple-300 hover:text-red-400 transition-colors">
+              🔄 Reset
+            </button>
+            <span id="grid-fill-status" class="text-xs text-realm-purple-400 ml-auto"></span>
           </div>
           {% else %}
           <label for="answer" class="block text-realm-purple-200 text-sm mb-2">Your answer:</label>
@@ -305,6 +336,38 @@
       btn.classList.add('border-realm-purple-400');
       btn.style.cursor = 'pointer';
     });
+  }
+</script>
+{% endif %}
+{% if grid_fill_data %}
+<script>
+  function gridFillUpdate() {
+    var selects = document.querySelectorAll('#grid-fill-list select');
+    var mapping = {};
+    var filled = 0;
+    selects.forEach(function(sel) {
+      var left = sel.getAttribute('data-left');
+      if (sel.value) {
+        mapping[left] = sel.value;
+        filled++;
+      }
+    });
+    document.getElementById('grid-fill-answer').value = JSON.stringify(mapping);
+    var total = selects.length;
+    var statusEl = document.getElementById('grid-fill-status');
+    if (filled === total) {
+      statusEl.textContent = '✅ All matched — ready to submit!';
+    } else {
+      statusEl.textContent = filled + ' of ' + total + ' matched';
+    }
+  }
+
+  function gridFillReset() {
+    document.querySelectorAll('#grid-fill-list select').forEach(function(sel) {
+      sel.value = '';
+    });
+    document.getElementById('grid-fill-answer').value = '';
+    document.getElementById('grid-fill-status').textContent = '';
   }
 </script>
 {% endif %}
