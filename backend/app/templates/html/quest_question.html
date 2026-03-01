@@ -234,8 +234,8 @@
   </div>
 
   <div class="mt-6 text-center">
-    <a href="/" class="text-realm-purple-300 hover:text-realm-gold-400 transition-colors text-sm">
-      ← Back to quests
+    <a href="{{ back_url | default('/') }}" class="text-realm-purple-300 hover:text-realm-gold-400 transition-colors text-sm">
+      ← Back to {{ back_label | default('quests') }}
     </a>
   </div>
 </main>

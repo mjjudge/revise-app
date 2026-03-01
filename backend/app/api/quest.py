@@ -31,6 +31,26 @@ router = APIRouter(prefix="/quest", tags=["quest"])
 templates = __import__("app.templates.shared", fromlist=["create_templates"]).create_templates()
 
 
+def _quest_back_link(quest: QuestSession | None) -> tuple[str, str]:
+    """Return (back_url, back_label) for the parent page of a quest."""
+    if quest is None:
+        return "/", "Home"
+    if quest.subject and quest.unit:
+        from app.api.pages import _SUBJECT_META
+        subject_meta = _SUBJECT_META.get(quest.subject, {})
+        unit_meta = next(
+            (u for u in subject_meta.get("units", []) if u["key"] == quest.unit),
+            None,
+        )
+        label = unit_meta["title"] if unit_meta else quest.unit.replace("_", " ").title()
+        return f"/quest/unit/{quest.subject}/{quest.unit}", label
+    if quest.subject and not quest.chapter:
+        return f"/subject/{quest.subject}", quest.subject.title()
+    if quest.chapter:
+        return f"/quest/chapter/{quest.chapter}", f"Chapter {quest.chapter}"
+    return "/", "Home"
+
+
 # ---------------------------------------------------------------------------
 # GET /quest/chapter/{chapter} — pick skill or start chapter quest
 # ---------------------------------------------------------------------------
@@ -155,6 +175,7 @@ def quest_start(
     session.add(quest)
     session.commit()
 
+    back_url, back_label = _quest_back_link(quest)
     tpl = get_template_by_id(instance.template_id)
     return templates.TemplateResponse(request, "quest_question.html", {
         "user": user,
@@ -166,6 +187,8 @@ def quest_start(
         "mcq_options": get_mcq_options(instance),
         "order_items": get_order_items(instance),
         "grid_fill_data": get_grid_fill_data(instance),
+        "back_url": back_url,
+        "back_label": back_label,
     })
 
 
@@ -204,6 +227,8 @@ def quest_generate(
         "mcq_options": get_mcq_options(instance),
         "order_items": get_order_items(instance),
         "grid_fill_data": get_grid_fill_data(instance),
+        "back_url": "/",
+        "back_label": "Home",
     })
 
 
@@ -347,6 +372,7 @@ def quest_next(
 
     q_num = quest.completed + 1  # 1-indexed, completed = answered so far
 
+    back_url, back_label = _quest_back_link(quest)
     tpl = get_template_by_id(instance.template_id)
     return templates.TemplateResponse(request, "quest_question.html", {
         "user": user,
@@ -358,6 +384,8 @@ def quest_next(
         "mcq_options": get_mcq_options(instance),
         "order_items": get_order_items(instance),
         "grid_fill_data": get_grid_fill_data(instance),
+        "back_url": back_url,
+        "back_label": back_label,
     })
 
 
@@ -398,20 +426,7 @@ def quest_summary(
         rank_emoji = "📖"
 
     # Determine back-link context for subject/unit quests
-    back_url = f"/quest/chapter/{quest.chapter}" if quest.chapter else "/"
-    back_label = f"Chapter {quest.chapter}" if quest.chapter else "Home"
-    if quest.subject and quest.unit:
-        back_url = f"/quest/unit/{quest.subject}/{quest.unit}"
-        from app.api.pages import _SUBJECT_META
-        subject_meta = _SUBJECT_META.get(quest.subject, {})
-        unit_meta = next(
-            (u for u in subject_meta.get("units", []) if u["key"] == quest.unit),
-            None,
-        )
-        back_label = unit_meta["title"] if unit_meta else quest.unit.replace("_", " ").title()
-    elif quest.subject:
-        back_url = f"/subject/{quest.subject}"
-        back_label = quest.subject.title()
+    back_url, back_label = _quest_back_link(quest)
 
     return templates.TemplateResponse(request, "quest_summary.html", {
         "user": user,
