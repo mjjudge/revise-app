@@ -11,6 +11,7 @@ from app.services.auth import get_current_user, greeting
 from app.models.quest import Payout, QuestSession
 from app.models.question import Attempt, UserSkillProgress
 from app.models.user import Role, User
+from app.services.questions import get_all_subject_progress, get_subject_progress
 
 router = APIRouter(tags=["pages"])
 
@@ -120,10 +121,13 @@ def home_page(request: Request, session: Session = Depends(get_session)):
         )
     ).one()
 
+    subject_stats = get_all_subject_progress(session, user.id)
+
     return templates.TemplateResponse(request, "home.html", {
         "user": user,
         "greeting": greeting(),
         "quests_done": quests_done,
+        "subject_stats": subject_stats,
     })
 
 
@@ -145,12 +149,16 @@ def subject_home(name: str, request: Request, session: Session = Depends(get_ses
         )
     ).one()
 
+    sp = get_subject_progress(session, user.id, name)
+
     return templates.TemplateResponse(request, "subject_home.html", {
         "user": user,
         "subject_title": meta["title"],
         "subject_icon": meta["icon"],
+        "subject_name": name,
         "units": meta["units"],
         "quests_done": quests_done,
+        "sp": sp,
     })
 
 
@@ -166,9 +174,11 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
     stats = {"xp": 0, "gold": 0, "quests_completed": 0, "accuracy": 0,
              "total_paid_pence": 0, "payouts": []}
 
+    subject_stats = {}
     if kid:
         stats["xp"] = kid.xp
         stats["gold"] = kid.gold
+        subject_stats = get_all_subject_progress(session, kid.id)
 
         quest_count = session.exec(
             select(func.count(QuestSession.id)).where(
@@ -209,6 +219,7 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
     return templates.TemplateResponse(request, "admin.html", {
         "user": user,
         "stats": stats,
+        "subject_stats": subject_stats,
         "gold_to_pence": settings.gold_to_pence,
         "weekly_gold_cap": settings.weekly_gold_cap,
     })

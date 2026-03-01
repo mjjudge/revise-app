@@ -1,9 +1,21 @@
 # SESSION_STATE
 
 ## Current objective
-Unit Quest Standardisation: complete.
+EPIC 10 — Per-Subject Progress Tracking: complete.
 
 ## Completed this session
+
+### EPIC 10: Per-Subject Progress Tracking
+- **SubjectProgress model**: New `subject_progress` table with `user_id`, `subject`, `xp_earned`, `gold_earned`, `quests_completed`, `questions_answered`, `questions_correct`, `best_streak`, `last_played`
+- **check_answer integration**: `_update_subject_progress()` called after every answer; derives subject from template → quest → fallback "maths"
+- **Query helpers**: `get_subject_progress(db, user_id, subject)` and `get_all_subject_progress(db, user_id)` for single/multi lookup
+- **Home page** (`home.html`): Subject cards show per-subject XP and quests completed badges
+- **Subject home** (`subject_home.html`): Stats bar shows subject-specific XP, quests, correct/answered ratio, best streak (replaces global stats)
+- **Admin dashboard** (`admin.html`): New per-subject breakdown card with XP, gold, quests, accuracy, questions done, best streak per subject
+- **Pages routes**: `home_page` passes `subject_stats` dict; `subject_home` passes `sp` (SubjectProgress); `admin_page` passes `subject_stats` for kid user
+- **Tests**: 15 new tests in `test_subject_progress.py` — model creation, `_update_subject_progress` upsert/increment, query helpers, integration with `check_answer`
+- **Docs**: ADR 018, SESSION_STATE.md updated
+- 288 tests passing (273 existing + 15 new)
 
 ### Unit Quest Standardisation
 - **QuestSession model**: Added `subject` and `unit` optional fields; `chapter` now defaults to 0
@@ -60,15 +72,15 @@ Unit Quest Standardisation: complete.
 - Hint UX: scroll-to-hint on button click for visibility (ADR 014)
 - Multi-subject: feed_loader multi-pack, subject/unit navigation, new marking modes (ADR 015)
 - Geography content pack: 24 templates, 15 generators, 9 renderers, 5 marking modes (ADR 016)
-- Unit quest standardisation: subject/unit fields on QuestSession, unit quest button, dynamic summary links (ADR 017)
+- Per-subject progress tracking: denormalised SubjectProgress table, real-time increments, subject-specific UI (ADR 018)
 
 ## Open questions
 - None
 
 ## Next actions
-- [ ] EPIC 8.2: Subject-scoped progress tracking (per-subject XP/stats)
-- [ ] EPIC 10: History subject pack (YAML templates + generators)
-- [ ] EPIC 11: Cross-subject features (combined leaderboard, subject streaks)
+- [ ] EPIC 10 continued: Normalised rewards balancing (per-subject XP rates, streaks/goals, parent caps)
+- [ ] EPIC 11: History subject pack (YAML templates + generators)
+- [ ] EPIC 12: Cross-subject features (combined leaderboard, subject streaks)
 - [ ] UFW rules for LAN subnet
 - [ ] Optional Caddy basic auth
 

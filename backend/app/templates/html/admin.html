@@ -77,6 +77,55 @@
         </div>
       </div>
 
+      <!-- Per-subject breakdown -->
+      {% if subject_stats %}
+      <div class="bg-realm-purple-700/40 backdrop-blur rounded-xl p-6 border border-realm-purple-500/30 md:col-span-2">
+        <h2 class="text-xl font-bold text-realm-gold-400 mb-4">📚 Per-Subject Breakdown</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {% for subj, sp in subject_stats.items() %}
+          <div class="bg-realm-purple-800/40 rounded-lg p-4 border border-realm-purple-600/30">
+            <h3 class="font-bold text-realm-gold-400 mb-3">
+              {% if subj == 'maths' %}🧮{% elif subj == 'geography' %}🌍{% else %}📖{% endif %}
+              {{ subj | capitalize }}
+            </h3>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div class="flex justify-between">
+                <span class="text-realm-purple-300">XP</span>
+                <span class="font-bold text-realm-green-400">{{ sp.xp_earned }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-realm-purple-300">Gold</span>
+                <span class="font-bold text-realm-gold-400">{{ sp.gold_earned }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-realm-purple-300">Quests</span>
+                <span class="font-bold">{{ sp.quests_completed }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-realm-purple-300">Accuracy</span>
+                <span class="font-bold">
+                  {% if sp.questions_answered > 0 %}
+                    {{ (sp.questions_correct * 100 / sp.questions_answered) | int }}%
+                  {% else %}
+                    –
+                  {% endif %}
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-realm-purple-300">Q's Done</span>
+                <span class="font-bold">{{ sp.questions_answered }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-realm-purple-300">Best Streak</span>
+                <span class="font-bold">{{ sp.best_streak }}🔥</span>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
       <!-- Payout card -->
       <div class="bg-realm-purple-700/40 backdrop-blur rounded-xl p-6 border border-realm-purple-500/30">
         <h2 class="text-xl font-bold text-realm-gold-400 mb-4">🏦 Record Payout</h2>

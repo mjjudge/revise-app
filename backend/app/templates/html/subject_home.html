@@ -61,21 +61,29 @@
 
     <!-- Stats bar -->
     <div class="mt-10 bg-realm-purple-800/60 backdrop-blur rounded-xl p-6 border border-realm-purple-600/30">
-      <h3 class="text-lg font-bold tier-accent mb-4">&#128081; Your Adventure Stats</h3>
-      <div class="grid grid-cols-3 gap-4 text-center">
+      <h3 class="text-lg font-bold tier-accent mb-4">&#128081; {{ subject_title }} Stats</h3>
+      {% if sp %}
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
         <div>
-          <p class="text-2xl font-bold">{{ user.xp }}</p>
-          <p class="text-realm-purple-300 text-sm">Total XP</p>
+          <p class="text-2xl font-bold">{{ sp.xp_earned }}</p>
+          <p class="text-realm-purple-300 text-sm">{{ subject_title }} XP</p>
         </div>
         <div>
-          <p class="text-2xl font-bold">{{ user.gold }}</p>
-          <p class="text-realm-purple-300 text-sm">Gold Coins</p>
-        </div>
-        <div>
-          <p class="text-2xl font-bold">{{ quests_done }}</p>
+          <p class="text-2xl font-bold">{{ sp.quests_completed }}</p>
           <p class="text-realm-purple-300 text-sm">Quests Done</p>
         </div>
+        <div>
+          <p class="text-2xl font-bold">{{ sp.questions_correct }}/{{ sp.questions_answered }}</p>
+          <p class="text-realm-purple-300 text-sm">Correct</p>
+        </div>
+        <div>
+          <p class="text-2xl font-bold">{{ sp.best_streak }}&#128293;</p>
+          <p class="text-realm-purple-300 text-sm">Best Streak</p>
+        </div>
       </div>
+      {% else %}
+      <p class="text-realm-purple-300 text-center">No quests attempted yet — pick a unit above to start!</p>
+      {% endif %}
     </div>
 
     <!-- Tier progress card -->

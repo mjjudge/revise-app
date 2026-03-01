@@ -82,3 +82,20 @@ class UserSkillProgress(SQLModel, table=True):
     class Config:
         # Unique constraint on (user_id, skill)
         pass
+
+
+class SubjectProgress(SQLModel, table=True):
+    """Denormalised per-user, per-subject stats — incremented in real time."""
+
+    __tablename__ = "subject_progress"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
+    subject: str = Field(index=True, description="Subject code (maths, geography, ...)")
+    xp_earned: int = Field(default=0, description="Total XP earned in this subject")
+    gold_earned: int = Field(default=0, description="Total gold earned in this subject")
+    quests_completed: int = Field(default=0, description="Finished quests in this subject")
+    questions_answered: int = Field(default=0, description="Total questions answered")
+    questions_correct: int = Field(default=0, description="Correct (first try) answers")
+    best_streak: int = Field(default=0, description="Best streak in this subject")
+    last_played: Optional[datetime] = Field(default=None, description="Last activity time")

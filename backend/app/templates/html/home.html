@@ -55,6 +55,14 @@
           </div>
           <h2 class="text-xl font-bold text-realm-gold-400 mb-1">Maths</h2>
           <p class="text-realm-purple-200 text-sm mb-3">Data, Algebra, Calculation &amp; Probability</p>
+          {% if subject_stats.get('maths') %}
+            {% set ms = subject_stats['maths'] %}
+            <div class="flex items-center justify-center gap-3 text-xs mb-2">
+              <span class="text-realm-green-400">⭐ {{ ms.xp_earned }} XP</span>
+              <span class="text-realm-purple-300">·</span>
+              <span class="text-realm-purple-200">{{ ms.quests_completed }} quests</span>
+            </div>
+          {% endif %}
           <span class="text-xs bg-realm-green-600/40 text-realm-green-400 px-2 py-1 rounded">Ready</span>
         </div>
       </a>
@@ -68,6 +76,14 @@
           </div>
           <h2 class="text-xl font-bold text-realm-gold-400 mb-1">Geography</h2>
           <p class="text-realm-purple-200 text-sm mb-3">Maps, Weather, Climate &amp; World</p>
+          {% if subject_stats.get('geography') %}
+            {% set gs = subject_stats['geography'] %}
+            <div class="flex items-center justify-center gap-3 text-xs mb-2">
+              <span class="text-realm-green-400">⭐ {{ gs.xp_earned }} XP</span>
+              <span class="text-realm-purple-300">·</span>
+              <span class="text-realm-purple-200">{{ gs.quests_completed }} quests</span>
+            </div>
+          {% endif %}
           <span class="text-xs bg-realm-green-600/40 text-realm-green-400 px-2 py-1 rounded">Ready</span>
         </div>
       </a>

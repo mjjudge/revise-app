@@ -15,7 +15,7 @@ from typing import Any, Optional
 
 from sqlmodel import Session, select
 
-from app.models.question import Attempt, QuestionInstance, UserSkillProgress
+from app.models.question import Attempt, QuestionInstance, UserSkillProgress, SubjectProgress
 from app.models.quest import QuestSession
 from app.models.user import User
 from app.services.generators import generate_param
@@ -631,6 +631,17 @@ def check_answer(
     # Update skill progress
     _update_skill_progress(db, user, instance.skill, result.correct)
 
+    # Update subject progress
+    subject_code = template.subject or (quest.subject if quest else None) or "maths"
+    _update_subject_progress(
+        db, user, subject_code,
+        xp_earned=xp,
+        gold_earned=gold,
+        correct=result.correct and attempt_num == 1,
+        quest_finished=quest.finished if quest else False,
+        streak=quest.streak if quest else 0,
+    )
+
     db.commit()
     db.refresh(attempt)
 
@@ -726,6 +737,56 @@ def _update_skill_progress(db: Session, user: User, skill: str, correct: bool) -
             progress.current_band -= 1
 
     db.add(progress)
+
+
+def _update_subject_progress(
+    db: Session,
+    user: User,
+    subject: str,
+    *,
+    xp_earned: int,
+    gold_earned: int,
+    correct: bool,
+    quest_finished: bool,
+    streak: int,
+) -> None:
+    """Increment denormalised per-subject stats after each answer."""
+    stmt = select(SubjectProgress).where(
+        SubjectProgress.user_id == user.id,
+        SubjectProgress.subject == subject,
+    )
+    sp = db.exec(stmt).first()
+    if sp is None:
+        sp = SubjectProgress(user_id=user.id, subject=subject)
+
+    sp.xp_earned += xp_earned
+    sp.gold_earned += gold_earned
+    sp.questions_answered += 1
+    if correct:
+        sp.questions_correct += 1
+    if quest_finished:
+        sp.quests_completed += 1
+    if streak > sp.best_streak:
+        sp.best_streak = streak
+    sp.last_played = datetime.now(timezone.utc)
+
+    db.add(sp)
+
+
+def get_subject_progress(db: Session, user_id: int, subject: str) -> SubjectProgress | None:
+    """Retrieve SubjectProgress for a user + subject, or None."""
+    stmt = select(SubjectProgress).where(
+        SubjectProgress.user_id == user_id,
+        SubjectProgress.subject == subject,
+    )
+    return db.exec(stmt).first()
+
+
+def get_all_subject_progress(db: Session, user_id: int) -> dict[str, SubjectProgress]:
+    """Return {subject_code: SubjectProgress} for a user."""
+    stmt = select(SubjectProgress).where(SubjectProgress.user_id == user_id)
+    rows = db.exec(stmt).all()
+    return {sp.subject: sp for sp in rows}
 
 
 def _gold_earned_this_week(db: Session, user: User) -> int:
