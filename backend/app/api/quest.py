@@ -23,7 +23,7 @@ from app.models.question import QuestionInstance, Attempt
 from app.models.user import Role, User
 from app.services.auth import get_current_user
 from app.services.questions import generate_question, check_answer
-from app.templates.feed_loader import get_templates_by_chapter, get_skill_map
+from app.templates.feed_loader import get_templates_by_chapter, get_skill_map, get_template_by_id
 
 router = APIRouter(prefix="/quest", tags=["quest"])
 
@@ -104,12 +104,14 @@ def quest_start(
     session.add(quest)
     session.commit()
 
+    tpl = get_template_by_id(instance.template_id)
     return templates.TemplateResponse(request, "quest_question.html", {
         "user": user,
         "question": instance,
         "attempt_number": 1,
         "quest": quest,
         "quest_progress": f"Question 1 of {quest.total_questions}",
+        "calculator": tpl.calculator if tpl else None,
     })
 
 
@@ -137,12 +139,14 @@ def quest_generate(
         template_id=template_id,
     )
 
+    tpl = get_template_by_id(instance.template_id)
     return templates.TemplateResponse(request, "quest_question.html", {
         "user": user,
         "question": instance,
         "attempt_number": 1,
         "quest": None,
         "quest_progress": "",
+        "calculator": tpl.calculator if tpl else None,
     })
 
 
@@ -263,12 +267,14 @@ def quest_next(
 
     q_num = quest.completed + 1  # 1-indexed, completed = answered so far
 
+    tpl = get_template_by_id(instance.template_id)
     return templates.TemplateResponse(request, "quest_question.html", {
         "user": user,
         "question": instance,
         "attempt_number": 1,
         "quest": quest,
         "quest_progress": f"Question {q_num} of {quest.total_questions}",
+        "calculator": tpl.calculator if tpl else None,
     })
 
 

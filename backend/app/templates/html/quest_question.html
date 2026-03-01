@@ -69,6 +69,51 @@
     <!-- Hint area -->
     <div id="hint-area" class="mb-4"></div>
 
+    <!-- On-screen calculator (only shown when template allows it) -->
+    {% if calculator %}
+    <div class="mb-4">
+      <button type="button" onclick="document.getElementById('calc-panel').classList.toggle('hidden')"
+              class="text-sm text-realm-purple-300 hover:text-realm-gold-400 transition-colors">
+        🧮 {{ "Calculator" if calculator == "basic" else "Scientific Calculator" }}
+      </button>
+      <div id="calc-panel" class="hidden mt-2 bg-realm-purple-800/90 border border-realm-purple-500 rounded-xl p-4 max-w-xs">
+        <input type="text" id="calc-display" readonly
+               class="w-full px-3 py-2 mb-3 rounded-lg bg-realm-purple-900 border border-realm-purple-600
+                      text-white text-right text-lg font-mono" value="0">
+        <div class="grid grid-cols-4 gap-2">
+          <button type="button" onclick="calcClear()" class="calc-btn bg-red-600/60 hover:bg-red-500/60 col-span-2">C</button>
+          <button type="button" onclick="calcBackspace()" class="calc-btn bg-realm-purple-600 hover:bg-realm-purple-500">⌫</button>
+          <button type="button" onclick="calcOp('/')" class="calc-btn bg-realm-gold-500/40 hover:bg-realm-gold-400/40">÷</button>
+
+          <button type="button" onclick="calcDigit('7')" class="calc-btn">7</button>
+          <button type="button" onclick="calcDigit('8')" class="calc-btn">8</button>
+          <button type="button" onclick="calcDigit('9')" class="calc-btn">9</button>
+          <button type="button" onclick="calcOp('*')" class="calc-btn bg-realm-gold-500/40 hover:bg-realm-gold-400/40">×</button>
+
+          <button type="button" onclick="calcDigit('4')" class="calc-btn">4</button>
+          <button type="button" onclick="calcDigit('5')" class="calc-btn">5</button>
+          <button type="button" onclick="calcDigit('6')" class="calc-btn">6</button>
+          <button type="button" onclick="calcOp('-')" class="calc-btn bg-realm-gold-500/40 hover:bg-realm-gold-400/40">−</button>
+
+          <button type="button" onclick="calcDigit('1')" class="calc-btn">1</button>
+          <button type="button" onclick="calcDigit('2')" class="calc-btn">2</button>
+          <button type="button" onclick="calcDigit('3')" class="calc-btn">3</button>
+          <button type="button" onclick="calcOp('+')" class="calc-btn bg-realm-gold-500/40 hover:bg-realm-gold-400/40">+</button>
+
+          <button type="button" onclick="calcDigit('0')" class="calc-btn col-span-2">0</button>
+          <button type="button" onclick="calcDigit('.')" class="calc-btn">.</button>
+          <button type="button" onclick="calcEquals()" class="calc-btn bg-realm-green-500/60 hover:bg-realm-green-400/60">=</button>
+        </div>
+        <div class="mt-2 flex justify-end">
+          <button type="button" onclick="calcToAnswer()"
+                  class="text-xs text-realm-gold-400 hover:text-realm-gold-500 transition-colors">
+            📋 Copy to answer
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
     <!-- Answer form -->
     <div id="answer-area">
       <form method="post" action="/quest/answer"
@@ -122,4 +167,61 @@
     </a>
   </div>
 </main>
+{% endblock %}
+
+{% block head %}
+{% if calculator %}
+<style>
+  .calc-btn {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    font-weight: 600;
+    color: white;
+    background-color: rgba(91, 33, 182, 0.5);
+    transition: background-color 0.15s;
+    cursor: pointer;
+    border: 1px solid rgba(154, 106, 255, 0.3);
+    font-size: 1rem;
+  }
+  .calc-btn:hover { background-color: rgba(109, 40, 217, 0.7); }
+  .calc-btn:active { transform: scale(0.95); }
+</style>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if calculator %}
+<script>
+  var calcExpr = '';
+  var calcDisplay = function() {
+    document.getElementById('calc-display').value = calcExpr || '0';
+  };
+  function calcDigit(d) { calcExpr += d; calcDisplay(); }
+  function calcOp(op) { calcExpr += ' ' + op + ' '; calcDisplay(); }
+  function calcClear() { calcExpr = ''; calcDisplay(); }
+  function calcBackspace() { calcExpr = calcExpr.trimEnd().slice(0, -1).trimEnd(); calcDisplay(); }
+  function calcEquals() {
+    try {
+      var result = Function('"use strict"; return (' + calcExpr + ')')();
+      // Round to avoid floating-point noise
+      if (typeof result === 'number') {
+        result = Math.round(result * 1e10) / 1e10;
+      }
+      calcExpr = String(result);
+      calcDisplay();
+    } catch(e) {
+      document.getElementById('calc-display').value = 'Error';
+      calcExpr = '';
+    }
+  }
+  function calcToAnswer() {
+    var val = document.getElementById('calc-display').value;
+    if (val && val !== 'Error') {
+      var answerInput = document.getElementById('answer');
+      if (answerInput) { answerInput.value = val; answerInput.focus(); }
+    }
+  }
+</script>
+{% endif %}
 {% endblock %}

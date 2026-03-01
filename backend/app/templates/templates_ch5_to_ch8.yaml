@@ -9,6 +9,7 @@ templates:
     skill: stats.mean.basic
     difficulty: 2
     type: numeric
+    calculator: basic
     prompt: "Find the mean of the numbers: {values}."
     parameters:
       values:
@@ -71,6 +72,7 @@ templates:
     skill: stats.pie_chart.angles
     difficulty: 3
     type: numeric
+    calculator: basic
     prompt: "A pie chart shows favourite snacks. {table_title}.\nWhat angle (in degrees) represents {target_label}?"
     parameters:
       categories:
@@ -142,6 +144,7 @@ templates:
     skill: algebra.substitution.eval
     difficulty: 2
     type: numeric
+    calculator: basic
     prompt: "Evaluate {expr} when {assignments}."
     parameters:
       expr:
@@ -194,6 +197,7 @@ templates:
     skill: measure.metric.convert
     difficulty: 2
     type: numeric
+    calculator: basic
     prompt: "Convert {value} {from_unit} to {to_unit}."
     parameters:
       conversion:
@@ -220,6 +224,7 @@ templates:
     skill: measure.rounding.dp_sf
     difficulty: 2
     type: numeric
+    calculator: basic
     prompt: "Round {value} to {dp} decimal places."
     parameters:
       value:
@@ -243,6 +248,7 @@ templates:
     skill: calc.bidmas.evaluate
     difficulty: 3
     type: numeric
+    calculator: basic
     prompt: "Work out: {expr}"
     parameters:
       expr:
@@ -267,6 +273,7 @@ templates:
     skill: calc.division.written
     difficulty: 3
     type: short_text
+    calculator: basic
     prompt: "Calculate {dividend} ÷ {divisor}. Give your answer as a whole number with remainder (e.g. 23 r 4)."
     parameters:
       dividend:
@@ -367,6 +374,7 @@ templates:
     skill: prob.experimental
     difficulty: 3
     type: numeric
+    calculator: basic
     prompt: "A bag contains coloured counters. In {trials} draws with replacement, {successes} were {success_label}. Estimate the probability of {success_label}."
     parameters:
       trials:
@@ -408,6 +416,7 @@ templates:
     skill: stats.mean.basic
     difficulty: 3
     type: numeric
+    calculator: basic
     prompt: "Calculate the mean of these test scores: {values}."
     parameters:
       values:
@@ -471,6 +480,7 @@ templates:
     skill: stats.pie_chart.angles
     difficulty: 4
     type: numeric
+    calculator: basic
     prompt: "Students voted for their favourite sport. What angle (in degrees) represents {target_label} on a pie chart?"
     parameters:
       categories:
@@ -540,6 +550,7 @@ templates:
     skill: algebra.substitution.eval
     difficulty: 3
     type: numeric
+    calculator: basic
     prompt: "Work out the value of {expr} when {assignments}."
     parameters:
       expr:
@@ -594,6 +605,7 @@ templates:
     skill: measure.metric.convert
     difficulty: 3
     type: numeric
+    calculator: basic
     prompt: "A recipe needs {value} {from_unit} of flour. How much is that in {to_unit}?"
     parameters:
       conversion:
@@ -621,6 +633,7 @@ templates:
     skill: measure.rounding.dp_sf
     difficulty: 3
     type: numeric
+    calculator: basic
     prompt: "A measurement reads {value}. Round this to {dp} decimal place(s)."
     parameters:
       value:
@@ -645,6 +658,7 @@ templates:
     skill: calc.bidmas.evaluate
     difficulty: 2
     type: numeric
+    calculator: basic
     prompt: "Calculate: {expr}"
     parameters:
       expr:
@@ -668,6 +682,7 @@ templates:
     skill: calc.division.written
     difficulty: 2
     type: short_text
+    calculator: basic
     prompt: "Work out {dividend} ÷ {divisor}. Write your answer as a whole number with remainder (e.g. 15 r 3)."
     parameters:
       dividend:
@@ -771,6 +786,7 @@ templates:
     skill: prob.experimental
     difficulty: 2
     type: numeric
+    calculator: basic
     prompt: "A spinner is spun {trials} times. It lands on {success_label} a total of {successes} times. Estimate the probability of landing on {success_label}."
     parameters:
       trials:

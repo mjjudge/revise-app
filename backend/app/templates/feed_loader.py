@@ -107,7 +107,15 @@ class TemplateDef(BaseModel):
     marking: MarkingSpec
     solution: SolutionSpec
     assets: list[AssetSpec] = []
+    calculator: Optional[str] = None  # "basic" or "scientific"; None = not needed
     notes: Optional[dict[str, Any]] = None
+
+    @field_validator("calculator")
+    @classmethod
+    def calculator_values(cls, v: str | None) -> str | None:
+        if v is not None and v not in ("basic", "scientific"):
+            raise ValueError(f"calculator must be 'basic' or 'scientific', got '{v}'")
+        return v
 
     @field_validator("chapter")
     @classmethod

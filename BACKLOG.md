@@ -83,6 +83,15 @@
 - [x] 23 quality tests (151 total)
 - [x] ADR 009: Quality & Observability
 
+## EPIC 6.5 -- On-screen Calculator
+- [x] Add `calculator` field to `TemplateDef` schema (optional: "basic" or "scientific")
+- [x] Tag 16 templates with `calculator: basic` (mean, pie chart, substitution, metric, rounding, BIDMAS, division, experimental probability — v1+v2)
+- [x] Build toggle-able calculator panel (digit/operator grid, display, Copy to answer)
+- [x] Wire `calculator` flag through `quest.py` to all 3 question render calls
+- [x] Calculator field validation tests + tagged-template count test
+- [x] 153 total tests passing
+- [x] ADR 010: On-screen Calculator
+
 ## EPIC 7 -- Hardening (LAN-only, optional)
 - [ ] UFW rules for LAN subnet
 - [ ] Optional Caddy basic auth

@@ -134,6 +134,22 @@ class TestYAMLValidation:
                 f"Chapter {ch} has no templates"
             )
 
+    def test_calculator_field_values(self):
+        """Calculator field should be None, 'basic', or 'scientific'."""
+        templates_feed = load_templates()
+        for t in templates_feed.templates:
+            assert t.calculator in (None, "basic", "scientific"), (
+                f"Template '{t.id}' has invalid calculator value '{t.calculator}'"
+            )
+
+    def test_calculator_tagged_templates_exist(self):
+        """At least some templates should have a calculator."""
+        templates_feed = load_templates()
+        with_calc = [t for t in templates_feed.templates if t.calculator]
+        assert len(with_calc) >= 8, (
+            f"Expected at least 8 calculator-tagged templates, got {len(with_calc)}"
+        )
+
 
 # ---------------------------------------------------------------------------
 # End-to-End Template Generation Tests

@@ -1,7 +1,7 @@
 # SESSION_STATE
 
 ## Current objective
-EPIC 6 complete. Quality & Observability fully implemented and tested.
+EPIC 6.5 complete. On-screen calculator for arithmetic question templates.
 
 ## Completed this session
 - EPIC 4 fully implemented (gamification, quest sessions, payouts)
@@ -27,6 +27,13 @@ EPIC 6 complete. Quality & Observability fully implemented and tested.
   - Each skill now has 2 templates at different difficulty levels
   - All 30 templates pass E2E generation, correct-marking, and wrong-marking tests
   - Fixed `_compute_algebra` to include variable name in answer dict
+- EPIC 6.5 fully implemented:
+  - `calculator` field on `TemplateDef` (optional: "basic" or "scientific") with Pydantic validator
+  - 16 templates tagged with `calculator: basic` (mean, pie chart, substitution, metric, rounding, BIDMAS, division, experimental probability — both v1 and v2)
+  - On-screen calculator panel: toggle button (🧮), 4×5 grid (digits, operators, clear, backspace, equals), read-only display, "Copy to answer" button
+  - Calculator wired through `quest.py` — all 3 `quest_question.html` render calls pass `calculator` from template
+  - 2 new calculator tests in `test_quality.py` (field values + tagged template count)
+  - ADR 010: On-screen Calculator
 
 ## Decisions made
 - UI: HTMX + Tailwind CSS, server-rendered via Jinja2 (ADR 001)
@@ -38,11 +45,13 @@ EPIC 6 complete. Quality & Observability fully implemented and tested.
 - Gamification: Quest loops, streak bonuses, gold cap, payouts (ADR 007)
 - Tutor: GPT-4o, 3 hint levels, explain + fun rewrite, halve gold penalty (ADR 008)
 - Quality: Structured logging, error pages, E2E tests, retry UX (ADR 009)
+- Calculator: On-screen basic calculator, template-level opt-in (ADR 010)
 
 ## Open questions
 - None for current EPICs
 
 ## Next actions (EPIC 7 — Hardening)
+- [ ] Increase weekly gold cap to 500 (£10/week)
 - [ ] UFW rules for LAN subnet
 - [ ] Optional Caddy basic auth
 - [ ] Consider adding more v3 templates for skills with low coverage
