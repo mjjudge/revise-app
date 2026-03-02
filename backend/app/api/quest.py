@@ -79,6 +79,7 @@ def quest_chapter(
         "user": user,
         "chapter": chapter,
         "skills": skills_in_chapter,
+        "boosted_skills": get_boosted_skills(session, user.id),
     })
 
 

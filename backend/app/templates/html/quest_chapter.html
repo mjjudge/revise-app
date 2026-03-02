@@ -52,12 +52,18 @@
       <input type="hidden" name="chapter" value="{{ chapter }}">
       <button type="submit"
               class="w-full text-left bg-realm-purple-700/60 hover:bg-realm-purple-600/80
-                     border border-realm-purple-500 rounded-xl p-5 transition-all
+                     border {% if skill_code in boosted_skills %}border-realm-gold-400 shadow-[0_0_12px_rgba(251,191,36,0.25)]{% else %}border-realm-purple-500{% endif %} rounded-xl p-5 transition-all
                      hover:quest-glow group cursor-pointer">
         <div class="flex items-center justify-between">
           <div>
             <h3 class="text-lg font-semibold text-white group-hover:text-realm-gold-400 transition-colors">
               🎯 {{ skill_name }}
+              {% if skill_code in boosted_skills %}
+              <span class="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold
+                           bg-realm-gold-500/20 text-realm-gold-400 border border-realm-gold-500/40 animate-pulse">
+                ⚡💎 2× Gold
+              </span>
+              {% endif %}
             </h3>
             <p class="text-sm text-realm-purple-300 mt-1">8 questions • {{ skill_code }}</p>
           </div>
