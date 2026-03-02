@@ -119,7 +119,7 @@ def mark_numeric_tolerance(student: str, correct: Any, spec: dict) -> MarkResult
     expected_val = float(correct)
     student_val = _try_float(student)
     expected_str = str(correct)
-    tol = spec.get("tolerance", 0.01)
+    tol = spec.get("tolerance") or 0.01
 
     if student_val is None:
         return MarkResult(False, 0.0, "Your answer must be a number.", expected_str)
@@ -450,7 +450,7 @@ def mark_gridref_6fig(student: str, correct: Any, spec: dict) -> MarkResult:
       - tolerance (int, default 0): allowed ±N on 3rd and 6th digits
       - correct can be a list of accepted refs (any match passes)
     """
-    tol = spec.get("tolerance", 0)
+    tol = spec.get("tolerance") or 0
     norm = student.replace(" ", "")
 
     if not re.fullmatch(r"\d{6}", norm):
@@ -490,7 +490,7 @@ def mark_gridref_6fig(student: str, correct: Any, spec: dict) -> MarkResult:
 @register_marker("bearing_3digit")
 def mark_bearing_3digit(student: str, correct: Any, spec: dict) -> MarkResult:
     """3-digit bearing, with ±tolerance_degrees (default 2)."""
-    tol = spec.get("tolerance_degrees", 2)
+    tol = spec.get("tolerance_degrees") or 2
     expected_val = int(float(correct))
     expected_str = f"{expected_val:03d}°"
 
