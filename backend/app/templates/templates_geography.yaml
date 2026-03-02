@@ -1319,7 +1319,7 @@ templates:
     skill: geog.maps.map_symbols
     difficulty: 2
     type: multi_choice
-    prompt: "What does the railway symbol on the west side of the river represent?"
+    prompt: "What is the black, often dashed, route running from south-east to north-west in the same direction as the river?"
     parameters:
       distractors:
         gen: fixed
