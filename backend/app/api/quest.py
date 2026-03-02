@@ -340,6 +340,18 @@ def quest_answer(
     })
 
 
+def _recent_template_ids(db: Session, quest: QuestSession) -> set[str]:
+    """Return template_ids already used in this quest so we can avoid repeats."""
+    qids = quest.get_question_ids()
+    if not qids:
+        return set()
+    stmt = select(QuestionInstance.template_id).where(
+        QuestionInstance.id.in_(qids)  # type: ignore[attr-defined]
+    )
+    rows = db.exec(stmt).all()
+    return set(rows)
+
+
 # ---------------------------------------------------------------------------
 # POST /quest/next — generate next question in a quest
 # ---------------------------------------------------------------------------
@@ -359,12 +371,16 @@ def quest_next(
     if not quest or quest.finished:
         return RedirectResponse(url="/", status_code=303)
 
+    # Avoid repeating templates already shown in this quest
+    exclude = _recent_template_ids(session, quest)
+
     instance = generate_question(
         session, user,
         skill=quest.skill,
         chapter=quest.chapter if not quest.skill and not quest.unit else None,
         subject=quest.subject,
         unit=quest.unit if not quest.skill else None,
+        exclude_template_ids=exclude,
     )
     quest.add_question_id(instance.id)
     session.add(quest)

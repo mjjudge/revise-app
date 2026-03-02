@@ -511,14 +511,23 @@ def generate_question(
     unit: str | None = None,
     template_id: str | None = None,
     seed: int | None = None,
+    exclude_template_ids: set[str] | None = None,
 ) -> QuestionInstance:
     """Generate a new question instance and persist it.
 
     Priority: template_id > skill > unit > chapter.
     Uses adaptive difficulty band from UserSkillProgress if available.
+
+    *exclude_template_ids* – template ids already used in the current quest
+    so we avoid showing the same question twice in a row.
     """
     # 1. Select template
-    template = _select_template(db, user, skill=skill, chapter=chapter, subject=subject, unit=unit, template_id=template_id)
+    template = _select_template(
+        db, user,
+        skill=skill, chapter=chapter, subject=subject, unit=unit,
+        template_id=template_id,
+        exclude_template_ids=exclude_template_ids,
+    )
 
     # 2. Seed
     if seed is None:
@@ -678,6 +687,17 @@ def check_answer(
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+def _exclude_recent(
+    candidates: list[TemplateDef],
+    exclude_ids: set[str],
+) -> list[TemplateDef]:
+    """Remove recently-used templates; fall back to full list if all excluded."""
+    if not exclude_ids:
+        return candidates
+    filtered = [t for t in candidates if t.id not in exclude_ids]
+    return filtered if filtered else candidates
+
+
 def _select_template(
     db: Session,
     user: User,
@@ -687,13 +707,21 @@ def _select_template(
     subject: str | None = None,
     unit: str | None = None,
     template_id: str | None,
+    exclude_template_ids: set[str] | None = None,
 ) -> TemplateDef:
-    """Pick the right template, considering adaptive difficulty."""
+    """Pick the right template, considering adaptive difficulty.
+
+    *exclude_template_ids* lists templates recently shown in the current
+    quest so we avoid back-to-back repeats.  If excluding leaves no
+    candidates we fall back to the full pool.
+    """
     if template_id:
         t = get_template_by_id(template_id)
         if t is None:
             raise ValueError(f"Template '{template_id}' not found")
         return t
+
+    excl = exclude_template_ids or set()
 
     if skill:
         templates = get_templates_by_skill(skill)
@@ -702,6 +730,7 @@ def _select_template(
         nearby = [t for t in templates if abs(t.difficulty - band) <= 1]
         if not nearby:
             nearby = templates
+        nearby = _exclude_recent(nearby, excl)
         rng = random.Random()
         return rng.choice(nearby)
 
@@ -709,6 +738,7 @@ def _select_template(
         templates = get_templates_by_unit(subject, unit)
         if not templates:
             raise ValueError(f"No templates for {subject}/{unit}")
+        templates = _exclude_recent(templates, excl)
         rng = random.Random()
         return rng.choice(templates)
 
@@ -716,6 +746,7 @@ def _select_template(
         templates = get_templates_by_chapter(chapter)
         if not templates:
             raise ValueError(f"No templates for chapter {chapter}")
+        templates = _exclude_recent(templates, excl)
         rng = random.Random()
         return rng.choice(templates)
 
