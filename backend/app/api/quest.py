@@ -23,6 +23,7 @@ from app.models.question import QuestionInstance, Attempt
 from app.models.user import Role, User
 from app.services.auth import get_current_user
 from app.services.questions import generate_question, check_answer, detect_milestone, milestone_message, get_mcq_options, get_order_items, get_grid_fill_data, get_boosted_skills
+from app.services.game_config import get_enabled_games
 from app.services.tiers import detect_tier_up
 from app.templates.feed_loader import get_templates_by_chapter, get_templates_by_unit, get_skill_map, get_template_by_id
 
@@ -343,6 +344,7 @@ def quest_answer(
         "milestone": milestone,
         "tier_up": tier_up,
         "is_boosted": is_boosted,
+        "enabled_games": get_enabled_games() if milestone else [],
     })
 
 

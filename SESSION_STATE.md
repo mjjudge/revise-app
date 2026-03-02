@@ -1,9 +1,31 @@
 # SESSION_STATE
 
 ## Current objective
-EPIC 10.5 — Practice Boost implemented and deployed.
+EPIC 10.6 — Brain Reset Reward Games implemented and deployed.
 
 ## Completed this session
+
+### EPIC 10.6 — Brain Reset Reward Mini-Games
+- **Game framework**: Created `backend/app/static/reward_games.js` with registry pattern, modal system, random game selection, skip button
+- **10 games implemented** (all pure client-side JS):
+  1. Mini Sudoku (fixed) — 4×4 grid with inline styles (fixes broken Jinja2 block issue)
+  2. Tic-Tac-Toe — vs simple AI (win/block/prefer-centre strategy)
+  3. Space Invaders — canvas, 45s arcade, mobile touch controls
+  4. Pattern Memory — 4×4 grid sequence recall with difficulty scaling
+  5. Reflex Tap — 10 rounds, average reaction time
+  6. Word Scramble — 60s, unscramble maths/geography vocabulary
+  7. Mini 2048 — tile-merging, target 256, swipe support
+  8. Gravity Collector — canvas physics, 45s, orbiting star collection
+  9. Tangram Builder — tap cells to fill shape silhouettes
+  10. Pixel Art Reveal — tap tiles to reveal castle/cat/landscape art
+- **Admin Games page**: `/admin/games` with preview buttons and on/off toggles per game
+- **Game config service**: `backend/app/services/game_config.py` — JSON file persistence, toggle API
+- **Static file serving**: Added `/static` mount in main.py
+- **Milestone integration**: Random enabled game on every 100 XP milestone
+- **Sudoku fix**: Moved from Jinja2 conditional blocks to inline styles in JS — root cause was `{% block head %}` wrapped in `{% if milestone %}` which doesn't work reliably in Jinja2 inheritance
+- **Tests**: 12 new tests in `test_reward_games.py`
+- **Docs**: ADR-022, BACKLOG EPIC 10.6
+- 402 tests passing (390 existing + 12 new)
 
 ### EPIC 10.5 — Practice Boost: Extra Rewards for Weak Skills
 - **`get_boosted_skills(db, user_id)`**: New service function returns skill codes qualifying for Practice Boost (accuracy ≤60% with ≥3 attempts, or band==1). Auto-removes when accuracy ≥75% over ≥5 attempts.

@@ -345,6 +345,130 @@ rather than a penalty for staying on easy skills.
 - [x] Streak bonus and boost stack correctly (streak first, then boost)
 
 
+## EPIC 10.6 — Brain Reset Reward Games
+Goal: Provide 10 lightweight, fun mini-games as "Brain Reset Rewards" triggered on
+milestone celebrations. Games are max 90 seconds, no penalties, no leaderboard
+pressure. Includes an admin Games page to preview and toggle games on/off.
+
+**Design principles**:
+- Max 90 seconds per game
+- No penalties or deep scoring — they are rewards, not challenges
+- Optional skip button on every game
+- Pure client-side JS (no server round-trips during play)
+- Games are offered at milestones (every 100 XP) — one random enabled game
+- Admin can test any game and toggle which ones are in the rotation
+
+### Games
+
+1. **Mini Sudoku** (fix existing) — 4×4 grid, fill blanks so rows/cols/boxes have 1–4.
+   Bug: grid renders empty with no given numbers and inputs not editable. Fix the
+   existing `openSudoku()` JS + CSS in quest_result.html.
+
+2. **Tic-Tac-Toe vs Computer** — Classic 3×3 grid, Anna plays X against a simple
+   AI (random moves or one-step lookahead). Win/draw/lose with fun messages.
+
+3. **Space Invaders Mini** — Canvas game. Arrow keys to move ship, spacebar to fire.
+   3 rows of aliens descend slowly. No lives system — just "how many can you zap
+   in 60 seconds?" with a score counter.
+
+4. **Pattern Memory** — Show a 4×4 grid, highlight 5–8 squares in sequence (1/sec),
+   hide them, Anna taps them back in order. Difficulty: more squares, faster reveal.
+   "Mini Memory Mission" branding.
+
+5. **Tangram Builder** — Show a silhouette (boat, house, cat, arrow, etc). Provide
+   7 geometric shapes. Drag & rotate to fill the silhouette. Gentle snap-to-grid,
+   no timer, no fail state — just encouragement.
+
+6. **Reflex Tap** — Circle appears randomly on screen, tap as fast as possible.
+   10 rounds, shows average reaction time. "Beat your best!" messaging.
+   Random fake-outs (faint circle before solid).
+
+7. **Word Scramble** — Scrambled subject vocabulary (TROPOSPHERE → PHERESORTOP,
+   CONTOUR → RUCONTO). 30 seconds to unscramble 5 words. No penalty, bonus feel.
+   Word bank drawn from geography/maths terms Anna has studied.
+
+8. **Pixel Art Reveal** — Long-term: earning XP reveals tiles of a hidden pixel
+   image (cat, castle, landscape). Each milestone unlocks a chunk. No time pressure.
+   Progress persists across sessions.
+
+9. **Gravity Collector** — Canvas game. Control a small planet with arrow keys,
+   collect stars while orbiting a centre object. Simple physics, no enemies.
+   60-second session, count stars collected.
+
+10. **Mini 2048** — 4×4 number grid, arrow keys to slide, combine matching tiles.
+    Short version: stop at 128 or 256. Shows "You reached [highest tile]!"
+
+### Stories
+- [ ] **10.6.1 — Fix Mini Sudoku**: Debug and fix existing 4×4 Sudoku so grid
+      renders with given numbers, inputs accept digits, and check works correctly
+- [ ] **10.6.2 — Game framework**: Create `reward_games.js` module with game
+      registry, random selection, modal/overlay system, skip button, and completion
+      callback. Each game is a self-contained function that renders into a container.
+- [ ] **10.6.3 — Tic-Tac-Toe**: Implement 3×3 grid with simple AI opponent
+- [ ] **10.6.4 — Space Invaders Mini**: Canvas-based, 60-second arcade session
+- [ ] **10.6.5 — Pattern Memory**: Grid-based sequence recall game
+- [ ] **10.6.6 — Tangram Builder**: Drag-and-drop shape puzzle with silhouettes
+- [ ] **10.6.7 — Reflex Tap**: Reaction time game, 10 rounds
+- [ ] **10.6.8 — Word Scramble**: Subject vocabulary unscramble
+- [ ] **10.6.9 — Pixel Art Reveal**: Persistent tile-unlock reward image
+- [ ] **10.6.10 — Gravity Collector**: Canvas physics collection game
+- [ ] **10.6.11 — Mini 2048**: Tile-merging puzzle, short version
+- [ ] **10.6.12 — Admin Games page**: `/admin/games` — grid of all games with
+      "Preview" button (plays the game) and on/off toggle per game. Toggle state
+      stored in settings/config.
+- [ ] **10.6.13 — Milestone integration**: Replace current hardcoded Sudoku trigger
+      with random selection from enabled games pool
+
+### Tasks (backend)
+- [ ] Add `GameConfig` model or settings entry to track enabled/disabled games
+- [ ] Add `/admin/games` GET route — renders game grid with toggle controls
+- [ ] Add `/admin/games/toggle` POST route — enables/disables a game by ID
+- [ ] Add `/api/games/enabled` GET endpoint (optional) — returns enabled game list
+      for the milestone trigger
+
+### Tasks (frontend)
+- [ ] Create `reward_games.js` with game registry pattern:
+      ```
+      const GAMES = { sudoku: { name, init, cleanup }, tictactoe: { ... }, ... }
+      ```
+- [ ] Each game: `init(container, onComplete)` renders into div, calls onComplete
+      when done/skipped
+- [ ] Generic game modal with skip button, game title, and container div
+- [ ] Milestone trigger: pick random enabled game → open modal → play → close
+- [ ] Admin games page: card grid with preview + toggle per game
+- [ ] Fix Sudoku: ensure grid CSS renders, inputs accept digits 1–4, given cells
+      are pre-filled and readonly
+
+### Tasks (individual games — all pure JS)
+- [ ] Sudoku: fix existing code, extract into `reward_games.js` module
+- [ ] Tic-Tac-Toe: 3×3 grid, X/O turns, simple AI, win/draw detection
+- [ ] Space Invaders: canvas, ship movement, bullet firing, alien grid, collision
+      detection, 60-second timer, score counter
+- [ ] Pattern Memory: grid highlight sequence, replay detection, difficulty scaling
+- [ ] Tangram: SVG/canvas shapes, drag + rotate, snap detection, silhouette library
+- [ ] Reflex Tap: random positioned circle, timing, 10-round average
+- [ ] Word Scramble: word bank from subject vocabulary, anagram shuffle, text input
+- [ ] Pixel Art Reveal: tile grid, XP-based unlock tracking (localStorage), reveal
+      animation
+- [ ] Gravity Collector: canvas physics (simple orbit), star spawning, collection
+- [ ] Mini 2048: 4×4 grid, arrow key input, tile merging, score display
+
+### Tests
+- [ ] Sudoku puzzle solutions are valid (rows/cols/boxes have 1–4)
+- [ ] Game registry returns only enabled games
+- [ ] Admin toggle endpoint changes game state
+- [ ] Milestone trigger selects from enabled pool only
+- [ ] Each game's init function renders without JS errors (smoke test)
+
+### Design notes
+- Games are "Brain Reset Rewards" — fun, light, no cognitive overload
+- Tangram is the most complex to build (drag/rotate); consider Phase 2 if needed
+- Pixel Art Reveal needs localStorage for persistence across sessions
+- Word Scramble can reuse skill/template vocabulary from feed_loader
+- Space Invaders and Gravity Collector are canvas-based; others are DOM-based
+- All games should work on both desktop and tablet (touch + keyboard)
+
+
 ## EPIC 11 — History (Coming Soon) Framework Prep
 Goal: Prepare the structure so History can drop in cleanly.
 

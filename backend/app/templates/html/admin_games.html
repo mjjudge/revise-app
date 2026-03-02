@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Games - Revise Quest Admin{% endblock %}
+
+{% block body %}
+<div class="min-h-screen">
+  <!-- Top bar -->
+  <nav class="bg-realm-purple-800/80 backdrop-blur border-b border-realm-purple-600/50 px-4 py-3">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">🎮</span>
+        <span class="font-bold text-lg text-realm-green-400">Brain Reset Rewards</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/admin" class="text-realm-purple-300 hover:text-white text-sm">← Dashboard</a>
+        <a href="/auth/logout" class="text-realm-purple-300 hover:text-white text-sm">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-2">🧩 Reward Mini-Games</h1>
+    <p class="text-realm-purple-300 mb-8">Preview and toggle which games appear as milestone rewards. Games play at every 100 XP milestone — one random enabled game is offered.</p>
+
+    <!-- Game cards grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {% for game in games %}
+      <div class="bg-realm-purple-700/40 backdrop-blur rounded-xl p-5 border border-realm-purple-500/30
+                  {% if not game.enabled %}opacity-50{% endif %}"
+           id="game-card-{{ game.id }}">
+
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <span class="text-3xl">{{ game.icon }}</span>
+            <h3 class="font-bold text-lg text-white mt-1">{{ game.name }}</h3>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" class="sr-only peer"
+                   {% if game.enabled %}checked{% endif %}
+                   onchange="toggleGame('{{ game.id }}', this)">
+            <div class="w-11 h-6 bg-realm-purple-600 peer-focus:outline-none rounded-full peer
+                        peer-checked:after:translate-x-full peer-checked:after:border-white
+                        after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                        after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
+                        peer-checked:bg-realm-green-500"></div>
+          </label>
+        </div>
+
+        <button onclick="previewGame('{{ game.id }}')"
+                class="w-full py-2 bg-realm-gold-500/20 hover:bg-realm-gold-500/40 text-realm-gold-400
+                       font-medium rounded-lg transition-colors text-sm border border-realm-gold-500/30">
+          ▶️ Preview
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="mt-8 text-center">
+      <p class="text-realm-purple-400 text-sm">
+        {{ games | selectattr('enabled') | list | length }} / {{ games | length }} games enabled
+      </p>
+    </div>
+  </main>
+</div>
+
+<!-- Reward Game modal (for preview) -->
+<div id="reward-game-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 hidden">
+  <div class="bg-realm-purple-800 border-2 border-realm-gold-400 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <h3 id="reward-game-title" class="text-xl font-bold text-realm-gold-400 text-center mb-3">🧩 Reward Game</h3>
+    <div id="reward-game-container"></div>
+    <div class="mt-3 text-center">
+      <button onclick="closeRewardGame()" class="px-6 py-2 border border-realm-purple-400 text-realm-purple-200 hover:bg-realm-purple-600/60 rounded-xl transition-colors text-sm">
+        ⏭️ Close
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/reward_games.js"></script>
+{% endblock %}

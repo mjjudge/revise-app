@@ -12,6 +12,7 @@ from app.models.quest import Payout, QuestSession
 from app.models.question import Attempt, UserSkillProgress
 from app.models.user import Role, User
 from app.services.questions import get_all_subject_progress, get_subject_progress, get_skill_insights, get_boosted_skills
+from app.services.game_config import get_all_games_status, get_enabled_games, toggle_game
 
 router = APIRouter(tags=["pages"])
 
@@ -229,3 +230,35 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
         "gold_to_pence": settings.gold_to_pence,
         "weekly_gold_cap": settings.weekly_gold_cap,
     })
+
+
+@router.get("/admin/games", response_class=HTMLResponse)
+def admin_games_page(request: Request, session: Session = Depends(get_session)):
+    """Admin page to preview and toggle reward mini-games."""
+    user = get_current_user(request, session)
+    if not user or user.role != Role.admin:
+        return RedirectResponse(url="/login", status_code=303)
+
+    return templates.TemplateResponse(request, "admin_games.html", {
+        "user": user,
+        "games": get_all_games_status(),
+    })
+
+
+@router.post("/admin/games/toggle")
+async def admin_toggle_game(request: Request, session: Session = Depends(get_session)):
+    """Toggle a game on/off. Accepts JSON body {game_id, enabled}."""
+    from starlette.responses import JSONResponse
+
+    user = get_current_user(request, session)
+    if not user or user.role != Role.admin:
+        return JSONResponse({"status": "error", "msg": "forbidden"}, status_code=403)
+
+    body = await request.json()
+    game_id = body.get("game_id", "")
+    enabled = body.get("enabled", True)
+
+    ok = toggle_game(game_id, enabled)
+    if not ok:
+        return JSONResponse({"status": "error", "msg": "unknown game"}, status_code=400)
+    return JSONResponse({"status": "ok"})
