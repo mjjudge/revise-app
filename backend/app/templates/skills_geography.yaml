@@ -133,16 +133,6 @@ skills:
   # -------------------------
   # Geography: Real OS map study
   # -------------------------
-  - code: geog.maps.compass_realmap
-    subject: geography
-    unit: maps
-    name: Compass directions on a real OS map
-
-  - code: geog.maps.symbols_realmap
-    subject: geography
-    unit: maps
-    name: Reading symbols on a real OS map
-
   - code: geog.maps.features_realmap
     subject: geography
     unit: maps
@@ -157,26 +147,6 @@ skills:
     subject: geography
     unit: maps
     name: Transport features on a real OS map
-
-  - code: geog.maps.gridref_4fig_realmap
-    subject: geography
-    unit: maps
-    name: 4-figure grid references on a real OS map
-
-  - code: geog.maps.gridref_6fig_realmap
-    subject: geography
-    unit: maps
-    name: 6-figure grid references on a real OS map
-
-  - code: geog.maps.bearing_realmap
-    subject: geography
-    unit: maps
-    name: Bearings on a real OS map
-
-  - code: geog.maps.relief_realmap
-    subject: geography
-    unit: maps
-    name: Relief and contour interpretation on a real map
 
   - code: geog.maps.settlement_realmap
     subject: geography

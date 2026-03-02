@@ -664,7 +664,7 @@ templates:
   - id: minsterworth_compass_river_v1
     subject: geography
     unit: maps
-    skill: geog.maps.compass_realmap
+    skill: geog.maps.compass_points
     difficulty: 1
     type: multi_choice
     prompt: "Look at the map. The River Severn runs roughly in which direction through the area shown?"
@@ -693,7 +693,7 @@ templates:
   - id: minsterworth_compass_village_v1
     subject: geography
     unit: maps
-    skill: geog.maps.compass_realmap
+    skill: geog.maps.compass_points
     difficulty: 1
     type: multi_choice
     prompt: "In which direction is the village of Minsterworth from the River Severn?"
@@ -722,7 +722,7 @@ templates:
   - id: minsterworth_compass_clayhill_v1
     subject: geography
     unit: maps
-    skill: geog.maps.compass_realmap
+    skill: geog.maps.compass_points
     difficulty: 2
     type: multi_choice
     prompt: "In which direction is Clay Hill from the village of Minsterworth?"
@@ -751,7 +751,7 @@ templates:
   - id: minsterworth_symbol_fb_v1
     subject: geography
     unit: maps
-    skill: geog.maps.symbols_realmap
+    skill: geog.maps.map_symbols
     difficulty: 2
     type: multi_choice
     prompt: "The map shows the letters 'FB' near a watercourse. What does 'FB' stand for?"
@@ -780,7 +780,7 @@ templates:
   - id: minsterworth_symbol_sch_v1
     subject: geography
     unit: maps
-    skill: geog.maps.symbols_realmap
+    skill: geog.maps.map_symbols
     difficulty: 1
     type: multi_choice
     prompt: "What does the abbreviation 'Sch' on the map stand for?"
@@ -915,7 +915,7 @@ templates:
   - id: minsterworth_gridref4_school_v1
     subject: geography
     unit: maps
-    skill: geog.maps.gridref_4fig_realmap
+    skill: geog.maps.gridref_4fig
     difficulty: 2
     type: short_text
     prompt: "Give the 4-figure grid reference for the school (Sch) on the map."
@@ -941,7 +941,7 @@ templates:
   - id: minsterworth_gridref4_cornham_v1
     subject: geography
     unit: maps
-    skill: geog.maps.gridref_4fig_realmap
+    skill: geog.maps.gridref_4fig
     difficulty: 2
     type: short_text
     prompt: "Give the 4-figure grid reference for Corn Ham (the large riverside field/meadow)."
@@ -967,7 +967,7 @@ templates:
   - id: minsterworth_gridref6_school_v1
     subject: geography
     unit: maps
-    skill: geog.maps.gridref_6fig_realmap
+    skill: geog.maps.gridref_6fig
     difficulty: 3
     type: short_text
     prompt: "Give the 6-figure grid reference for the school (Sch)."
@@ -994,7 +994,7 @@ templates:
   - id: minsterworth_gridref6_fb_v1
     subject: geography
     unit: maps
-    skill: geog.maps.gridref_6fig_realmap
+    skill: geog.maps.gridref_6fig
     difficulty: 3
     type: short_text
     prompt: "Give the 6-figure grid reference for the foot bridge (FB) near Long Brook."
@@ -1025,7 +1025,7 @@ templates:
   - id: minsterworth_bearing_sch_wood_v1
     subject: geography
     unit: maps
-    skill: geog.maps.bearing_realmap
+    skill: geog.maps.bearings
     difficulty: 3
     type: short_text
     prompt: "What is the 3-figure bearing from the school to Clayhill Wood?"
@@ -1051,7 +1051,7 @@ templates:
   - id: minsterworth_bearing_sch_cornham_v1
     subject: geography
     unit: maps
-    skill: geog.maps.bearing_realmap
+    skill: geog.maps.bearings
     difficulty: 3
     type: short_text
     prompt: "What is the 3-figure bearing from the school to Corn Ham?"
@@ -1077,7 +1077,7 @@ templates:
   - id: minsterworth_relief_steep_v1
     subject: geography
     unit: maps
-    skill: geog.maps.relief_realmap
+    skill: geog.maps.contours_height
     difficulty: 3
     type: multi_choice
     prompt: "Look at the contour lines around Clay Hill. On which side of the hill is the slope steepest?"
@@ -1107,7 +1107,7 @@ templates:
   - id: minsterworth_relief_landform_v1
     subject: geography
     unit: maps
-    skill: geog.maps.relief_realmap
+    skill: geog.maps.landform_shape
     difficulty: 3
     type: multi_choice
     prompt: "What type of landform is Clay Hill most likely to be, based on the contour pattern?"
