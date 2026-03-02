@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: help init env-up env-down build build-backend restart logs test lint fmt backup restore
+.PHONY: help init env-up env-down build build-backend restart logs test lint fmt backup restore rollback-today rollback-date
 
 help:
 	@echo "Targets:"
@@ -16,6 +16,8 @@ help:
 	@echo "  fmt             Format with ruff (safe)"
 	@echo "  backup          Create timestamped backup to ./backups (ignored by git)"
 	@echo "  restore         Restore latest backup into ./data (DANGEROUS)"
+	@echo "  rollback-today  Back out all XP/gold/quests earned today"
+	@echo "  rollback-date   Back out earnings for a specific date (DATE=YYYY-MM-DD)"
 
 init:
 	mkdir -p data logs backups
@@ -62,3 +64,24 @@ restore:
 	echo "Using $$latest"; \
 	rm -rf data && mkdir -p data; \
 	tar -xzf "$$latest" -C . data
+
+# ---------------------------------------------------------------------------
+# Rollback XP/gold/quests for a date
+# ---------------------------------------------------------------------------
+# Backs out all XP, gold, attempts, quest sessions, and skill progress
+# earned on the target date. Runs inside the Docker container so it has
+# write access to the root-owned SQLite database.
+#
+#   make rollback-today              # rolls back today's earnings
+#   make rollback-date DATE=2026-03-01  # rolls back a specific date
+#
+# The script shows a dry-run summary and asks for confirmation before
+# making any changes using an interactive prompt.
+# ---------------------------------------------------------------------------
+
+rollback-today:
+	docker compose run --rm app bash /app/scripts/rollback_today.sh /data/app.sqlite3
+
+rollback-date:
+	@if [ -z "$(DATE)" ]; then echo "Usage: make rollback-date DATE=YYYY-MM-DD"; exit 1; fi
+	docker compose run --rm app bash /app/scripts/rollback_today.sh /data/app.sqlite3 $(DATE)
