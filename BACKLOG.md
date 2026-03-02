@@ -278,6 +278,73 @@ Goal: Make XP/Gold feel fair across different subjects and question types.
 - [ ] Parent controls per subject (caps, multipliers)
 
 
+## EPIC 10.5 — Practice Boost: Extra Rewards for Weak Skills
+Goal: Encourage Anna to practise skills she struggles with by offering bonus gold
+and XP when she attempts "needs practice" skills, rather than farming comfortable ones.
+
+**Context**: The Skill Insights feature (admin dashboard) shows that Anna gravitates
+to high-accuracy skills to build gold, while avoiding weaker skills. This EPIC adds
+a "Practice Boost" multiplier to incentivise working on skills where accuracy is low.
+
+### Design
+A skill qualifies for **Practice Boost** when:
+- ≥3 attempts exist (enough data to be meaningful)
+- Accuracy is ≤60% (struggling threshold)
+- OR the skill's difficulty band has dropped to 1 (adaptive system already flagged it)
+
+Boost rewards:
+- **2× gold** on correct first-try answers for boosted skills
+- **1.5× XP** on any correct answer for boosted skills
+- Visual indicator on the quest/skill UI so Anna knows which skills have a boost active
+- Boost **removes itself** once accuracy on that skill reaches 75%+ (over ≥5 attempts)
+
+The boost should feel like a positive incentive ("bonus treasure for brave adventurers!")
+rather than a penalty for staying on easy skills.
+
+### Stories
+- [ ] **10.5.1 — Identify boosted skills**: Add `get_boosted_skills(db, user_id)` service
+      that returns skill codes qualifying for Practice Boost based on accuracy/band thresholds
+- [ ] **10.5.2 — Apply reward multiplier**: In `check_answer`, detect if the current
+      question's skill is boosted and apply 2× gold / 1.5× XP multiplier
+      (after streak bonus, before weekly cap)
+- [ ] **10.5.3 — Boost badge on skill UI**: Show a ⚡ or 💎 badge next to boosted skills
+      on the unit quest page (quest_unit.html) so Anna sees which ones give bonus treasure
+- [ ] **10.5.4 — Boost notification on result**: When a boosted skill pays out, show
+      "Practice Boost! 2× Gold 💎" on the result page so the reward feels tangible
+- [ ] **10.5.5 — Auto-remove boost**: When a skill's accuracy crosses 75% threshold
+      (≥5 attempts), the boost is removed — the skill has been practised enough
+- [ ] **10.5.6 — Admin visibility**: Show boosted skills on the admin dashboard
+      (Skill Insights card), marked with a boost indicator
+
+### Tasks (backend)
+- [ ] Add `get_boosted_skills()` to `services/questions.py`:
+      - Query `UserSkillProgress` for skills where accuracy ≤60% AND attempts ≥3,
+        OR current_band == 1
+      - Return set of skill codes
+- [ ] Update `check_answer()` reward calculation:
+      - After base XP/gold but before weekly cap
+      - If skill is in boosted set: `gold = gold * 2`, `xp = int(xp * 1.5)`
+      - Store boost flag in attempt (or derive from skill state at time of answer)
+- [ ] Add boost status to quest/skill selection API responses
+- [ ] Update `get_skill_insights()` to flag boosted skills
+
+### Tasks (frontend)
+- [ ] quest_unit.html: Add boost badge (⚡💎) next to skill names that qualify
+- [ ] quest_question.html: Optional "Practice Boost active!" banner at top
+- [ ] quest_result.html: "Practice Boost! 2× Gold 💎" callout on correct answers
+- [ ] Admin dashboard: Boost indicator in Skill Insights card
+
+### Tests
+- [ ] `get_boosted_skills` returns correct skills based on accuracy threshold
+- [ ] `get_boosted_skills` excludes skills with <3 attempts
+- [ ] `check_answer` applies 2× gold for boosted skill (correct, first try)
+- [ ] `check_answer` applies 1.5× XP for boosted skill
+- [ ] Boost does not apply when accuracy >60%
+- [ ] Boost auto-removes when accuracy crosses 75%
+- [ ] Weekly gold cap still applies after boost multiplier
+- [ ] Streak bonus and boost stack correctly (streak first, then boost)
+
+
 ## EPIC 11 — History (Coming Soon) Framework Prep
 Goal: Prepare the structure so History can drop in cleanly.
 
