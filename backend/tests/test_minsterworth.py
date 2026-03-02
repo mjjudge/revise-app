@@ -245,3 +245,77 @@ class TestBearingTolerance:
     def test_outside_tolerance(self):
         r = mark("085", 75, {"mode": "bearing_3digit", "tolerance_degrees": 5})
         assert not r.correct
+
+
+# ===================================================================
+# North Evesham template loading tests
+# ===================================================================
+
+
+class TestEveshamTemplates:
+    """All 20 North Evesham templates must load and validate."""
+
+    @pytest.fixture(autouse=True)
+    def load(self):
+        clear_cache()
+        tpl_feed = load_templates()
+        skill_feed = load_skills()
+        self.templates = tpl_feed.templates
+        self.skills = skill_feed.skills
+        self.evesham = [t for t in self.templates if t.id.startswith("evesham_")]
+
+    def test_20_templates_loaded(self):
+        assert len(self.evesham) == 20, (
+            f"Expected 20 Evesham templates, got {len(self.evesham)}: "
+            + ", ".join(t.id for t in self.evesham)
+        )
+
+    def test_all_geography_subject(self):
+        for t in self.evesham:
+            assert t.subject == "geography", f"{t.id} subject: {t.subject}"
+
+    def test_all_maps_unit(self):
+        for t in self.evesham:
+            assert t.unit == "maps", f"{t.id} unit: {t.unit}"
+
+    def test_all_have_map_asset(self):
+        for t in self.evesham:
+            kinds = [a.kind for a in t.assets]
+            assert "map_image" in kinds, f"{t.id} missing map_image asset"
+
+    def test_map_src_is_evesham(self):
+        for t in self.evesham:
+            for a in t.assets:
+                if a.kind == "map_image":
+                    assert "north_evesham" in a.src, f"{t.id} wrong map src: {a.src}"
+
+    def test_skills_exist(self):
+        skill_codes = {s.code for s in self.skills}
+        for t in self.evesham:
+            assert t.skill in skill_codes, f"{t.id} skill {t.skill} not in skills"
+
+    @pytest.mark.parametrize("tpl_id", [
+        "evesham_compass_greenhill_v1",
+        "evesham_compass_ryden_v1",
+        "evesham_compass_river_v1",
+        "evesham_compass_chadbury_v1",
+        "evesham_symbol_sch_v1",
+        "evesham_symbol_railway_v1",
+        "evesham_features_human_v1",
+        "evesham_features_physical_v1",
+        "evesham_gridref4_leicester_v1",
+        "evesham_gridref4_ryden_v1",
+        "evesham_gridref4_greenhill_v1",
+        "evesham_gridref6_school_v1",
+        "evesham_gridref6_chadbury_v1",
+        "evesham_bearing_greenhill_abbey_v1",
+        "evesham_bearing_leicester_v1",
+        "evesham_bearing_ryden_v1",
+        "evesham_relief_height_v1",
+        "evesham_relief_steep_v1",
+        "evesham_relief_landform_v1",
+        "evesham_flood_risk_v1",
+    ])
+    def test_template_exists(self, tpl_id):
+        ids = [t.id for t in self.evesham]
+        assert tpl_id in ids

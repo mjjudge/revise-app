@@ -133,7 +133,7 @@ class TestYAMLValidation:
 
     def test_geography_template_ids_have_geog_prefix(self):
         """Geography template IDs should start with 'geog_' or a place-study prefix."""
-        _GEOG_PREFIXES = ("geog_", "minsterworth_")
+        _GEOG_PREFIXES = ("geog_", "minsterworth_", "evesham_")
         templates_feed = load_templates()
         for t in templates_feed.templates:
             if t.subject == "geography":

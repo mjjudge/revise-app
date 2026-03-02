@@ -1163,3 +1163,566 @@ templates:
         - "Nucleated = buildings clustered around a central point."
         - "Dispersed = buildings spread far apart."
         - "Minsterworth is mostly strung along the A48 road, so it is linear."
+
+  # ============================================================
+  # NORTH EVESHAM OS MAP STUDY  (20 templates)
+  # ============================================================
+
+  # ── Q1: Compass — Greenhill from Leicester Tower ─────────
+  - id: evesham_compass_greenhill_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.compass_points
+    difficulty: 1
+    type: multi_choice
+    prompt: "Look at the map. What direction is Greenhill from Leicester Tower?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "South-east"
+          distractors:
+            - "North-west"
+            - "South-west"
+            - "North-east"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Find Leicester Tower, then Greenhill on the map."
+        - "Greenhill is to the south-east of Leicester Tower."
+
+  # ── Q2: Compass — Ryden Farm from Abbey Manor Farm ──────
+  - id: evesham_compass_ryden_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.compass_points
+    difficulty: 2
+    type: multi_choice
+    prompt: "What direction is Ryden Farm from Abbey Manor Farm?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "West"
+          distractors:
+            - "East"
+            - "North"
+            - "South-east"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Find Abbey Manor Farm and Ryden Farm on the map."
+        - "Ryden Farm is to the west (slightly south-west) of Abbey Manor Farm."
+
+  # ── Q3: Compass — River Avon direction ──────────────────
+  - id: evesham_compass_river_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.compass_points
+    difficulty: 1
+    type: multi_choice
+    prompt: "In which direction does the River Avon flow across this map?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "North-west to south-east"
+          distractors:
+            - "North to south"
+            - "East to west"
+            - "South-west to north-east"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Follow the River Avon on the map."
+        - "It flows from the north-west to the south-east."
+
+  # ── Q4: Compass — Chadbury Lock from Greenhill ──────────
+  - id: evesham_compass_chadbury_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.compass_points
+    difficulty: 2
+    type: multi_choice
+    prompt: "What direction is Chadbury Lock from Greenhill?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "North-west"
+          distractors:
+            - "South-east"
+            - "North-east"
+            - "South"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Find Greenhill and then Chadbury Lock on the map."
+        - "Chadbury Lock is to the north-west of Greenhill."
+
+  # ── Q5: Symbol — Sch ────────────────────────────────────
+  - id: evesham_symbol_sch_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.map_symbols
+    difficulty: 1
+    type: multi_choice
+    prompt: "What does the abbreviation 'Sch' near Greenhill stand for?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "School"
+          distractors:
+            - "Scheduled monument"
+            - "Shelter"
+            - "Shrine"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "'Sch' is the standard OS abbreviation for School."
+
+  # ── Q6: Symbol — railway ────────────────────────────────
+  - id: evesham_symbol_railway_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.map_symbols
+    difficulty: 2
+    type: multi_choice
+    prompt: "What does the railway symbol on the west side of the river represent?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "A railway line"
+          distractors:
+            - "A motorway"
+            - "A canal"
+            - "A footpath"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "The parallel lines with cross-hatching represent a railway line."
+        - "It runs along the west side of the River Avon."
+
+  # ── Q7: Human vs physical feature ───────────────────────
+  - id: evesham_features_human_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.features_realmap
+    difficulty: 2
+    type: multi_choice
+    prompt: "Which of these is a HUMAN feature shown on the map?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "Sewage Works"
+          distractors:
+            - "River Avon"
+            - "Battle Well"
+            - "Contour lines"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Human features are built or made by people (e.g. roads, farms, sewage works)."
+        - "Physical features are natural (e.g. rivers, hills, wells)."
+        - "Sewage Works is a human feature."
+
+  # ── Q8: Physical feature & feature types ─────────────────
+  - id: evesham_features_physical_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.features_realmap
+    difficulty: 2
+    type: multi_choice
+    prompt: "What type of map feature is Shakespeare's Avon Way?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "A footpath"
+          distractors:
+            - "A motorway"
+            - "A railway line"
+            - "A canal"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Shakespeare's Avon Way is shown as a green dashed line."
+        - "Dashed green lines represent footpaths on OS maps."
+
+  # ── Q9: 4-figure grid ref — Leicester Tower ─────────────
+  - id: evesham_gridref4_leicester_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.gridref_4fig
+    difficulty: 2
+    type: short_text
+    prompt: "Give the 4-figure grid reference for Leicester Tower."
+    parameters:
+      correct_value:
+        gen: fixed
+        value: "0346"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: gridref_4fig
+    solution:
+      steps:
+        - "Find Leicester Tower on the map."
+        - "Read the easting (along): 03."
+        - "Read the northing (up): 46."
+        - "The 4-figure grid reference is 0346."
+
+  # ── Q10: 4-figure grid ref — Ryden Farm ─────────────────
+  - id: evesham_gridref4_ryden_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.gridref_4fig
+    difficulty: 2
+    type: short_text
+    prompt: "Which grid square contains Ryden Farm? Give the 4-figure grid reference."
+    parameters:
+      correct_value:
+        gen: fixed
+        value: "0246"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: gridref_4fig
+    solution:
+      steps:
+        - "Find Ryden Farm on the map."
+        - "Read across (easting): 02."
+        - "Read up (northing): 46."
+        - "The 4-figure grid reference is 0246."
+
+  # ── Q11: 4-figure grid ref — Greenhill ──────────────────
+  - id: evesham_gridref4_greenhill_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.gridref_4fig
+    difficulty: 2
+    type: short_text
+    prompt: "Give the 4-figure grid reference for Greenhill."
+    parameters:
+      correct_value:
+        gen: fixed
+        value: "0345"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: gridref_4fig
+    solution:
+      steps:
+        - "Find Greenhill on the map."
+        - "Read along (easting): 03."
+        - "Read up (northing): 45."
+        - "The 4-figure grid reference is 0345."
+
+  # ── Q12: 6-figure grid ref — school in Greenhill ────────
+  - id: evesham_gridref6_school_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.gridref_6fig
+    difficulty: 3
+    type: short_text
+    prompt: "Give the 6-figure grid reference for the school in Greenhill."
+    parameters:
+      correct_value:
+        gen: fixed
+        value: "039451"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: gridref_6fig
+      tolerance: 1
+    solution:
+      steps:
+        - "Find the school symbol (Sch) in Greenhill."
+        - "Easting: 03 + about 9 tenths = 039."
+        - "Northing: 45 + about 1 tenth = 451."
+        - "The 6-figure grid reference is 039 451."
+
+  # ── Q13: 6-figure grid ref — Chadbury Lock ──────────────
+  - id: evesham_gridref6_chadbury_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.gridref_6fig
+    difficulty: 3
+    type: short_text
+    prompt: "Give the 6-figure grid reference for Chadbury Lock."
+    parameters:
+      correct_value:
+        gen: fixed
+        value: "024462"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: gridref_6fig
+      tolerance: 1
+    solution:
+      steps:
+        - "Find Chadbury Lock on the map near the river."
+        - "Easting: 02 + about 4 tenths = 024."
+        - "Northing: 46 + about 2 tenths = 462."
+        - "The 6-figure grid reference is 024 462."
+
+  # ── Q14: Bearing — Greenhill from Abbey Manor Farm ──────
+  - id: evesham_bearing_greenhill_abbey_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.bearings
+    difficulty: 3
+    type: short_text
+    prompt: "What is the 3-figure bearing of Greenhill from Abbey Manor Farm?"
+    parameters:
+      correct_value:
+        gen: fixed
+        value: 170
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: bearing_3digit
+      tolerance_degrees: 5
+    solution:
+      steps:
+        - "Place a protractor at Abbey Manor Farm with 0° pointing north."
+        - "Measure clockwise to Greenhill."
+        - "The bearing is approximately 170° (south-south-east)."
+
+  # ── Q15: Bearing — Leicester Tower from Greenhill ────────
+  - id: evesham_bearing_leicester_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.bearings
+    difficulty: 3
+    type: short_text
+    prompt: "What is the 3-figure bearing of Leicester Tower from Greenhill?"
+    parameters:
+      correct_value:
+        gen: fixed
+        value: 330
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: bearing_3digit
+      tolerance_degrees: 5
+    solution:
+      steps:
+        - "Place a protractor at Greenhill with 0° pointing north."
+        - "Measure clockwise to Leicester Tower."
+        - "The bearing is approximately 330° (north-north-west)."
+
+  # ── Q16: Bearing — Ryden Farm from Greenhill ─────────────
+  - id: evesham_bearing_ryden_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.bearings
+    difficulty: 3
+    type: short_text
+    prompt: "What is the 3-figure bearing of Ryden Farm from Greenhill?"
+    parameters:
+      correct_value:
+        gen: fixed
+        value: 280
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: bearing_3digit
+      tolerance_degrees: 5
+    solution:
+      steps:
+        - "Place a protractor at Greenhill with 0° pointing north."
+        - "Measure clockwise to Ryden Farm."
+        - "The bearing is approximately 280° (west-north-west)."
+
+  # ── Q17: Relief — height near Leicester Tower ────────────
+  - id: evesham_relief_height_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.contours_height
+    difficulty: 2
+    type: multi_choice
+    prompt: "What is the approximate height of land near Leicester Tower?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "64 metres"
+          distractors:
+            - "30 metres"
+            - "45 metres"
+            - "80 metres"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Find Leicester Tower on the map."
+        - "The spot height nearby shows 64 metres."
+
+  # ── Q18: Relief — steepest slope near Greenhill ──────────
+  - id: evesham_relief_steep_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.contours_height
+    difficulty: 3
+    type: multi_choice
+    prompt: "Where is the steepest slope near Greenhill?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "On the eastern side"
+          distractors:
+            - "On the western side"
+            - "On the northern side"
+            - "On the southern side"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Contour lines close together = steep slope."
+        - "The contours are closest together on the eastern side of Greenhill."
+
+  # ── Q19: Relief — landform at Battle Well ────────────────
+  - id: evesham_relief_landform_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.landform_shape
+    difficulty: 3
+    type: multi_choice
+    prompt: "What landform is shown at Battle Well, based on the contour pattern?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "A small hilltop"
+          distractors:
+            - "A flat valley floor"
+            - "A steep cliff"
+            - "A narrow ridge"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Look at the contour lines around Battle Well."
+        - "Contours forming closed loops indicate a hilltop."
+
+  # ── Q20: Water & flood risk ─────────────────────────────
+  - id: evesham_flood_risk_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.features_realmap
+    difficulty: 3
+    type: multi_choice
+    prompt: "Where is flooding most likely: near Hampton Parks Farm by the river, or near Leicester Tower?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "Near Hampton Parks Farm — it is low-lying land next to the river"
+          distractors:
+            - "Near Leicester Tower — it is closest to the river"
+            - "Both are equally likely to flood"
+            - "Neither — the river never floods"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/north_evesham_map.png
+        alt: "OS map extract of North Evesham"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Hampton Parks Farm is on low-lying land right next to the River Avon."
+        - "Leicester Tower is on higher ground (around 64m)."
+        - "Low-lying land near rivers is most at risk of flooding."
