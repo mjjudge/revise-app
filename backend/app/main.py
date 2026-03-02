@@ -76,6 +76,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Revise App", version="0.1.0", lifespan=lifespan)
 
+# Static files (map images etc.)
+app.mount("/images", StaticFiles(directory="app/images"), name="images")
+
 # Request logging
 app.add_middleware(RequestLoggingMiddleware)
 

@@ -132,12 +132,13 @@ class TestYAMLValidation:
             )
 
     def test_geography_template_ids_have_geog_prefix(self):
-        """Geography template IDs should start with 'geog_'."""
+        """Geography template IDs should start with 'geog_' or a place-study prefix."""
+        _GEOG_PREFIXES = ("geog_", "minsterworth_")
         templates_feed = load_templates()
         for t in templates_feed.templates:
             if t.subject == "geography":
-                assert t.id.startswith("geog_"), (
-                    f"Geography template '{t.id}' should start with 'geog_'"
+                assert t.id.startswith(_GEOG_PREFIXES), (
+                    f"Geography template '{t.id}' should start with one of {_GEOG_PREFIXES}"
                 )
 
     def test_difficulty_distribution(self):

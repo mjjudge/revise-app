@@ -653,3 +653,513 @@ templates:
         - "Relief: air forced over hills."
         - "Convectional: sun heats ground, warm air rises."
         - "Frontal: warm and cold air meet."
+
+  # ============================================================
+  # MINSTERWORTH OS MAP STUDY  (18 templates)
+  # ============================================================
+  # All questions use the same real OS map image of Minsterworth.
+  # Answers are fixed (no random generation).
+
+  # ── Q1: Compass direction — river runs roughly ────────────
+  - id: minsterworth_compass_river_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.compass_realmap
+    difficulty: 1
+    type: multi_choice
+    prompt: "Look at the map. The River Severn runs roughly in which direction through the area shown?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "South-west to North-east"
+          distractors:
+            - "North to South"
+            - "East to West"
+            - "South-east to North-west"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Follow the course of the River Severn on the map."
+        - "It flows roughly from the south-west corner to the north-east."
+
+  # ── Q2: Compass direction — Minsterworth from river ───────
+  - id: minsterworth_compass_village_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.compass_realmap
+    difficulty: 1
+    type: multi_choice
+    prompt: "In which direction is the village of Minsterworth from the River Severn?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "South"
+          distractors:
+            - "North"
+            - "East"
+            - "West"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Find the village of Minsterworth on the map."
+        - "The River Severn is to the north of the village, so Minsterworth is south of the river."
+
+  # ── Q3: Compass direction — Clay Hill from village ────────
+  - id: minsterworth_compass_clayhill_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.compass_realmap
+    difficulty: 2
+    type: multi_choice
+    prompt: "In which direction is Clay Hill from the village of Minsterworth?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "East"
+          distractors:
+            - "West"
+            - "North"
+            - "South-west"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Find Minsterworth village and then Clay Hill on the map."
+        - "Clay Hill is to the east of the village."
+
+  # ── Q4: Symbol reading — footbridge ──────────────────────
+  - id: minsterworth_symbol_fb_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.symbols_realmap
+    difficulty: 2
+    type: multi_choice
+    prompt: "The map shows the letters 'FB' near a watercourse. What does 'FB' stand for?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "Foot Bridge"
+          distractors:
+            - "Fire Brigade"
+            - "Farm Building"
+            - "Flood Barrier"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "FB is a standard OS map abbreviation for Foot Bridge."
+        - "It shows where a small bridge allows pedestrians to cross a stream."
+
+  # ── Q5: Symbol reading — Sch ─────────────────────────────
+  - id: minsterworth_symbol_sch_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.symbols_realmap
+    difficulty: 1
+    type: multi_choice
+    prompt: "What does the abbreviation 'Sch' on the map stand for?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "School"
+          distractors:
+            - "Scheduled monument"
+            - "Shelter"
+            - "Shrine"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "'Sch' is the standard OS abbreviation for School."
+
+  # ── Q6: Human vs physical feature ────────────────────────
+  - id: minsterworth_features_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.features_realmap
+    difficulty: 2
+    type: multi_choice
+    prompt: "Which of these is a HUMAN feature shown on the map?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "School"
+          distractors:
+            - "River Severn"
+            - "Clayhill Wood"
+            - "Long Brook"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Human features are built or made by people (e.g. school, road, farm)."
+        - "Physical features are natural (e.g. river, hill, wood)."
+        - "The school is a human feature; the river, wood, and brook are physical."
+
+  # ── Q7: Identify woodland ────────────────────────────────
+  - id: minsterworth_woodland_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.identify_realmap
+    difficulty: 2
+    type: short_text
+    prompt: "Name the area of woodland shown on the eastern side of the map."
+    parameters:
+      correct_value:
+        gen: fixed
+        value: "Clayhill Wood"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: exact_text_normalised
+    solution:
+      steps:
+        - "Look at the eastern side of the map for the green shading that represents woodland."
+        - "The name 'Clayhill Wood' is printed on the map."
+
+  # ── Q8: Identify watercourse ─────────────────────────────
+  - id: minsterworth_watercourse_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.identify_realmap
+    difficulty: 2
+    type: short_text
+    prompt: "Name the small stream (watercourse) that flows through grid square 7717."
+    parameters:
+      correct_value:
+        gen: fixed
+        value: "Long Brook"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: exact_text_normalised
+    solution:
+      steps:
+        - "Find grid square 7717 on the map."
+        - "The blue line running through it is labelled 'Long Brook'."
+
+  # ── Q9: Transport feature ───────────────────────────────
+  - id: minsterworth_transport_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.transport_realmap
+    difficulty: 1
+    type: multi_choice
+    prompt: "What is the name or number of the main road running through Minsterworth?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "A48"
+          distractors:
+            - "A40"
+            - "B4215"
+            - "M5"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "The main road is coloured and labelled with its road number."
+        - "The A48 runs through Minsterworth village."
+
+  # ── Q10: 4-figure grid ref — school ─────────────────────
+  - id: minsterworth_gridref4_school_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.gridref_4fig_realmap
+    difficulty: 2
+    type: short_text
+    prompt: "Give the 4-figure grid reference for the school (Sch) on the map."
+    parameters:
+      correct_value:
+        gen: fixed
+        value: "7617"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: gridref_4fig
+    solution:
+      steps:
+        - "Find the school symbol on the map."
+        - "Read the easting (along) first: 76."
+        - "Then read the northing (up): 17."
+        - "The 4-figure grid reference is 7617."
+
+  # ── Q11: 4-figure grid ref — Corn Ham ───────────────────
+  - id: minsterworth_gridref4_cornham_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.gridref_4fig_realmap
+    difficulty: 2
+    type: short_text
+    prompt: "Give the 4-figure grid reference for Corn Ham (the large riverside field/meadow)."
+    parameters:
+      correct_value:
+        gen: fixed
+        value: "7418"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: gridref_4fig
+    solution:
+      steps:
+        - "Find the label 'Corn Ham' on the map near the river."
+        - "Read across (easting): 74."
+        - "Read up (northing): 18."
+        - "The 4-figure grid reference is 7418."
+
+  # ── Q12: 6-figure grid ref — school ─────────────────────
+  - id: minsterworth_gridref6_school_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.gridref_6fig_realmap
+    difficulty: 3
+    type: short_text
+    prompt: "Give the 6-figure grid reference for the school (Sch)."
+    parameters:
+      correct_value:
+        gen: fixed
+        value: "776172"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: gridref_6fig
+      tolerance: 1
+    solution:
+      steps:
+        - "Find the school on the map."
+        - "The easting is 77, plus about 6 tenths = 776."
+        - "The northing is 17, plus about 2 tenths = 172."
+        - "The 6-figure grid reference is 776 172."
+
+  # ── Q13: 6-figure grid ref — FB near Long Brook ─────────
+  - id: minsterworth_gridref6_fb_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.gridref_6fig_realmap
+    difficulty: 3
+    type: short_text
+    prompt: "Give the 6-figure grid reference for the foot bridge (FB) near Long Brook."
+    parameters:
+      correct_value:
+        gen: fixed
+        value:
+          - "772175"
+          - "778177"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: gridref_6fig
+      tolerance: 1
+      correct:
+        - "772175"
+        - "778177"
+    solution:
+      steps:
+        - "There may be more than one FB near Long Brook."
+        - "Find the 'FB' label and estimate 3-digit easting and northing."
+        - "Accepted answers include 772 175 and 778 177 (±1 each way)."
+
+  # ── Q14: Bearing — school to Clayhill Wood ──────────────
+  - id: minsterworth_bearing_sch_wood_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.bearing_realmap
+    difficulty: 3
+    type: short_text
+    prompt: "What is the 3-figure bearing from the school to Clayhill Wood?"
+    parameters:
+      correct_value:
+        gen: fixed
+        value: 75
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: bearing_3digit
+      tolerance_degrees: 5
+    solution:
+      steps:
+        - "Place a protractor at the school with 0° pointing north."
+        - "Measure the angle clockwise to Clayhill Wood."
+        - "The bearing is approximately 075°."
+
+  # ── Q15: Bearing — school to Corn Ham ───────────────────
+  - id: minsterworth_bearing_sch_cornham_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.bearing_realmap
+    difficulty: 3
+    type: short_text
+    prompt: "What is the 3-figure bearing from the school to Corn Ham?"
+    parameters:
+      correct_value:
+        gen: fixed
+        value: 315
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: bearing_3digit
+      tolerance_degrees: 5
+    solution:
+      steps:
+        - "Place a protractor at the school with 0° pointing north."
+        - "Measure the angle clockwise to Corn Ham."
+        - "The bearing is approximately 315°."
+
+  # ── Q16: Relief — steepest slope ─────────────────────────
+  - id: minsterworth_relief_steep_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.relief_realmap
+    difficulty: 3
+    type: multi_choice
+    prompt: "Look at the contour lines around Clay Hill. On which side of the hill is the slope steepest?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "West side"
+          distractors:
+            - "East side"
+            - "North side"
+            - "South side"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Contour lines close together = steep slope."
+        - "Look at the spacing of contour lines on each side of Clay Hill."
+        - "They are closest together on the west side, so the west is steepest."
+
+  # ── Q17: Relief — landform type ──────────────────────────
+  - id: minsterworth_relief_landform_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.relief_realmap
+    difficulty: 3
+    type: multi_choice
+    prompt: "What type of landform is Clay Hill most likely to be, based on the contour pattern?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "A rounded hilltop"
+          distractors:
+            - "A steep cliff"
+            - "A flat valley floor"
+            - "A narrow ridge"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Contour lines that form concentric ovals indicate a hill."
+        - "If the contours are roughly circular and spread out at the top, it is a rounded hilltop."
+        - "Clay Hill's contours show a gentle, rounded shape."
+
+  # ── Q18: Settlement pattern ─────────────────────────────
+  - id: minsterworth_settlement_v1
+    subject: geography
+    unit: maps
+    skill: geog.maps.settlement_realmap
+    difficulty: 3
+    type: multi_choice
+    prompt: "What settlement pattern does Minsterworth village show?"
+    parameters:
+      distractors:
+        gen: fixed
+        value:
+          correct: "Linear"
+          distractors:
+            - "Nucleated"
+            - "Dispersed"
+            - "Concentric"
+    assets:
+      - kind: map_image
+        id: map
+        src: /images/minsterworth_map.png
+        alt: "OS map extract of Minsterworth"
+    marking:
+      mode: mcq
+    solution:
+      steps:
+        - "Linear = buildings stretched along a road or river."
+        - "Nucleated = buildings clustered around a central point."
+        - "Dispersed = buildings spread far apart."
+        - "Minsterworth is mostly strung along the A48 road, so it is linear."

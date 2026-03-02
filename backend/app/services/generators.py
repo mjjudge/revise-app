@@ -599,6 +599,16 @@ def gen_from_object(rng: _random_mod.Random, spec: dict, ctx: dict) -> Any:
 
 
 # ---------------------------------------------------------------------------
+# fixed  (return a static value — for map-study / image-based questions)
+# ---------------------------------------------------------------------------
+
+@register_gen("fixed")
+def gen_fixed(rng: _random_mod.Random, spec: dict, ctx: dict) -> Any:
+    """Return a fixed value from the spec. No randomisation."""
+    return spec.get("value")
+
+
+# ---------------------------------------------------------------------------
 # Helper: resolve a dotted context reference
 # ---------------------------------------------------------------------------
 

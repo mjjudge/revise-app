@@ -444,17 +444,39 @@ def mark_gridref_4fig(student: str, correct: Any, spec: dict) -> MarkResult:
 
 @register_marker("gridref_6fig")
 def mark_gridref_6fig(student: str, correct: Any, spec: dict) -> MarkResult:
-    """6-figure grid reference – e.g. '152234'. Strips spaces."""
-    expected_str = str(correct).replace(" ", "")
+    """6-figure grid reference – e.g. '152234'. Strips spaces.
+
+    Supports:
+      - tolerance (int, default 0): allowed ±N on 3rd and 6th digits
+      - correct can be a list of accepted refs (any match passes)
+    """
+    tol = spec.get("tolerance", 0)
     norm = student.replace(" ", "")
 
     if not re.fullmatch(r"\d{6}", norm):
         return MarkResult(False, 0.0,
                           "Write a 6-figure grid reference, e.g. 152234.",
-                          expected_str)
+                          str(correct))
 
-    if norm == expected_str:
-        return MarkResult(True, 1.0, "Correct!", expected_str)
+    # Use spec.correct if provided (list of accepted refs), otherwise use correct arg
+    accepted_raw = spec.get("correct", correct)
+
+    # Normalise correct to a list
+    if isinstance(accepted_raw, list):
+        expected_list = [str(c).replace(" ", "") for c in accepted_raw]
+    else:
+        expected_list = [str(accepted_raw).replace(" ", "")]
+
+    expected_str = " or ".join(expected_list)
+
+    s_e = int(norm[:3])
+    s_n = int(norm[3:])
+
+    for exp in expected_list:
+        c_e = int(exp[:3])
+        c_n = int(exp[3:])
+        if abs(s_e - c_e) <= tol and abs(s_n - c_n) <= tol:
+            return MarkResult(True, 1.0, "Correct!", expected_str)
 
     return MarkResult(False, 0.0,
                       f"Not quite. The grid reference is {expected_str}.",
@@ -552,3 +574,41 @@ def mark_grid_match(student: str, correct: Any, spec: dict) -> MarkResult:
 def mark_label_match(student: str, correct: Any, spec: dict) -> MarkResult:
     """Alias for grid_match."""
     return mark_grid_match(student, correct, spec)
+
+
+# ---------------------------------------------------------------------------
+# Mode: keyword_any
+# ---------------------------------------------------------------------------
+
+@register_marker("keyword_any")
+def mark_keyword_any(student: str, correct: Any, spec: dict) -> MarkResult:
+    """Accept answer if it contains ANY of the accepted keywords/phrases.
+
+    `correct` is a list of accepted answers (case-insensitive substring match).
+    If `accept_any` is set in spec, those are additional alternatives.
+    Partial credit when some but not all required keywords present.
+    """
+    norm = student.strip().lower()
+
+    if isinstance(correct, list):
+        accepted = [str(a).strip().lower() for a in correct]
+    else:
+        accepted = [str(correct).strip().lower()]
+
+    # Additional accepted from spec
+    extra = spec.get("accept_any", [])
+    if extra:
+        accepted.extend([str(a).strip().lower() for a in extra])
+
+    expected_str = accepted[0] if accepted else ""
+
+    if not norm:
+        return MarkResult(False, 0.0, "Please enter an answer.", expected_str)
+
+    for ans in accepted:
+        if ans in norm or norm in ans:
+            return MarkResult(True, 1.0, "Correct!", expected_str)
+
+    return MarkResult(False, 0.0,
+                      f"Not quite. An accepted answer is: {expected_str}.",
+                      expected_str)

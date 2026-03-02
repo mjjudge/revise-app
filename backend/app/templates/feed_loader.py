@@ -63,6 +63,7 @@ class MarkingMode(str, Enum):
     bearing_3digit = "bearing_3digit"
     grid_match = "grid_match"
     label_match = "label_match"
+    keyword_any = "keyword_any"
 
 
 # ---------------------------------------------------------------------------

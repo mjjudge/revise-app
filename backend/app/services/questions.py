@@ -126,6 +126,8 @@ def _compute_answer(template: TemplateDef, params: dict[str, Any]) -> Any:
         return _compute_gridref(template, params, digits=6)
     elif mode == "bearing_3digit":
         return _compute_bearing(template, params)
+    elif mode == "keyword_any":
+        return _compute_keyword_any(template, params)
     else:
         raise ValueError(f"No answer computation for mode: {mode}")
 
@@ -214,6 +216,10 @@ def _compute_numeric(template: TemplateDef, params: dict[str, Any]) -> float:
 
 
 def _compute_text(template: TemplateDef, params: dict[str, Any]) -> str:
+    # Fixed answer (map-study questions with pre-defined answers)
+    if "correct_value" in params:
+        return str(params["correct_value"])
+
     skill = template.skill
     if "mode" in skill:
         # For mode-finding: the most frequent value
@@ -295,6 +301,14 @@ def _compute_grid_match(template: TemplateDef, params: dict[str, Any]) -> dict:
 
 def _compute_gridref(template: TemplateDef, params: dict[str, Any], *, digits: int) -> str:
     """Compute the grid reference for a named feature on the map."""
+    # Fixed answer (map-study questions with pre-defined answers)
+    if "correct_value" in params:
+        val = params["correct_value"]
+        # Preserve list for multi-answer 6-fig refs
+        if isinstance(val, list):
+            return val
+        return str(val)
+
     map_data = params.get("map", {})
     feature_name = params.get("feature_name", "")
 
@@ -308,6 +322,10 @@ def _compute_gridref(template: TemplateDef, params: dict[str, Any], *, digits: i
 
 def _compute_bearing(template: TemplateDef, params: dict[str, Any]) -> int:
     """Compute the bearing from one feature to another on the map."""
+    # Fixed answer (map-study questions with pre-defined answers)
+    if "correct_value" in params:
+        return int(params["correct_value"])
+
     import math as _math
 
     map_data = params.get("map", {})
@@ -324,6 +342,14 @@ def _compute_bearing(template: TemplateDef, params: dict[str, Any]) -> int:
     angle = _math.degrees(_math.atan2(dx, dy))  # atan2(east, north)
     bearing = int(round(angle % 360))
     return bearing
+
+
+def _compute_keyword_any(template: TemplateDef, params: dict[str, Any]) -> Any:
+    """Return the correct value for a keyword_any question."""
+    cv = params.get("correct_value")
+    if isinstance(cv, list):
+        return cv
+    return str(cv) if cv is not None else ""
 
 
 def get_mcq_options(instance: QuestionInstance) -> list[str] | None:

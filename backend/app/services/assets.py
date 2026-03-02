@@ -64,6 +64,8 @@ def render_assets(asset_specs: list[dict], params: dict[str, Any]) -> list[dict]
             html = _render_synoptic_chart(spec, params)
         elif kind == "rainfall_diagram":
             html = _render_rainfall_diagram(spec, params)
+        elif kind == "map_image":
+            html = _render_map_image(spec, params)
         else:
             html = f'<p class="text-realm-purple-300">Unsupported asset kind: {kind}</p>'
 
@@ -991,5 +993,29 @@ def _render_rainfall_diagram(spec: dict, params: dict[str, Any]) -> str:
         lines.append('  <line x1="150" y1="120" x2="170" y2="70" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3"/>')
 
     lines.append('</svg>')
+    lines.append('</div>')
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Map image renderer
+# ---------------------------------------------------------------------------
+
+def _render_map_image(spec: dict, params: dict[str, Any]) -> str:
+    """Render an <img> tag pointing to a static map image."""
+    src = spec.get("src", "")
+    alt = spec.get("alt", "Map")
+    caption = spec.get("caption", "")
+
+    lines = [
+        '<div class="my-4 text-center">',
+        f'  <img src="{src}" alt="{alt}" '
+        'class="mx-auto rounded-lg border border-realm-purple-500/30 max-w-full" '
+        'style="max-height: 500px;" />',
+    ]
+    if caption:
+        lines.append(
+            f'  <p class="text-xs text-realm-purple-400 mt-2 italic">{caption}</p>'
+        )
     lines.append('</div>')
     return "\n".join(lines)
