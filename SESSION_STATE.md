@@ -1,7 +1,22 @@
 # SESSION_STATE
 
 ## Current objective
-EPIC 10 — Per-Subject Progress Tracking: complete. Bug fixes done. Contour cross-section bug deferred to next session.
+Minsterworth OS map study questions — complete. 18 real-map questions added, deployed, and tested.
+
+## Completed this session
+
+### Minsterworth OS Map Study (18 questions)
+- **Static image serving**: Mounted `/images/` as StaticFiles in `main.py`; `map_image` asset renderer produces responsive `<img>` tags
+- **`fixed` generator**: New generator that returns values as-is (no randomisation) for fixed/map-study questions
+- **`keyword_any` marking mode**: Accepts answers matching any of a list of accepted keywords (case-insensitive substring)
+- **`gridref_6fig` tolerance**: Updated marker to support `tolerance` (±N on 3rd/6th digits) and multiple accepted references
+- **18 YAML templates**: Compass direction (3 MCQ), symbols (2 MCQ), features (1 MCQ), identification (2 short text), transport (1 MCQ), gridref 4-fig (2), gridref 6-fig (2 with tolerance), bearings (2 with ±5°), relief/contours (2 MCQ), settlement (1 MCQ)
+- **10 new skills**: `geog.maps.*_realmap` skills for compass, symbols, features, identification, transport, gridref 4-fig, gridref 6-fig, bearing, relief, settlement
+- **`_compute_answer` wiring**: Handles fixed-value templates (via `correct_value` param) for text, gridref, bearing, and keyword_any modes
+- **Tests**: 48 new tests in `test_minsterworth.py` — fixed generator, map_image asset, keyword_any marker, gridref tolerance, bearing tolerance, template loading/validation
+- **Docs**: ADR 019, quality test updated to allow `minsterworth_*` prefix
+- 336 tests passing (288 existing + 48 new)
+- Committed `6fc94e6`
 
 ## Completed this session
 
@@ -77,6 +92,7 @@ EPIC 10 — Per-Subject Progress Tracking: complete. Bug fixes done. Contour cro
 - Multi-subject: feed_loader multi-pack, subject/unit navigation, new marking modes (ADR 015)
 - Geography content pack: 24 templates, 15 generators, 9 renderers, 5 marking modes (ADR 016)
 - Per-subject progress tracking: denormalised SubjectProgress table, real-time increments, subject-specific UI (ADR 018)
+- Real OS map study: fixed generator, map_image asset, gridref tolerance, 18 Minsterworth templates (ADR 019)
 
 ## Open questions
 - None
@@ -90,6 +106,11 @@ EPIC 10 — Per-Subject Progress Tracking: complete. Bug fixes done. Contour cro
 - [ ] Optional Caddy basic auth
 
 ## Notes / gotchas
+- Map images stored in `backend/app/images/`, served at `/images/` via StaticFiles mount
+- `fixed` generator + `map_image` asset pattern is reusable for any place-study map
+- Minsterworth template IDs use `minsterworth_*` prefix (quality test allows both `geog_*` and `minsterworth_*`)
+- `gridref_6fig` tolerance: spec.tolerance ±N on 3rd/6th digits; spec.correct can list multiple accepted refs
+- `keyword_any` marking: case-insensitive substring match against list of accepted answers
 - Geography uses unit-based routing (`/quest/unit/geography/{unit}`) not chapter-based
 - Grid-fill UI uses `<select>` dropdowns → JSON answer in hidden field → `grid_match` marker
 - All matching-set generators return `{left, right, correct_mapping}` structure
