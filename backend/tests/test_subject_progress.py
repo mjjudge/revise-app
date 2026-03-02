@@ -7,12 +7,13 @@ from sqlalchemy.pool import StaticPool
 
 from app.models.user import User, Role
 from app.models.quest import QuestSession
-from app.models.question import QuestionInstance, SubjectProgress
+from app.models.question import QuestionInstance, SubjectProgress, UserSkillProgress
 from app.services.questions import (
     check_answer,
     generate_question,
     get_subject_progress,
     get_all_subject_progress,
+    get_skill_insights,
     _update_subject_progress,
 )
 
@@ -289,3 +290,104 @@ class TestCheckAnswerSubjectProgress:
         if result.correct:
             sp = get_subject_progress(session, kid.id, "maths")
             assert sp.xp_earned > 0
+
+
+# ---------------------------------------------------------------------------
+# Skill insights tests
+# ---------------------------------------------------------------------------
+
+class TestSkillInsights:
+    """Tests for get_skill_insights (strongest/weakest per subject)."""
+
+    def _seed_skill_progress(self, session, kid, entries):
+        """Helper: create UserSkillProgress rows from a list of dicts."""
+        for e in entries:
+            sp = UserSkillProgress(
+                user_id=kid.id,
+                skill=e["skill"],
+                current_band=e.get("band", 2),
+                attempts_total=e["attempts"],
+                attempts_correct=e["correct"],
+                streak=0,
+            )
+            session.add(sp)
+        session.commit()
+
+    def test_empty_when_no_progress(self, session, kid):
+        """Returns empty dict when no skill progress exists."""
+        result = get_skill_insights(session, kid.id)
+        assert result == {}
+
+    def test_ignores_single_attempt_skills(self, session, kid):
+        """Skills with <2 attempts are excluded from insights."""
+        self._seed_skill_progress(session, kid, [
+            {"skill": "stats.mean.basic", "attempts": 1, "correct": 1},
+        ])
+        result = get_skill_insights(session, kid.id)
+        assert result == {}
+
+    def test_maths_strongest_weakest(self, session, kid):
+        """Correctly identifies strongest and weakest maths skills."""
+        self._seed_skill_progress(session, kid, [
+            {"skill": "stats.mean.basic", "attempts": 10, "correct": 10, "band": 5},
+            {"skill": "stats.median.basic", "attempts": 8, "correct": 7, "band": 3},
+            {"skill": "algebra.simplify.like_terms", "attempts": 6, "correct": 3, "band": 2},
+            {"skill": "prob.scale", "attempts": 4, "correct": 1, "band": 1},
+            {"skill": "measure.metric.convert", "attempts": 5, "correct": 0, "band": 1},
+        ])
+        result = get_skill_insights(session, kid.id)
+        assert "maths" in result
+
+        strongest = result["maths"]["strongest"]
+        weakest = result["maths"]["weakest"]
+
+        # Top 3 strongest by accuracy
+        assert len(strongest) == 3
+        assert strongest[0]["accuracy"] == 100  # stats.mean.basic 10/10
+
+        # Top 3 weakest by accuracy
+        assert len(weakest) == 3
+        assert weakest[0]["accuracy"] == 0  # measure.metric.convert 0/5
+
+    def test_geography_skills_separate(self, session, kid):
+        """Geography skills are bucketed separately from maths."""
+        self._seed_skill_progress(session, kid, [
+            {"skill": "stats.mean.basic", "attempts": 5, "correct": 5},
+            {"skill": "geog.maps.compass_points", "attempts": 4, "correct": 4},
+            {"skill": "geog.maps.gridref_4fig", "attempts": 3, "correct": 1},
+        ])
+        result = get_skill_insights(session, kid.id)
+        assert "maths" in result
+        assert "geography" in result
+        assert len(result["maths"]["strongest"]) == 1
+        assert len(result["geography"]["strongest"]) == 2
+
+    def test_top_n_limits_results(self, session, kid):
+        """top_n parameter limits how many skills are returned."""
+        self._seed_skill_progress(session, kid, [
+            {"skill": "stats.mean.basic", "attempts": 10, "correct": 10},
+            {"skill": "stats.median.basic", "attempts": 8, "correct": 7},
+            {"skill": "algebra.simplify.like_terms", "attempts": 6, "correct": 3},
+            {"skill": "prob.scale", "attempts": 4, "correct": 1},
+            {"skill": "measure.metric.convert", "attempts": 5, "correct": 0},
+        ])
+        result = get_skill_insights(session, kid.id, top_n=2)
+        assert len(result["maths"]["strongest"]) == 2
+        assert len(result["maths"]["weakest"]) == 2
+
+    def test_entries_have_expected_fields(self, session, kid):
+        """Each skill entry has name, code, accuracy, attempts, band."""
+        self._seed_skill_progress(session, kid, [
+            {"skill": "stats.mean.basic", "attempts": 5, "correct": 4, "band": 3},
+        ])
+        result = get_skill_insights(session, kid.id)
+        entry = result["maths"]["strongest"][0]
+        assert "name" in entry
+        assert "code" in entry
+        assert "accuracy" in entry
+        assert "attempts" in entry
+        assert "band" in entry
+        assert entry["code"] == "stats.mean.basic"
+        assert entry["accuracy"] == 80
+        assert entry["attempts"] == 5
+        assert entry["band"] == 3

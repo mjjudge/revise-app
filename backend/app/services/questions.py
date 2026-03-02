@@ -846,6 +846,65 @@ def get_all_subject_progress(db: Session, user_id: int) -> dict[str, SubjectProg
     return {sp.subject: sp for sp in rows}
 
 
+def get_skill_insights(
+    db: Session, user_id: int, top_n: int = 3,
+) -> dict[str, dict[str, list[dict]]]:
+    """Return strongest and weakest skills per subject for the admin dashboard.
+
+    Returns::
+
+        {
+            "maths": {
+                "strongest": [{"code": "...", "name": "...", "accuracy": 100, "attempts": 9}, ...],
+                "weakest":   [{"code": "...", "name": "...", "accuracy": 0, "attempts": 2}, ...],
+            },
+            "geography": { ... },
+        }
+
+    Only includes skills with ≥2 attempts so streaky single-attempt data
+    doesn't dominate.  Strongest = highest accuracy, weakest = lowest.
+    """
+    from app.templates.feed_loader import get_skill_map
+
+    skill_map = get_skill_map()
+
+    # Fetch all skill progress rows for this user
+    stmt = select(UserSkillProgress).where(
+        UserSkillProgress.user_id == user_id,
+        UserSkillProgress.attempts_total >= 2,
+    )
+    rows = db.exec(stmt).all()
+
+    # Bucket by subject
+    by_subject: dict[str, list[dict]] = {}
+    for sp in rows:
+        sk = skill_map.get(sp.skill)
+        subject = sk.subject if sk else ("maths" if not sp.skill.startswith("geog.") else "geography")
+        name = sk.name if sk else sp.skill
+
+        accuracy = int(sp.attempts_correct / sp.attempts_total * 100) if sp.attempts_total else 0
+        entry = {
+            "code": sp.skill,
+            "name": name,
+            "accuracy": accuracy,
+            "attempts": sp.attempts_total,
+            "band": sp.current_band,
+        }
+        by_subject.setdefault(subject, []).append(entry)
+
+    result: dict[str, dict[str, list[dict]]] = {}
+    for subject, entries in by_subject.items():
+        # Sort by accuracy descending (ties broken by more attempts)
+        sorted_entries = sorted(entries, key=lambda e: (e["accuracy"], e["attempts"]), reverse=True)
+        strongest = sorted_entries[:top_n]
+        # Weakest = lowest accuracy (ties broken by more attempts = more evidence)
+        weakest_sorted = sorted(entries, key=lambda e: (e["accuracy"], -e["attempts"]))
+        weakest = weakest_sorted[:top_n]
+        result[subject] = {"strongest": strongest, "weakest": weakest}
+
+    return result
+
+
 def _gold_earned_this_week(db: Session, user: User) -> int:
     """Sum gold earned by user in the current ISO week (Mon-Sun)."""
     from sqlmodel import func
