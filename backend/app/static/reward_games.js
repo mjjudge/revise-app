@@ -251,6 +251,9 @@ function closeRewardGame() {
    ═══════════════════════════════════════════════════════════════════ */
 (function() {
   let _raf = null;
+  let _siKeyDown = null;
+  let _siKeyUp = null;
+  let _siTimer = null;
 
   function init(container, onComplete) {
     container.innerHTML = `
@@ -285,18 +288,27 @@ function closeRewardGame() {
       }
     }
 
-    const timer = setInterval(() => {
+    _siTimer = setInterval(() => {
       if (!gameActive) return;
       timeLeft--;
-      document.getElementById('si-timer').textContent = timeLeft + 's';
+      const el = document.getElementById('si-timer');
+      if (el) el.textContent = timeLeft + 's';
       if (timeLeft <= 0) {
         gameActive = false;
-        clearInterval(timer);
+        clearInterval(_siTimer);
+        _siTimer = null;
         showEnd();
       }
     }, 1000);
 
+    function removeKeyListeners() {
+      if (_siKeyDown) { document.removeEventListener('keydown', _siKeyDown); _siKeyDown = null; }
+      if (_siKeyUp)   { document.removeEventListener('keyup',   _siKeyUp);   _siKeyUp = null;   }
+    }
+
     function showEnd() {
+      gameActive = false;
+      removeKeyListeners();
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
       ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = '#fbbf24';
@@ -339,7 +351,8 @@ function closeRewardGame() {
             a.alive = false;
             bullets.splice(bi, 1);
             score++;
-            document.getElementById('si-score').textContent = 'Score: ' + score;
+            const el = document.getElementById('si-score');
+            if (el) el.textContent = 'Score: ' + score;
           }
         });
       });
@@ -393,8 +406,16 @@ function closeRewardGame() {
       }
     }
 
-    document.addEventListener('keydown', e => { keys[e.key] = true; if (e.key === ' ') { e.preventDefault(); fire(); } });
-    document.addEventListener('keyup', e => { keys[e.key] = false; });
+    _siKeyDown = function(e) {
+      if (!gameActive) return;
+      keys[e.key] = true;
+      if (e.key === ' ') { e.preventDefault(); e.stopPropagation(); fire(); }
+    };
+    _siKeyUp = function(e) {
+      keys[e.key] = false;
+    };
+    document.addEventListener('keydown', _siKeyDown);
+    document.addEventListener('keyup', _siKeyUp);
 
     // Mobile controls
     const leftBtn = document.getElementById('si-left');
@@ -414,6 +435,9 @@ function closeRewardGame() {
   function cleanup() {
     if (_raf) cancelAnimationFrame(_raf);
     _raf = null;
+    if (_siKeyDown) { document.removeEventListener('keydown', _siKeyDown); _siKeyDown = null; }
+    if (_siKeyUp)   { document.removeEventListener('keyup',   _siKeyUp);   _siKeyUp = null;   }
+    if (_siTimer) { clearInterval(_siTimer); _siTimer = null; }
   }
 
   registerGame('space_invaders', 'Space Invaders', '🚀', init, cleanup);
@@ -429,7 +453,7 @@ function closeRewardGame() {
   function init(container, onComplete) {
     _timeouts = [];
     const gridSize = 16;  // 4×4
-    const seqLen = 5 + Math.floor(Math.random() * 3);  // 5-7 squares
+    const seqLen = 3;     // start easy — 3 squares
     const sequence = [];
     while (sequence.length < seqLen) {
       const n = Math.floor(Math.random() * gridSize);
@@ -444,6 +468,7 @@ function closeRewardGame() {
       <div id="pm-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:240px;margin:0 auto 12px auto;"></div>
       <div id="pm-msg" class="text-center text-lg font-bold h-8 mb-2"></div>
       <div id="pm-progress" class="text-center text-realm-purple-300 text-sm"></div>
+      <div id="pm-actions" class="text-center mt-2"></div>
     `;
 
     const grid = document.getElementById('pm-grid');
@@ -466,19 +491,34 @@ function closeRewardGame() {
       cells[idx].style.boxShadow = on ? '0 0 12px rgba(251,191,36,0.6)' : 'none';
     }
 
-    // Show sequence
-    sequence.forEach((sq, i) => {
-      const tOn = setTimeout(() => highlight(sq, true), i * 700);
-      const tOff = setTimeout(() => highlight(sq, false), i * 700 + 500);
-      _timeouts.push(tOn, tOff);
-    });
+    function playSequence() {
+      // Clear any existing timeouts
+      _timeouts.forEach(t => clearTimeout(t));
+      _timeouts = [];
+      phase = 'showing';
+      inputIdx = 0;
+      document.getElementById('pm-instruction').textContent = 'Watch the pattern…';
+      document.getElementById('pm-progress').textContent = '';
+      document.getElementById('pm-msg').textContent = '';
+      document.getElementById('pm-actions').innerHTML = '';
 
-    const tReady = setTimeout(() => {
-      phase = 'input';
-      document.getElementById('pm-instruction').textContent = 'Now tap them in the same order!';
-      document.getElementById('pm-progress').textContent = '0 / ' + seqLen;
-    }, seqLen * 700 + 300);
-    _timeouts.push(tReady);
+      // Reset all cells
+      cells.forEach((c, i) => highlight(i, false));
+
+      // Show sequence
+      sequence.forEach((sq, i) => {
+        const tOn = setTimeout(() => highlight(sq, true), i * 700);
+        const tOff = setTimeout(() => highlight(sq, false), i * 700 + 500);
+        _timeouts.push(tOn, tOff);
+      });
+
+      const tReady = setTimeout(() => {
+        phase = 'input';
+        document.getElementById('pm-instruction').textContent = 'Now tap them in the same order!';
+        document.getElementById('pm-progress').textContent = '0 / ' + seqLen;
+      }, seqLen * 700 + 300);
+      _timeouts.push(tReady);
+    }
 
     function onCellClick(i) {
       if (phase !== 'input') return;
@@ -500,15 +540,21 @@ function closeRewardGame() {
           cells[i].style.background = 'rgba(88,28,135,0.5)';
           cells[i].style.borderColor = 'rgba(139,92,246,0.4)';
         }, 300);
-        document.getElementById('pm-msg').textContent = '🤔 Oops! Try from the start…';
+        phase = 'wrong';
+        document.getElementById('pm-msg').textContent = '🤔 Oops! Wrong square…';
         document.getElementById('pm-msg').style.color = '#ef4444';
-        inputIdx = 0;
-        document.getElementById('pm-progress').textContent = '0 / ' + seqLen;
-        setTimeout(() => {
-          document.getElementById('pm-msg').textContent = '';
-        }, 1200);
+        document.getElementById('pm-progress').textContent = '';
+        // Show Watch Again button
+        const actions = document.getElementById('pm-actions');
+        actions.innerHTML = `<button id="pm-replay" class="px-4 py-2 bg-realm-purple-700 hover:bg-realm-purple-600 text-white rounded-lg text-sm font-bold transition">🔄 Watch Again</button>`;
+        document.getElementById('pm-replay').addEventListener('click', () => {
+          playSequence();
+        });
       }
     }
+
+    // Initial play
+    playSequence();
   }
 
   function cleanup() {
@@ -1069,70 +1115,288 @@ function closeRewardGame() {
 
 
 /* ═══════════════════════════════════════════════════════════════════
-   GAME 9: TANGRAM BUILDER
+   GAME 9: TANGRAM BUILDER (SVG drag-and-drop)
    ═══════════════════════════════════════════════════════════════════ */
 (function() {
-  // Simplified tangram: drag colored blocks to fill a shape outline
-  const SILHOUETTES = [
-    { name: 'Arrow', cells: [1,5,6,7,9,13], grid: 4 },       // 4×4 grid, shaded cells form arrow
-    { name: 'House', cells: [1,4,5,6,8,9,10], grid: 4 },     // house shape
-    { name: 'Boat', cells: [5,8,9,10,11,13,14], grid: 4 },   // boat shape
-    { name: 'Cross', cells: [1,4,5,6,9], grid: 4 },          // plus sign
-    { name: 'Cat', cells: [0,3,4,5,6,7,9,10], grid: 4 },     // cat silhouette
-  ];
+  const PUZZLE_IDS = ['house', 'cat', 'rocket', 'fish', 'bird'];
+  let _pointerHandlers = null;
 
   function init(container, onComplete) {
-    const sil = SILHOUETTES[Math.floor(Math.random() * SILHOUETTES.length)];
-    const gridSize = sil.grid;
-    const totalCells = gridSize * gridSize;
+    const puzzleId = PUZZLE_IDS[Math.floor(Math.random() * PUZZLE_IDS.length)];
 
     container.innerHTML = `
-      <p class="text-realm-purple-300 text-sm text-center mb-2">Tap empty highlighted cells to fill the "${sil.name}" shape!</p>
-      <div id="tg-grid" style="display:grid;grid-template-columns:repeat(${gridSize},1fr);gap:4px;max-width:${gridSize * 56}px;margin:0 auto 12px auto;"></div>
-      <div class="flex justify-between" style="max-width:${gridSize * 56}px;margin:0 auto;">
-        <span id="tg-count" class="text-realm-purple-300 text-sm">0 / ${sil.cells.length}</span>
+      <p id="tg-instruction" class="text-realm-purple-300 text-sm text-center mb-2">Loading puzzle…</p>
+      <div id="tg-area" style="position:relative;max-width:400px;margin:0 auto;"></div>
+      <div id="tg-controls" class="flex justify-center gap-3 mt-2">
+        <button id="tg-rot-ccw" class="px-3 py-1 bg-realm-purple-700 hover:bg-realm-purple-600 text-white rounded-lg text-sm font-bold">↺ Rotate</button>
+        <button id="tg-rot-cw" class="px-3 py-1 bg-realm-purple-700 hover:bg-realm-purple-600 text-white rounded-lg text-sm font-bold">Rotate ↻</button>
+      </div>
+      <div class="flex justify-between mt-2" style="max-width:400px;margin:4px auto;">
+        <span id="tg-count" class="text-realm-purple-300 text-sm">0 / 7 placed</span>
         <span id="tg-msg" class="text-lg font-bold"></span>
       </div>
     `;
 
-    const grid = document.getElementById('tg-grid');
-    let filled = new Set();
-
-    for (let i = 0; i < totalCells; i++) {
-      const cell = document.createElement('button');
-      const isTarget = sil.cells.includes(i);
-      Object.assign(cell.style, {
-        width: '50px', height: '50px', borderRadius: '0.5rem',
-        border: isTarget ? '2px dashed rgba(251,191,36,0.6)' : '2px solid rgba(139,92,246,0.2)',
-        background: isTarget ? 'rgba(251,191,36,0.1)' : 'rgba(88,28,135,0.2)',
-        cursor: isTarget ? 'pointer' : 'default',
-        transition: 'all 0.2s',
+    fetch('/static/tangram/' + puzzleId + '.json')
+      .then(r => r.json())
+      .then(puzzle => initPuzzle(container, puzzle, onComplete))
+      .catch(() => {
+        document.getElementById('tg-instruction').textContent = 'Could not load puzzle.';
       });
+  }
 
-      if (isTarget) {
-        cell.addEventListener('click', () => {
-          if (filled.has(i)) return;
-          filled.add(i);
-          cell.style.background = '#fbbf24';
-          cell.style.borderColor = '#fbbf24';
-          cell.style.borderStyle = 'solid';
-          cell.style.boxShadow = '0 0 8px rgba(251,191,36,0.4)';
-          document.getElementById('tg-count').textContent = filled.size + ' / ' + sil.cells.length;
+  function initPuzzle(container, puzzle, onComplete) {
+    const board = puzzle.board;
+    const rotStep = puzzle.rules.rotationStepDeg || 15;
+    document.getElementById('tg-instruction').textContent =
+      'Drag pieces to build the "' + puzzle.title + '" · tap piece then rotate buttons';
 
-          if (filled.size >= sil.cells.length) {
-            const msg = document.getElementById('tg-msg');
-            msg.textContent = '🎉 Beautiful!';
-            msg.style.color = '#10b981';
-            setTimeout(() => onComplete(), 1500);
-          }
-        });
+    const area = document.getElementById('tg-area');
+    const svgNS = 'http://www.w3.org/2000/svg';
+
+    // Create SVG
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + board.width + ' ' + board.height);
+    svg.setAttribute('width', '100%');
+    svg.style.display = 'block';
+    svg.style.borderRadius = '0.75rem';
+    svg.style.background = 'rgba(88,28,135,0.3)';
+    svg.style.border = '2px solid rgba(139,92,246,0.3)';
+    svg.style.touchAction = 'none';
+    svg.style.userSelect = 'none';
+    area.appendChild(svg);
+
+    // Draw play area boundary (subtle)
+    const pa = board.playArea;
+    const playRect = document.createElementNS(svgNS, 'rect');
+    playRect.setAttribute('x', pa.x);
+    playRect.setAttribute('y', pa.y);
+    playRect.setAttribute('width', pa.w);
+    playRect.setAttribute('height', pa.h);
+    playRect.setAttribute('fill', 'rgba(139,92,246,0.08)');
+    playRect.setAttribute('stroke', 'rgba(139,92,246,0.2)');
+    playRect.setAttribute('stroke-width', '1');
+    playRect.setAttribute('stroke-dasharray', '4,4');
+    playRect.setAttribute('rx', '8');
+    svg.appendChild(playRect);
+
+    // Draw tray area boundary
+    const ta = board.trayArea;
+    const trayRect = document.createElementNS(svgNS, 'rect');
+    trayRect.setAttribute('x', ta.x);
+    trayRect.setAttribute('y', ta.y);
+    trayRect.setAttribute('width', ta.w);
+    trayRect.setAttribute('height', ta.h);
+    trayRect.setAttribute('fill', 'rgba(88,28,135,0.25)');
+    trayRect.setAttribute('stroke', 'rgba(139,92,246,0.15)');
+    trayRect.setAttribute('stroke-width', '1');
+    trayRect.setAttribute('rx', '8');
+    svg.appendChild(trayRect);
+
+    // Draw target silhouettes (ghost outlines)
+    puzzle.pieces.forEach(p => {
+      const ghost = document.createElementNS(svgNS, 'polygon');
+      const tp = p.targetPose;
+      ghost.setAttribute('points', polyToPoints(p.polygon));
+      ghost.setAttribute('fill', 'rgba(139,92,246,0.12)');
+      ghost.setAttribute('stroke', 'rgba(139,92,246,0.25)');
+      ghost.setAttribute('stroke-width', '1');
+      ghost.setAttribute('stroke-dasharray', '3,3');
+      ghost.setAttribute('transform', svgTransform(tp.position.x, tp.position.y, tp.rotationDeg));
+      svg.appendChild(ghost);
+    });
+
+    // Piece state
+    const pieces = puzzle.pieces.map(p => ({
+      id: p.id,
+      polygon: p.polygon,
+      color: p.color,
+      x: p.startPose.position.x,
+      y: p.startPose.position.y,
+      rotation: p.startPose.rotationDeg,
+      targetX: p.targetPose.position.x,
+      targetY: p.targetPose.position.y,
+      targetRot: p.targetPose.rotationDeg,
+      snapDist: p.snap.distPx,
+      snapRot: p.snap.rotDeg,
+      locked: false,
+      el: null,
+    }));
+
+    let selectedIdx = -1;
+    let dragging = false;
+    let dragOffset = { x: 0, y: 0 };
+    let lockedCount = 0;
+
+    // Create piece SVG elements
+    pieces.forEach((p, idx) => {
+      const g = document.createElementNS(svgNS, 'g');
+      g.style.cursor = 'grab';
+
+      const poly = document.createElementNS(svgNS, 'polygon');
+      poly.setAttribute('points', polyToPoints(p.polygon));
+      poly.setAttribute('fill', p.color);
+      poly.setAttribute('stroke', '#fff');
+      poly.setAttribute('stroke-width', '1.5');
+      poly.setAttribute('stroke-linejoin', 'round');
+      g.appendChild(poly);
+
+      g.setAttribute('transform', svgTransform(p.x, p.y, p.rotation));
+      g.dataset.idx = idx;
+      svg.appendChild(g);
+      p.el = g;
+    });
+
+    function polyToPoints(verts) {
+      return verts.map(v => v[0] + ',' + v[1]).join(' ');
+    }
+
+    function svgTransform(x, y, rot) {
+      return 'translate(' + x + ',' + y + ') rotate(' + rot + ')';
+    }
+
+    function selectPiece(idx) {
+      // Deselect old
+      if (selectedIdx >= 0 && pieces[selectedIdx].el) {
+        const oldPoly = pieces[selectedIdx].el.querySelector('polygon');
+        if (oldPoly) oldPoly.setAttribute('stroke', '#fff');
       }
+      selectedIdx = idx;
+      if (idx >= 0 && !pieces[idx].locked) {
+        // Bring to front
+        svg.appendChild(pieces[idx].el);
+        const poly = pieces[idx].el.querySelector('polygon');
+        if (poly) poly.setAttribute('stroke', '#fbbf24');
+      }
+    }
 
-      grid.appendChild(cell);
+    function checkSnap(p) {
+      const dx = p.x - p.targetX;
+      const dy = p.y - p.targetY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      // Normalize rotation difference to [-180, 180]
+      let rotDiff = ((p.rotation - p.targetRot) % 360 + 540) % 360 - 180;
+
+      if (dist <= p.snapDist && Math.abs(rotDiff) <= p.snapRot) {
+        // Snap!
+        p.x = p.targetX;
+        p.y = p.targetY;
+        p.rotation = p.targetRot;
+        p.locked = true;
+        p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation));
+        p.el.style.cursor = 'default';
+        p.el.style.opacity = '0.85';
+        // Green outline for locked
+        const poly = p.el.querySelector('polygon');
+        if (poly) { poly.setAttribute('stroke', '#10b981'); poly.setAttribute('stroke-width', '2'); }
+        lockedCount++;
+
+        document.getElementById('tg-count').textContent = lockedCount + ' / 7 placed';
+
+        if (lockedCount >= pieces.length) {
+          document.getElementById('tg-msg').textContent = '🎉 Beautiful!';
+          document.getElementById('tg-msg').style.color = '#10b981';
+          document.getElementById('tg-instruction').textContent = 'Puzzle complete!';
+          setTimeout(() => onComplete(), 1800);
+        }
+        return true;
+      }
+      return false;
+    }
+
+    // Get SVG coordinates from mouse/touch event
+    function svgPoint(e) {
+      const pt = svg.createSVGPoint();
+      const touch = e.touches ? e.touches[0] : e;
+      pt.x = touch.clientX;
+      pt.y = touch.clientY;
+      const ctm = svg.getScreenCTM().inverse();
+      return pt.matrixTransform(ctm);
+    }
+
+    // Pointer events
+    function onPointerDown(e) {
+      const target = e.target.closest('g[data-idx]');
+      if (!target) { selectPiece(-1); return; }
+      const idx = parseInt(target.dataset.idx);
+      if (pieces[idx].locked) return;
+
+      e.preventDefault();
+      selectPiece(idx);
+      dragging = true;
+
+      const pt = svgPoint(e);
+      dragOffset.x = pt.x - pieces[idx].x;
+      dragOffset.y = pt.y - pieces[idx].y;
+      target.style.cursor = 'grabbing';
+    }
+
+    function onPointerMove(e) {
+      if (!dragging || selectedIdx < 0) return;
+      e.preventDefault();
+      const p = pieces[selectedIdx];
+      if (p.locked) return;
+
+      const pt = svgPoint(e);
+      p.x = pt.x - dragOffset.x;
+      p.y = pt.y - dragOffset.y;
+      p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation));
+    }
+
+    function onPointerUp(e) {
+      if (!dragging || selectedIdx < 0) return;
+      dragging = false;
+      const p = pieces[selectedIdx];
+      if (!p.locked) {
+        p.el.style.cursor = 'grab';
+        checkSnap(p);
+      }
+    }
+
+    // Attach events
+    svg.addEventListener('mousedown', onPointerDown);
+    svg.addEventListener('mousemove', onPointerMove);
+    svg.addEventListener('mouseup', onPointerUp);
+    svg.addEventListener('mouseleave', onPointerUp);
+    svg.addEventListener('touchstart', onPointerDown, { passive: false });
+    svg.addEventListener('touchmove', onPointerMove, { passive: false });
+    svg.addEventListener('touchend', onPointerUp);
+
+    _pointerHandlers = { svg, onPointerDown, onPointerMove, onPointerUp };
+
+    // Rotation buttons
+    document.getElementById('tg-rot-ccw').addEventListener('click', () => {
+      if (selectedIdx < 0 || pieces[selectedIdx].locked) return;
+      const p = pieces[selectedIdx];
+      p.rotation = (p.rotation - rotStep + 360) % 360;
+      p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation));
+      checkSnap(p);
+    });
+    document.getElementById('tg-rot-cw').addEventListener('click', () => {
+      if (selectedIdx < 0 || pieces[selectedIdx].locked) return;
+      const p = pieces[selectedIdx];
+      p.rotation = (p.rotation + rotStep) % 360;
+      p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation));
+      checkSnap(p);
+    });
+  }
+
+  function cleanup() {
+    if (_pointerHandlers) {
+      const { svg, onPointerDown, onPointerMove, onPointerUp } = _pointerHandlers;
+      svg.removeEventListener('mousedown', onPointerDown);
+      svg.removeEventListener('mousemove', onPointerMove);
+      svg.removeEventListener('mouseup', onPointerUp);
+      svg.removeEventListener('mouseleave', onPointerUp);
+      svg.removeEventListener('touchstart', onPointerDown);
+      svg.removeEventListener('touchmove', onPointerMove);
+      svg.removeEventListener('touchend', onPointerUp);
+      _pointerHandlers = null;
     }
   }
 
-  registerGame('tangram', 'Tangram Builder', '🔷', init);
+  registerGame('tangram', 'Tangram Builder', '🔷', init, cleanup);
 })();
 
 

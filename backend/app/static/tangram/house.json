@@ -1,0 +1,80 @@
+{
+  "id": "house",
+  "title": "House",
+  "board": {
+    "width": 400,
+    "height": 420,
+    "trayArea": { "x": 0, "y": 300, "w": 400, "h": 120 },
+    "playArea": { "x": 50, "y": 10, "w": 300, "h": 280 }
+  },
+  "rules": {
+    "allowFlip": false,
+    "rotationStepDeg": 15,
+    "completion": "target_pose"
+  },
+  "pieces": [
+    {
+      "id": "big_tri_1",
+      "polygon": [[0,0],[100,0],[0,100]],
+      "color": "#ef4444",
+      "startPose": { "position": { "x": 20, "y": 320 }, "rotationDeg": 0 },
+      "targetPose": { "position": { "x": 100, "y": 80 }, "rotationDeg": 180 },
+      "snap": { "distPx": 22, "rotDeg": 12 },
+      "lockOnSnap": true
+    },
+    {
+      "id": "big_tri_2",
+      "polygon": [[0,0],[100,0],[0,100]],
+      "color": "#f59e0b",
+      "startPose": { "position": { "x": 130, "y": 320 }, "rotationDeg": 0 },
+      "targetPose": { "position": { "x": 200, "y": 80 }, "rotationDeg": 270 },
+      "snap": { "distPx": 22, "rotDeg": 12 },
+      "lockOnSnap": true
+    },
+    {
+      "id": "med_tri",
+      "polygon": [[0,0],[70,0],[0,70]],
+      "color": "#10b981",
+      "startPose": { "position": { "x": 240, "y": 330 }, "rotationDeg": 0 },
+      "targetPose": { "position": { "x": 150, "y": 30 }, "rotationDeg": 135 },
+      "snap": { "distPx": 22, "rotDeg": 12 },
+      "lockOnSnap": true
+    },
+    {
+      "id": "small_tri_1",
+      "polygon": [[0,0],[50,0],[0,50]],
+      "color": "#3b82f6",
+      "startPose": { "position": { "x": 320, "y": 325 }, "rotationDeg": 0 },
+      "targetPose": { "position": { "x": 115, "y": 180 }, "rotationDeg": 0 },
+      "snap": { "distPx": 22, "rotDeg": 12 },
+      "lockOnSnap": true
+    },
+    {
+      "id": "small_tri_2",
+      "polygon": [[0,0],[50,0],[0,50]],
+      "color": "#8b5cf6",
+      "startPose": { "position": { "x": 370, "y": 325 }, "rotationDeg": 0 },
+      "targetPose": { "position": { "x": 235, "y": 180 }, "rotationDeg": 90 },
+      "snap": { "distPx": 22, "rotDeg": 12 },
+      "lockOnSnap": true
+    },
+    {
+      "id": "square",
+      "polygon": [[0,0],[50,0],[50,50],[0,50]],
+      "color": "#ec4899",
+      "startPose": { "position": { "x": 310, "y": 360 }, "rotationDeg": 0 },
+      "targetPose": { "position": { "x": 175, "y": 180 }, "rotationDeg": 0 },
+      "snap": { "distPx": 22, "rotDeg": 12 },
+      "lockOnSnap": true
+    },
+    {
+      "id": "parallelogram",
+      "polygon": [[0,0],[60,0],[85,50],[25,50]],
+      "color": "#14b8a6",
+      "startPose": { "position": { "x": 130, "y": 360 }, "rotationDeg": 0 },
+      "targetPose": { "position": { "x": 115, "y": 230 }, "rotationDeg": 0 },
+      "snap": { "distPx": 22, "rotDeg": 12 },
+      "lockOnSnap": true
+    }
+  ]
+}
