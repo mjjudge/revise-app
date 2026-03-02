@@ -1118,12 +1118,9 @@ function closeRewardGame() {
    GAME 9: TANGRAM BUILDER (SVG drag-and-drop)
    ═══════════════════════════════════════════════════════════════════ */
 (function() {
-  const PUZZLE_IDS = ['house', 'cat', 'rocket', 'fish', 'bird'];
   let _pointerHandlers = null;
 
   function init(container, onComplete) {
-    const puzzleId = PUZZLE_IDS[Math.floor(Math.random() * PUZZLE_IDS.length)];
-
     container.innerHTML = `
       <p id="tg-instruction" class="text-realm-purple-300 text-sm text-center mb-2">Loading puzzle…</p>
       <div id="tg-area" style="position:relative;max-width:400px;margin:0 auto;"></div>
@@ -1137,11 +1134,18 @@ function closeRewardGame() {
       </div>
     `;
 
-    fetch('/static/tangram/' + puzzleId + '.json')
+    // Load puzzle list from API, then pick random
+    fetch('/api/tangram/puzzles')
       .then(r => r.json())
+      .then(list => {
+        if (!list.length) throw new Error('no puzzles');
+        const pick = list[Math.floor(Math.random() * list.length)];
+        return fetch('/api/tangram/puzzle/' + pick.id).then(r => r.json());
+      })
       .then(puzzle => initPuzzle(container, puzzle, onComplete))
       .catch(() => {
-        document.getElementById('tg-instruction').textContent = 'Could not load puzzle.';
+        const el = document.getElementById('tg-instruction');
+        if (el) el.textContent = 'Could not load puzzle.';
       });
   }
 
@@ -1193,6 +1197,32 @@ function closeRewardGame() {
     trayRect.setAttribute('rx', '8');
     svg.appendChild(trayRect);
 
+    function polyToPoints(verts) {
+      return verts.map(v => v[0] + ',' + v[1]).join(' ');
+    }
+    function svgTransform(x, y, rot) {
+      return 'translate(' + x + ',' + y + ') rotate(' + rot + ')';
+    }
+    function polyKey(polygon) {
+      return polygon.map(v => v.join(',')).join(';');
+    }
+
+    // Build target slots grouped by polygon shape (for interchangeable pieces)
+    //   { polyKey → [{ x, y, rot, snapDist, snapRot, claimed: false }] }
+    const targetSlots = {};
+    puzzle.pieces.forEach(p => {
+      const key = polyKey(p.polygon);
+      if (!targetSlots[key]) targetSlots[key] = [];
+      targetSlots[key].push({
+        x: p.targetPose.position.x,
+        y: p.targetPose.position.y,
+        rot: p.targetPose.rotationDeg,
+        snapDist: p.snap.distPx,
+        snapRot: p.snap.rotDeg,
+        claimed: false,
+      });
+    });
+
     // Draw target silhouettes (ghost outlines)
     puzzle.pieces.forEach(p => {
       const ghost = document.createElementNS(svgNS, 'polygon');
@@ -1210,15 +1240,11 @@ function closeRewardGame() {
     const pieces = puzzle.pieces.map(p => ({
       id: p.id,
       polygon: p.polygon,
+      polyKey: polyKey(p.polygon),
       color: p.color,
       x: p.startPose.position.x,
       y: p.startPose.position.y,
       rotation: p.startPose.rotationDeg,
-      targetX: p.targetPose.position.x,
-      targetY: p.targetPose.position.y,
-      targetRot: p.targetPose.rotationDeg,
-      snapDist: p.snap.distPx,
-      snapRot: p.snap.rotDeg,
       locked: false,
       el: null,
     }));
@@ -1247,23 +1273,13 @@ function closeRewardGame() {
       p.el = g;
     });
 
-    function polyToPoints(verts) {
-      return verts.map(v => v[0] + ',' + v[1]).join(' ');
-    }
-
-    function svgTransform(x, y, rot) {
-      return 'translate(' + x + ',' + y + ') rotate(' + rot + ')';
-    }
-
     function selectPiece(idx) {
-      // Deselect old
-      if (selectedIdx >= 0 && pieces[selectedIdx].el) {
+      if (selectedIdx >= 0 && pieces[selectedIdx] && pieces[selectedIdx].el) {
         const oldPoly = pieces[selectedIdx].el.querySelector('polygon');
-        if (oldPoly) oldPoly.setAttribute('stroke', '#fff');
+        if (oldPoly && !pieces[selectedIdx].locked) oldPoly.setAttribute('stroke', '#fff');
       }
       selectedIdx = idx;
       if (idx >= 0 && !pieces[idx].locked) {
-        // Bring to front
         svg.appendChild(pieces[idx].el);
         const poly = pieces[idx].el.querySelector('polygon');
         if (poly) poly.setAttribute('stroke', '#fbbf24');
@@ -1271,36 +1287,44 @@ function closeRewardGame() {
     }
 
     function checkSnap(p) {
-      const dx = p.x - p.targetX;
-      const dy = p.y - p.targetY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+      // Try all unclaimed target slots that share this piece's polygon shape
+      const slots = targetSlots[p.polyKey];
+      if (!slots) return false;
 
-      // Normalize rotation difference to [-180, 180]
-      let rotDiff = ((p.rotation - p.targetRot) % 360 + 540) % 360 - 180;
+      for (const slot of slots) {
+        if (slot.claimed) continue;
 
-      if (dist <= p.snapDist && Math.abs(rotDiff) <= p.snapRot) {
-        // Snap!
-        p.x = p.targetX;
-        p.y = p.targetY;
-        p.rotation = p.targetRot;
-        p.locked = true;
-        p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation));
-        p.el.style.cursor = 'default';
-        p.el.style.opacity = '0.85';
-        // Green outline for locked
-        const poly = p.el.querySelector('polygon');
-        if (poly) { poly.setAttribute('stroke', '#10b981'); poly.setAttribute('stroke-width', '2'); }
-        lockedCount++;
+        const dx = p.x - slot.x;
+        const dy = p.y - slot.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        let rotDiff = ((p.rotation - slot.rot) % 360 + 540) % 360 - 180;
 
-        document.getElementById('tg-count').textContent = lockedCount + ' / 7 placed';
+        if (dist <= slot.snapDist && Math.abs(rotDiff) <= slot.snapRot) {
+          // Snap to this slot!
+          p.x = slot.x;
+          p.y = slot.y;
+          p.rotation = slot.rot;
+          p.locked = true;
+          slot.claimed = true;
+          p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation));
+          p.el.style.cursor = 'default';
+          p.el.style.opacity = '0.85';
+          const poly = p.el.querySelector('polygon');
+          if (poly) { poly.setAttribute('stroke', '#10b981'); poly.setAttribute('stroke-width', '2'); }
+          lockedCount++;
 
-        if (lockedCount >= pieces.length) {
-          document.getElementById('tg-msg').textContent = '🎉 Beautiful!';
-          document.getElementById('tg-msg').style.color = '#10b981';
-          document.getElementById('tg-instruction').textContent = 'Puzzle complete!';
-          setTimeout(() => onComplete(), 1800);
+          const countEl = document.getElementById('tg-count');
+          if (countEl) countEl.textContent = lockedCount + ' / ' + pieces.length + ' placed';
+
+          if (lockedCount >= pieces.length) {
+            const msgEl = document.getElementById('tg-msg');
+            if (msgEl) { msgEl.textContent = '🎉 Beautiful!'; msgEl.style.color = '#10b981'; }
+            const instrEl = document.getElementById('tg-instruction');
+            if (instrEl) instrEl.textContent = 'Puzzle complete!';
+            setTimeout(() => onComplete(), 1800);
+          }
+          return true;
         }
-        return true;
       }
       return false;
     }
@@ -1315,7 +1339,6 @@ function closeRewardGame() {
       return pt.matrixTransform(ctm);
     }
 
-    // Pointer events
     function onPointerDown(e) {
       const target = e.target.closest('g[data-idx]');
       if (!target) { selectPiece(-1); return; }
@@ -1354,7 +1377,6 @@ function closeRewardGame() {
       }
     }
 
-    // Attach events
     svg.addEventListener('mousedown', onPointerDown);
     svg.addEventListener('mousemove', onPointerMove);
     svg.addEventListener('mouseup', onPointerUp);
@@ -1365,7 +1387,6 @@ function closeRewardGame() {
 
     _pointerHandlers = { svg, onPointerDown, onPointerMove, onPointerUp };
 
-    // Rotation buttons
     document.getElementById('tg-rot-ccw').addEventListener('click', () => {
       if (selectedIdx < 0 || pieces[selectedIdx].locked) return;
       const p = pieces[selectedIdx];

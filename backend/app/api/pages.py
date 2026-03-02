@@ -13,6 +13,9 @@ from app.models.question import Attempt, UserSkillProgress
 from app.models.user import Role, User
 from app.services.questions import get_all_subject_progress, get_subject_progress, get_skill_insights, get_boosted_skills
 from app.services.game_config import get_all_games_status, get_enabled_games, toggle_game
+from app.services.tangram_service import (
+    list_puzzles, get_puzzle, save_puzzle, delete_puzzle, blank_puzzle,
+)
 
 router = APIRouter(tags=["pages"])
 
@@ -262,3 +265,76 @@ async def admin_toggle_game(request: Request, session: Session = Depends(get_ses
     if not ok:
         return JSONResponse({"status": "error", "msg": "unknown game"}, status_code=400)
     return JSONResponse({"status": "ok"})
+
+
+# ── Tangram Puzzle Editor (admin only) ─────────────────────────────────
+
+@router.get("/admin/tangram", response_class=HTMLResponse)
+def admin_tangram_page(request: Request, session: Session = Depends(get_session)):
+    """Admin tangram puzzle editor — create, edit, delete puzzles."""
+    user = get_current_user(request, session)
+    if not user or user.role != Role.admin:
+        return RedirectResponse(url="/login", status_code=303)
+
+    return templates.TemplateResponse(request, "admin_tangram.html", {
+        "user": user,
+        "puzzles": list_puzzles(),
+    })
+
+
+@router.get("/api/tangram/puzzles")
+def api_list_tangram_puzzles(request: Request, session: Session = Depends(get_session)):
+    """List all tangram puzzles (used by game + editor)."""
+    from starlette.responses import JSONResponse
+    return JSONResponse(list_puzzles())
+
+
+@router.get("/api/tangram/puzzle/{puzzle_id}")
+def api_get_tangram_puzzle(puzzle_id: str, request: Request, session: Session = Depends(get_session)):
+    """Get a single tangram puzzle JSON."""
+    from starlette.responses import JSONResponse
+    p = get_puzzle(puzzle_id)
+    if not p:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    return JSONResponse(p)
+
+
+@router.post("/api/tangram/puzzle")
+async def api_save_tangram_puzzle(request: Request, session: Session = Depends(get_session)):
+    """Create or update a tangram puzzle. Admin only."""
+    from starlette.responses import JSONResponse
+
+    user = get_current_user(request, session)
+    if not user or user.role != Role.admin:
+        return JSONResponse({"status": "error", "msg": "forbidden"}, status_code=403)
+
+    body = await request.json()
+    pid = save_puzzle(body)
+    return JSONResponse({"status": "ok", "id": pid})
+
+
+@router.delete("/api/tangram/puzzle/{puzzle_id}")
+async def api_delete_tangram_puzzle(puzzle_id: str, request: Request, session: Session = Depends(get_session)):
+    """Delete a tangram puzzle. Admin only."""
+    from starlette.responses import JSONResponse
+
+    user = get_current_user(request, session)
+    if not user or user.role != Role.admin:
+        return JSONResponse({"status": "error", "msg": "forbidden"}, status_code=403)
+
+    ok = delete_puzzle(puzzle_id)
+    if not ok:
+        return JSONResponse({"status": "error", "msg": "not found"}, status_code=404)
+    return JSONResponse({"status": "ok"})
+
+
+@router.get("/api/tangram/blank")
+def api_blank_tangram(request: Request, title: str = "Untitled", session: Session = Depends(get_session)):
+    """Get a blank puzzle scaffold for the editor."""
+    from starlette.responses import JSONResponse
+
+    user = get_current_user(request, session)
+    if not user or user.role != Role.admin:
+        return JSONResponse({"status": "error", "msg": "forbidden"}, status_code=403)
+
+    return JSONResponse(blank_puzzle(title))
