@@ -91,6 +91,16 @@
     </div>
     {% endif %}
 
+    <!-- Practice Boost callout -->
+    {% if is_boosted and result.correct %}
+    <div class="text-center py-3 mb-4 bg-realm-gold-500/10 border border-realm-gold-500/30 rounded-xl">
+      <span class="text-realm-gold-400 font-bold text-lg animate-pulse">
+        ⚡💎 Practice Boost! 2× Gold &amp; 1.5× XP
+      </span>
+      <p class="text-realm-purple-300 text-sm mt-1">Bonus treasure for brave adventurers tackling tough skills!</p>
+    </div>
+    {% endif %}
+
     <!-- Streak indicator -->
     {% if quest and quest.streak >= 3 %}
     <div class="text-center py-2 mb-4">

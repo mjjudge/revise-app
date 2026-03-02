@@ -1,73 +1,48 @@
 # SESSION_STATE
 
 ## Current objective
-Minsterworth OS map study questions — complete. 18 real-map questions added, deployed, and tested.
+EPIC 10.5 — Practice Boost implemented and deployed.
 
 ## Completed this session
 
-### Minsterworth OS Map Study (18 questions)
-- **Static image serving**: Mounted `/images/` as StaticFiles in `main.py`; `map_image` asset renderer produces responsive `<img>` tags
-- **`fixed` generator**: New generator that returns values as-is (no randomisation) for fixed/map-study questions
-- **`keyword_any` marking mode**: Accepts answers matching any of a list of accepted keywords (case-insensitive substring)
-- **`gridref_6fig` tolerance**: Updated marker to support `tolerance` (±N on 3rd/6th digits) and multiple accepted references
-- **18 YAML templates**: Compass direction (3 MCQ), symbols (2 MCQ), features (1 MCQ), identification (2 short text), transport (1 MCQ), gridref 4-fig (2), gridref 6-fig (2 with tolerance), bearings (2 with ±5°), relief/contours (2 MCQ), settlement (1 MCQ)
-- **10 new skills**: `geog.maps.*_realmap` skills for compass, symbols, features, identification, transport, gridref 4-fig, gridref 6-fig, bearing, relief, settlement
-- **`_compute_answer` wiring**: Handles fixed-value templates (via `correct_value` param) for text, gridref, bearing, and keyword_any modes
-- **Tests**: 48 new tests in `test_minsterworth.py` — fixed generator, map_image asset, keyword_any marker, gridref tolerance, bearing tolerance, template loading/validation
-- **Docs**: ADR 019, quality test updated to allow `minsterworth_*` prefix
-- 336 tests passing (288 existing + 48 new)
-- Committed `6fc94e6`
+### EPIC 10.5 — Practice Boost: Extra Rewards for Weak Skills
+- **`get_boosted_skills(db, user_id)`**: New service function returns skill codes qualifying for Practice Boost (accuracy ≤60% with ≥3 attempts, or band==1). Auto-removes when accuracy ≥75% over ≥5 attempts.
+- **`check_answer()` boost multiplier**: Now returns `(attempt, result, is_boosted)` 3-tuple. When skill is boosted: 2× gold, 1.5× XP. Applied after streak bonus, before hint penalty and weekly cap.
+- **quest_unit.html**: Boosted skills show ⚡💎 badge with gold border and "2× Gold" label
+- **quest_question.html**: "Practice Boost Active — 2× Gold & 1.5× XP!" banner when answering boosted skill
+- **quest_result.html**: "Practice Boost! 2× Gold & 1.5× XP" callout on correct answers for boosted skills
+- **admin.html**: "⚡ Boosted" badge next to weak skills in Skill Insights card
+- **Tests**: 15 new tests in `test_practice_boost.py` — `get_boosted_skills` (10 tests: empty, threshold exclusion, low accuracy, band 1, auto-remove, boundary cases) + reward multiplier (5 tests: double gold, 1.5× XP, non-boosted normal, streak+boost stacking, weekly cap still applies, wrong answer)
+- **All callers updated**: `check_answer()` return changed from 2-tuple to 3-tuple; updated quest.py, test_gamification.py, test_tutor.py, test_quality.py, test_subject_progress.py
+- **Docs**: ADR 021
+- 390 tests passing (375 existing + 15 new)
 
-## Completed this session
+### Question repeat prevention (ADR 020)
+- `_exclude_recent()` helper filters recently-used templates; falls back to full list
+- `_select_template()` and `generate_question()` accept `exclude_template_ids`
+- `quest_next` builds exclude set from quest's question IDs via `_recent_template_ids()`
+- 7 tests in `test_repeat_prevention.py`
 
-### EPIC 10: Per-Subject Progress Tracking
-- **SubjectProgress model**: New `subject_progress` table with `user_id`, `subject`, `xp_earned`, `gold_earned`, `quests_completed`, `questions_answered`, `questions_correct`, `best_streak`, `last_played`
-- **check_answer integration**: `_update_subject_progress()` called after every answer; derives subject from template → quest → fallback "maths"
-- **Query helpers**: `get_subject_progress(db, user_id, subject)` and `get_all_subject_progress(db, user_id)` for single/multi lookup
-- **Home page** (`home.html`): Subject cards show per-subject XP and quests completed badges
-- **Subject home** (`subject_home.html`): Stats bar shows subject-specific XP, quests, correct/answered ratio, best streak (replaces global stats)
-- **Admin dashboard** (`admin.html`): New per-subject breakdown card with XP, gold, quests, accuracy, questions done, best streak per subject
-- **Pages routes**: `home_page` passes `subject_stats` dict; `subject_home` passes `sp` (SubjectProgress); `admin_page` passes `subject_stats` for kid user
-- **Tests**: 15 new tests in `test_subject_progress.py` — model creation, `_update_subject_progress` upsert/increment, query helpers, integration with `check_answer`
-- **Docs**: ADR 018, SESSION_STATE.md updated
-- 288 tests passing (273 existing + 15 new)
+### Rollback tooling
+- `scripts/rollback_today.sh` — date-based rollback for XP/gold/attempts/quests
+- Makefile targets: `make rollback-today` and `make rollback-date DATE=YYYY-MM-DD`
+- Fixed subject_progress rollback to use quest_session join (skill prefix mismatch)
 
-### Bug fixes (this session)
-- **Geography 500 error**: Live SQLite DB had NOT NULL on `question_instance.chapter`; added idempotent migration in `session.py` that recreates the table with nullable chapter column
-- **Back link on question page**: Was hardcoded to `/` (home); now uses `_quest_back_link()` helper to navigate to parent unit/chapter/subject page; also refactored quest_summary to reuse same helper
+### Admin Skill Insights
+- `get_skill_insights(db, user_id, top_n=3)` — strongest/weakest per subject by accuracy
+- Admin dashboard card with green/red accuracy bars per subject
+- Maths subject_progress backfilled from attempt history (777 XP, 99 gold, 48 Qs)
+- 6 tests in `test_subject_progress.py`
 
-### Unit Quest Standardisation
-- **QuestSession model**: Added `subject` and `unit` optional fields; `chapter` now defaults to 0
-- **QuestionInstance model**: `chapter` changed from required `int` to `Optional[int]` for non-maths subjects
-- **DB migration**: Idempotent `ALTER TABLE ADD COLUMN` for `quest_session.subject` and `quest_session.unit`
-- **generate_question / _select_template**: Accept `subject`/`unit` params; priority: `template_id > skill > unit > chapter`; unit selection uses `get_templates_by_unit()`
-- **Quest routes**: `quest_start` accepts `subject`/`unit` form params; `quest_next` passes them through; `quest_summary` has dynamic back-link (unit page / chapter page / home)
-- **quest_unit.html**: Added "Unit Quest" button (10 Qs, gold gradient, ⚔️ icon) matching the Chapter Quest pattern; skill forms also pass `subject`/`unit` hidden fields
-- **quest_summary.html**: Dynamic back-link and play-again form include `subject`/`unit`/`chapter` as applicable
-- **Tests**: 9 new tests in `test_unit_quest.py` — model fields, template selection, E2E generation, multi-skill coverage
-- **Docs**: ADR 017, SESSION_STATE.md updated
-- 273 tests passing (264 existing + 9 new)
+### Skill merging (Maps unit)
+- Merged 6 `*_realmap` skills into base counterparts (20→14 skills)
 
-### EPIC 9: Geography Content Pack (earlier this session)
-- **templates_geography.yaml**: 24 geography templates across 7 categories (knowledge MCQ, matching/grid-fill, scale calculations, map/grid ref, contours, climate graphs, weather diagrams)
-- **generators.py**: ~15 new geography generators added — `pick_one`, `pick_one_distinct`, `from_object`, `geog_knowledge_mcq` (with knowledge pools for 4 topics), 6 matching-set generators (instruments, air masses, clouds, symbols, water cycle, continents/oceans), `map_scale`, `grid_map_with_features` (computes 4-fig and 6-fig grid refs), `compass_direction_mcq`, `climograph_dataset` (5 climate profiles), `climate_compare_mcq`, `synthetic_contour_map`, `isobar_chart_data`, `rainfall_diagram_data`
-- **assets.py**: 9 new SVG renderers — `matching_cards`, `map_grid`, `compass_rose`, `scale_bar`, `climograph`, `contours`, `cross_section_set`, `synoptic_chart`, `rainfall_diagram`
-- **marking.py**: 5 new marking modes — `gridref_4fig`, `gridref_6fig`, `bearing_3digit` (±tolerance), `grid_match` (JSON mapping with partial credit), `label_match` (alias)
-- **questions.py**: Extended `_compute_answer` for geography modes + scale/contour/climograph numeric computation; added `_compute_grid_match`, `_compute_gridref`, `_compute_bearing`; added `get_grid_fill_data()` for matching UI
-- **quest_question.html**: New `grid_fill` UI with dropdown `<select>` elements for matching left→right items, JSON answer, reset button
-- **quest.py**: New `/quest/unit/{subject}/{unit}` route; `get_grid_fill_data` wired into all question-rendering routes
-- **quest_unit.html**: New template for unit-based skill selection with breadcrumb navigation
-- **pages.py**: Added geography to `_SUBJECT_META` with 4 units (maps, weather, climate, world)
-- **home.html**: Geography card now active (no longer "Coming Soon")
-- **quest_question.html**: Fixed chapter display for non-maths questions (conditional `Ch` label)
-- **tests**: 56 new geography tests in `test_geography.py` — generator determinism, marking modes, E2E template generation, structure validation
-- **Docs**: ADR 016, SESSION_STATE.md updated
-- 264 tests passing (208 existing + 56 new)
+### Bug fixes
+- `gridref_6fig` tolerance crash: `spec.get("tolerance", 0)` returns None → fixed to `or` pattern
+- Railway question reworded
 
-### Bug fixes (earlier this session)
-- Quests Done counter: fixed hardcoded `0` on home page
-- Docker rebuild: `make restart` now includes `docker compose build`
-- Stats on subject page: added quests_done query + stats bar
+### North Evesham map questions
+- 20 questions with answers added
 
 ## Previous session work
 - EPIC 8 — Multi-subject navigation framework (committed `85dc65b`)
@@ -93,6 +68,8 @@ Minsterworth OS map study questions — complete. 18 real-map questions added, d
 - Geography content pack: 24 templates, 15 generators, 9 renderers, 5 marking modes (ADR 016)
 - Per-subject progress tracking: denormalised SubjectProgress table, real-time increments, subject-specific UI (ADR 018)
 - Real OS map study: fixed generator, map_image asset, gridref tolerance, 18 Minsterworth templates (ADR 019)
+- Question repeat prevention: template exclusion within quests (ADR 020)
+- Practice Boost: 2× gold + 1.5× XP for weak skills, auto-remove at 75% (ADR 021)
 
 ## Open questions
 - None

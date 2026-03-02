@@ -170,6 +170,12 @@
                 <div class="flex items-center justify-between bg-red-600/10 rounded-lg px-3 py-2 border border-red-600/20">
                   <div>
                     <span class="text-white text-sm font-medium">{{ s.name }}</span>
+                    {% if s.code in boosted_skills %}
+                    <span class="ml-1 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-bold
+                                 bg-realm-gold-500/20 text-realm-gold-400 border border-realm-gold-500/40">
+                      ⚡ Boosted
+                    </span>
+                    {% endif %}
                     <span class="text-realm-purple-400 text-xs ml-2">({{ s.attempts }} Qs)</span>
                   </div>
                   <div class="flex items-center gap-2">

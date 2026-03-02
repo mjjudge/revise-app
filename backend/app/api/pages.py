@@ -11,7 +11,7 @@ from app.services.auth import get_current_user, greeting
 from app.models.quest import Payout, QuestSession
 from app.models.question import Attempt, UserSkillProgress
 from app.models.user import Role, User
-from app.services.questions import get_all_subject_progress, get_subject_progress, get_skill_insights
+from app.services.questions import get_all_subject_progress, get_subject_progress, get_skill_insights, get_boosted_skills
 
 router = APIRouter(tags=["pages"])
 
@@ -176,11 +176,13 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
 
     subject_stats = {}
     skill_insights = {}
+    boosted_skills: set[str] = set()
     if kid:
         stats["xp"] = kid.xp
         stats["gold"] = kid.gold
         subject_stats = get_all_subject_progress(session, kid.id)
         skill_insights = get_skill_insights(session, kid.id)
+        boosted_skills = get_boosted_skills(session, kid.id)
 
         quest_count = session.exec(
             select(func.count(QuestSession.id)).where(
@@ -223,6 +225,7 @@ def admin_page(request: Request, session: Session = Depends(get_session)):
         "stats": stats,
         "subject_stats": subject_stats,
         "skill_insights": skill_insights,
+        "boosted_skills": boosted_skills,
         "gold_to_pence": settings.gold_to_pence,
         "weekly_gold_cap": settings.weekly_gold_cap,
     })

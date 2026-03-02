@@ -215,7 +215,7 @@ class TestHintPenalty:
         correct = json.loads(q.correct_json, object_hook=_fraction_hook)
         answer_str = _answer_to_str(correct)
 
-        attempt, result = check_answer(session, kid, q.id, answer_str)
+        attempt, result, _ = check_answer(session, kid, q.id, answer_str)
         if result.correct:
             # Gold should be the full amount for difficulty level
             from app.services.questions import _GOLD_FIRST_TRY
@@ -233,7 +233,7 @@ class TestHintPenalty:
         correct = json.loads(q.correct_json, object_hook=_fraction_hook)
         answer_str = _answer_to_str(correct)
 
-        attempt, result = check_answer(session, kid, q.id, answer_str)
+        attempt, result, _ = check_answer(session, kid, q.id, answer_str)
         if result.correct:
             from app.services.questions import _GOLD_FIRST_TRY
             full_gold = _GOLD_FIRST_TRY.get(q.difficulty, 1)
@@ -249,7 +249,7 @@ class TestHintPenalty:
         correct = json.loads(q.correct_json, object_hook=_fraction_hook)
         answer_str = _answer_to_str(correct)
 
-        attempt, result = check_answer(session, kid, q.id, answer_str)
+        attempt, result, _ = check_answer(session, kid, q.id, answer_str)
         if result.correct:
             from app.services.questions import _GOLD_FIRST_TRY
             full_gold = _GOLD_FIRST_TRY.get(q.difficulty, 1)

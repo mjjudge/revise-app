@@ -206,7 +206,7 @@ class TestEndToEndGeneration:
             correct = _decode_json(instance.correct_json)
             answer_str = _answer_to_str(correct)
 
-            attempt, result = check_answer(session, kid, instance.id, answer_str)
+            attempt, result, _ = check_answer(session, kid, instance.id, answer_str)
             assert result.correct, (
                 f"Template '{t.id}': correct answer '{answer_str}' was not marked correct. "
                 f"Feedback: {result.feedback}"
@@ -217,7 +217,7 @@ class TestEndToEndGeneration:
         maths = get_templates_by_subject("maths")
         for t in maths:
             instance = generate_question(session, kid, template_id=t.id, seed=42)
-            attempt, result = check_answer(session, kid, instance.id, "WRONG_ANSWER_xyz")
+            attempt, result, _ = check_answer(session, kid, instance.id, "WRONG_ANSWER_xyz")
             assert not result.correct, (
                 f"Template '{t.id}': 'WRONG_ANSWER_xyz' was incorrectly marked correct"
             )

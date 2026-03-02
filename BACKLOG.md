@@ -302,47 +302,47 @@ The boost should feel like a positive incentive ("bonus treasure for brave adven
 rather than a penalty for staying on easy skills.
 
 ### Stories
-- [ ] **10.5.1 — Identify boosted skills**: Add `get_boosted_skills(db, user_id)` service
+- [x] **10.5.1 — Identify boosted skills**: Add `get_boosted_skills(db, user_id)` service
       that returns skill codes qualifying for Practice Boost based on accuracy/band thresholds
-- [ ] **10.5.2 — Apply reward multiplier**: In `check_answer`, detect if the current
+- [x] **10.5.2 — Apply reward multiplier**: In `check_answer`, detect if the current
       question's skill is boosted and apply 2× gold / 1.5× XP multiplier
       (after streak bonus, before weekly cap)
-- [ ] **10.5.3 — Boost badge on skill UI**: Show a ⚡ or 💎 badge next to boosted skills
+- [x] **10.5.3 — Boost badge on skill UI**: Show a ⚡ or 💎 badge next to boosted skills
       on the unit quest page (quest_unit.html) so Anna sees which ones give bonus treasure
-- [ ] **10.5.4 — Boost notification on result**: When a boosted skill pays out, show
+- [x] **10.5.4 — Boost notification on result**: When a boosted skill pays out, show
       "Practice Boost! 2× Gold 💎" on the result page so the reward feels tangible
-- [ ] **10.5.5 — Auto-remove boost**: When a skill's accuracy crosses 75% threshold
+- [x] **10.5.5 — Auto-remove boost**: When a skill's accuracy crosses 75% threshold
       (≥5 attempts), the boost is removed — the skill has been practised enough
-- [ ] **10.5.6 — Admin visibility**: Show boosted skills on the admin dashboard
+- [x] **10.5.6 — Admin visibility**: Show boosted skills on the admin dashboard
       (Skill Insights card), marked with a boost indicator
 
 ### Tasks (backend)
-- [ ] Add `get_boosted_skills()` to `services/questions.py`:
+- [x] Add `get_boosted_skills()` to `services/questions.py`:
       - Query `UserSkillProgress` for skills where accuracy ≤60% AND attempts ≥3,
         OR current_band == 1
       - Return set of skill codes
-- [ ] Update `check_answer()` reward calculation:
+- [x] Update `check_answer()` reward calculation:
       - After base XP/gold but before weekly cap
       - If skill is in boosted set: `gold = gold * 2`, `xp = int(xp * 1.5)`
       - Store boost flag in attempt (or derive from skill state at time of answer)
-- [ ] Add boost status to quest/skill selection API responses
-- [ ] Update `get_skill_insights()` to flag boosted skills
+- [x] Add boost status to quest/skill selection API responses
+- [x] Update `get_skill_insights()` to flag boosted skills
 
 ### Tasks (frontend)
-- [ ] quest_unit.html: Add boost badge (⚡💎) next to skill names that qualify
-- [ ] quest_question.html: Optional "Practice Boost active!" banner at top
-- [ ] quest_result.html: "Practice Boost! 2× Gold 💎" callout on correct answers
-- [ ] Admin dashboard: Boost indicator in Skill Insights card
+- [x] quest_unit.html: Add boost badge (⚡💎) next to skill names that qualify
+- [x] quest_question.html: Optional "Practice Boost active!" banner at top
+- [x] quest_result.html: "Practice Boost! 2× Gold 💎" callout on correct answers
+- [x] Admin dashboard: Boost indicator in Skill Insights card
 
 ### Tests
-- [ ] `get_boosted_skills` returns correct skills based on accuracy threshold
-- [ ] `get_boosted_skills` excludes skills with <3 attempts
-- [ ] `check_answer` applies 2× gold for boosted skill (correct, first try)
-- [ ] `check_answer` applies 1.5× XP for boosted skill
-- [ ] Boost does not apply when accuracy >60%
-- [ ] Boost auto-removes when accuracy crosses 75%
-- [ ] Weekly gold cap still applies after boost multiplier
-- [ ] Streak bonus and boost stack correctly (streak first, then boost)
+- [x] `get_boosted_skills` returns correct skills based on accuracy threshold
+- [x] `get_boosted_skills` excludes skills with <3 attempts
+- [x] `check_answer` applies 2× gold for boosted skill (correct, first try)
+- [x] `check_answer` applies 1.5× XP for boosted skill
+- [x] Boost does not apply when accuracy >60%
+- [x] Boost auto-removes when accuracy crosses 75%
+- [x] Weekly gold cap still applies after boost multiplier
+- [x] Streak bonus and boost stack correctly (streak first, then boost)
 
 
 ## EPIC 11 — History (Coming Soon) Framework Prep

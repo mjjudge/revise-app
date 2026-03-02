@@ -201,7 +201,7 @@ class TestStreakBonus:
         correct_val = json.loads(q.correct_json)
 
         # First correct answer
-        attempt, result = check_answer(session, kid, q.id, str(correct_val), quest=quest)
+        attempt, result, _ = check_answer(session, kid, q.id, str(correct_val), quest=quest)
         if result.correct:
             assert quest.streak == 1
 
@@ -215,7 +215,7 @@ class TestStreakBonus:
 
         q = self._make_question(session, kid)
 
-        attempt, result = check_answer(session, kid, q.id, "WRONG_ANSWER_99999", quest=quest)
+        attempt, result, _ = check_answer(session, kid, q.id, "WRONG_ANSWER_99999", quest=quest)
         assert quest.streak == 0
 
     def test_streak_bonus_xp_at_3(self, session, kid):
@@ -231,7 +231,7 @@ class TestStreakBonus:
         import json
         correct_val = json.loads(q.correct_json)
 
-        attempt, result = check_answer(session, kid, q.id, str(correct_val), quest=quest)
+        attempt, result, _ = check_answer(session, kid, q.id, str(correct_val), quest=quest)
         if result.correct:
             # XP should include 50% bonus
             from app.services.questions import _XP_TABLE
@@ -253,7 +253,7 @@ class TestStreakBonus:
         import json
         correct_val = json.loads(q.correct_json)
 
-        attempt, result = check_answer(session, kid, q.id, str(correct_val), quest=quest)
+        attempt, result, _ = check_answer(session, kid, q.id, str(correct_val), quest=quest)
         if result.correct:
             from app.services.questions import _XP_TABLE
             base = _XP_TABLE.get(q.difficulty, 10)
@@ -273,7 +273,7 @@ class TestStreakBonus:
         import json
         correct_val = json.loads(q.correct_json)
 
-        attempt, result = check_answer(session, kid, q.id, str(correct_val), quest=quest)
+        attempt, result, _ = check_answer(session, kid, q.id, str(correct_val), quest=quest)
         if result.correct:
             assert quest.best_streak == 5
 

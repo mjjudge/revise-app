@@ -573,12 +573,15 @@ def check_answer(
     student_answer: str,
     *,
     quest: QuestSession | None = None,
-) -> tuple[Attempt, MarkResult]:
+) -> tuple[Attempt, MarkResult, bool]:
     """Mark a student's answer against the stored correct answer.
+
+    Returns (attempt, mark_result, is_boosted).
 
     When quest is provided, applies streak bonuses:
       - 3+ in a row: +50% XP
       - 5+ in a row: +100% XP
+    Practice Boost: 2× gold + 1.5× XP for weak skills.
     Also enforces the weekly gold cap from settings.
     """
     instance = db.get(QuestionInstance, question_id)
@@ -610,6 +613,7 @@ def check_answer(
     # Compute rewards
     xp = 0
     gold = 0
+    is_boosted = False
     if result.correct:
         base_xp = _XP_TABLE.get(instance.difficulty, 10)
         if attempt_num == 1:
@@ -628,6 +632,13 @@ def check_answer(
                 xp = int(xp * 2.0)  # +100%
             elif quest.streak >= 3:
                 xp = int(xp * 1.5)  # +50%
+
+        # Practice Boost: extra rewards for weak skills
+        boosted_skills = get_boosted_skills(db, user.id)
+        if instance.skill in boosted_skills:
+            is_boosted = True
+            gold = gold * 2        # 2× gold
+            xp = int(xp * 1.5)    # 1.5× XP
     else:
         # Reset quest streak on wrong answer
         if quest:
@@ -680,7 +691,7 @@ def check_answer(
     db.commit()
     db.refresh(attempt)
 
-    return attempt, result
+    return attempt, result, is_boosted
 
 
 # ---------------------------------------------------------------------------
@@ -844,6 +855,31 @@ def get_all_subject_progress(db: Session, user_id: int) -> dict[str, SubjectProg
     stmt = select(SubjectProgress).where(SubjectProgress.user_id == user_id)
     rows = db.exec(stmt).all()
     return {sp.subject: sp for sp in rows}
+
+
+def get_boosted_skills(db: Session, user_id: int) -> set[str]:
+    """Return skill codes qualifying for Practice Boost.
+
+    A skill qualifies when:
+    - accuracy ≤60 % AND ≥3 attempts, OR
+    - current_band == 1 (adaptive system already flagged it).
+
+    A skill is *removed* from boost once accuracy ≥75 % over ≥5 attempts.
+    """
+    stmt = select(UserSkillProgress).where(
+        UserSkillProgress.user_id == user_id,
+    )
+    rows = db.exec(stmt).all()
+    boosted: set[str] = set()
+    for sp in rows:
+        acc = (sp.attempts_correct / sp.attempts_total * 100) if sp.attempts_total else 0
+        # Auto-remove: accuracy ≥75% with ≥5 attempts means mastered
+        if sp.attempts_total >= 5 and acc >= 75:
+            continue
+        # Boost: low accuracy with enough data, or band dropped to 1
+        if (sp.attempts_total >= 3 and acc <= 60) or sp.current_band == 1:
+            boosted.add(sp.skill)
+    return boosted
 
 
 def get_skill_insights(

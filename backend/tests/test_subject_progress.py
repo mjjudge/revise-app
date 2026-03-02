@@ -240,7 +240,7 @@ class TestCheckAnswerSubjectProgress:
         session.refresh(quest)
 
         q = generate_question(session, kid, chapter=5)
-        attempt, result = check_answer(session, kid, q.id, "0", quest=quest)
+        attempt, result, _ = check_answer(session, kid, q.id, "0", quest=quest)
 
         sp = get_subject_progress(session, kid.id, "maths")
         assert sp is not None
@@ -259,7 +259,7 @@ class TestCheckAnswerSubjectProgress:
         session.refresh(quest)
 
         q = generate_question(session, kid, subject="geography", unit="maps")
-        attempt, result = check_answer(session, kid, q.id, "0", quest=quest)
+        attempt, result, _ = check_answer(session, kid, q.id, "0", quest=quest)
 
         sp = get_subject_progress(session, kid.id, "geography")
         assert sp is not None
@@ -283,7 +283,7 @@ class TestCheckAnswerSubjectProgress:
         if isinstance(correct_ans, list):
             correct_ans = correct_ans[0]
 
-        attempt, result = check_answer(
+        attempt, result, _ = check_answer(
             session, kid, q.id, str(correct_ans), quest=quest,
         )
 

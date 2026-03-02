@@ -22,7 +22,7 @@ from app.models.quest import QuestSession, Payout
 from app.models.question import QuestionInstance, Attempt
 from app.models.user import Role, User
 from app.services.auth import get_current_user
-from app.services.questions import generate_question, check_answer, detect_milestone, milestone_message, get_mcq_options, get_order_items, get_grid_fill_data
+from app.services.questions import generate_question, check_answer, detect_milestone, milestone_message, get_mcq_options, get_order_items, get_grid_fill_data, get_boosted_skills
 from app.services.tiers import detect_tier_up
 from app.templates.feed_loader import get_templates_by_chapter, get_templates_by_unit, get_skill_map, get_template_by_id
 
@@ -123,6 +123,7 @@ def quest_unit(
         "unit_title": unit_meta["title"] if unit_meta else unit.title(),
         "unit_icon": unit_meta["icon"] if unit_meta else "📖",
         "skills": skills_in_unit,
+        "boosted_skills": get_boosted_skills(session, user.id),
     })
 
 
@@ -177,6 +178,7 @@ def quest_start(
 
     back_url, back_label = _quest_back_link(quest)
     tpl = get_template_by_id(instance.template_id)
+    boosted = get_boosted_skills(session, user.id)
     return templates.TemplateResponse(request, "quest_question.html", {
         "user": user,
         "question": instance,
@@ -189,6 +191,7 @@ def quest_start(
         "grid_fill_data": get_grid_fill_data(instance),
         "back_url": back_url,
         "back_label": back_label,
+        "is_skill_boosted": instance.skill in boosted,
     })
 
 
@@ -229,6 +232,7 @@ def quest_generate(
         "grid_fill_data": get_grid_fill_data(instance),
         "back_url": "/",
         "back_label": "Home",
+        "is_skill_boosted": instance.skill in get_boosted_skills(session, user.id),
     })
 
 
@@ -284,7 +288,7 @@ def quest_answer(
         quest = session.get(QuestSession, quest_id)
 
     old_xp = user.xp  # snapshot for milestone detection
-    attempt, result = check_answer(session, user, question_id, answer, quest=quest)
+    attempt, result, is_boosted = check_answer(session, user, question_id, answer, quest=quest)
 
     # Refresh user for updated XP/gold
     session.refresh(user)
@@ -337,6 +341,7 @@ def quest_answer(
         "quest_finished": quest.finished if quest else False,
         "milestone": milestone,
         "tier_up": tier_up,
+        "is_boosted": is_boosted,
     })
 
 
@@ -390,6 +395,7 @@ def quest_next(
 
     back_url, back_label = _quest_back_link(quest)
     tpl = get_template_by_id(instance.template_id)
+    boosted = get_boosted_skills(session, user.id)
     return templates.TemplateResponse(request, "quest_question.html", {
         "user": user,
         "question": instance,
@@ -402,6 +408,7 @@ def quest_next(
         "grid_fill_data": get_grid_fill_data(instance),
         "back_url": back_url,
         "back_label": back_label,
+        "is_skill_boosted": instance.skill in boosted,
     })
 
 
