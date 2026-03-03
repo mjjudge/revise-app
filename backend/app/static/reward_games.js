@@ -1212,6 +1212,10 @@ function closeRewardGame() {
 
     // Build target slots grouped by polygon shape (for interchangeable pieces)
     //   { polyKey → [{ x, y, rot, flipped, snapDist, snapRot, claimed: false }] }
+    // Override per-piece snap values with generous minimums so older puzzles
+    // (saved with tighter values) are still comfortably playable.
+    const MIN_SNAP_DIST = 30;
+    const MIN_SNAP_ROT  = 15;
     const targetSlots = {};
     puzzle.pieces.forEach(p => {
       const key = polyKey(p.polygon);
@@ -1221,8 +1225,8 @@ function closeRewardGame() {
         y: p.targetPose.position.y,
         rot: p.targetPose.rotationDeg,
         flipped: !!(p.targetPose.flipped),
-        snapDist: p.snap.distPx,
-        snapRot: p.snap.rotDeg,
+        snapDist: Math.max(p.snap.distPx, MIN_SNAP_DIST),
+        snapRot:  Math.max(p.snap.rotDeg,  MIN_SNAP_ROT),
         claimed: false,
       });
     });
@@ -1427,6 +1431,10 @@ function closeRewardGame() {
       p.x = pt.x - dragOffset.x;
       p.y = pt.y - dragOffset.y;
       p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation, p.flipped));
+      // Live snap: lock piece as soon as it's close enough during drag
+      if (checkSnap(p)) {
+        dragging = false;
+      }
     }
 
     function onPointerUp(e) {
