@@ -345,7 +345,7 @@ rather than a penalty for staying on easy skills.
 - [x] Streak bonus and boost stack correctly (streak first, then boost)
 
 
-## EPIC 10.6 — Brain Reset Reward Games
+## EPIC 10.6 — Brain Reset Reward Games ✅
 Goal: Provide 10 lightweight, fun mini-games as "Brain Reset Rewards" triggered on
 milestone celebrations. Games are max 90 seconds, no penalties, no leaderboard
 pressure. Includes an admin Games page to preview and toggle games on/off.
@@ -399,66 +399,66 @@ pressure. Includes an admin Games page to preview and toggle games on/off.
     Short version: stop at 128 or 256. Shows "You reached [highest tile]!"
 
 ### Stories
-- [ ] **10.6.1 — Fix Mini Sudoku**: Debug and fix existing 4×4 Sudoku so grid
+- [x] **10.6.1 — Fix Mini Sudoku**: Debug and fix existing 4×4 Sudoku so grid
       renders with given numbers, inputs accept digits, and check works correctly
-- [ ] **10.6.2 — Game framework**: Create `reward_games.js` module with game
+- [x] **10.6.2 — Game framework**: Create `reward_games.js` module with game
       registry, random selection, modal/overlay system, skip button, and completion
       callback. Each game is a self-contained function that renders into a container.
-- [ ] **10.6.3 — Tic-Tac-Toe**: Implement 3×3 grid with simple AI opponent
-- [ ] **10.6.4 — Space Invaders Mini**: Canvas-based, 60-second arcade session
-- [ ] **10.6.5 — Pattern Memory**: Grid-based sequence recall game
-- [ ] **10.6.6 — Tangram Builder**: Drag-and-drop shape puzzle with silhouettes
-- [ ] **10.6.7 — Reflex Tap**: Reaction time game, 10 rounds
-- [ ] **10.6.8 — Word Scramble**: Subject vocabulary unscramble
-- [ ] **10.6.9 — Pixel Art Reveal**: Persistent tile-unlock reward image
-- [ ] **10.6.10 — Gravity Collector**: Canvas physics collection game
-- [ ] **10.6.11 — Mini 2048**: Tile-merging puzzle, short version
-- [ ] **10.6.12 — Admin Games page**: `/admin/games` — grid of all games with
+- [x] **10.6.3 — Tic-Tac-Toe**: Implement 3×3 grid with simple AI opponent
+- [x] **10.6.4 — Space Invaders Mini**: Canvas-based, 60-second arcade session
+- [x] **10.6.5 — Pattern Memory**: Grid-based sequence recall game
+- [x] **10.6.6 — Tangram Builder**: Drag-and-drop shape puzzle with silhouettes
+- [x] **10.6.7 — Reflex Tap**: Reaction time game, 10 rounds
+- [x] **10.6.8 — Word Scramble**: Subject vocabulary unscramble
+- [x] **10.6.9 — Pixel Art Reveal**: Persistent tile-unlock reward image
+- [x] **10.6.10 — Gravity Collector**: Canvas physics collection game
+- [x] **10.6.11 — Mini 2048**: Tile-merging puzzle, short version
+- [x] **10.6.12 — Admin Games page**: `/admin/games` — grid of all games with
       "Preview" button (plays the game) and on/off toggle per game. Toggle state
       stored in settings/config.
-- [ ] **10.6.13 — Milestone integration**: Replace current hardcoded Sudoku trigger
+- [x] **10.6.13 — Milestone integration**: Replace current hardcoded Sudoku trigger
       with random selection from enabled games pool
 
 ### Tasks (backend)
-- [ ] Add `GameConfig` model or settings entry to track enabled/disabled games
-- [ ] Add `/admin/games` GET route — renders game grid with toggle controls
-- [ ] Add `/admin/games/toggle` POST route — enables/disables a game by ID
-- [ ] Add `/api/games/enabled` GET endpoint (optional) — returns enabled game list
+- [x] Add `GameConfig` model or settings entry to track enabled/disabled games
+- [x] Add `/admin/games` GET route — renders game grid with toggle controls
+- [x] Add `/admin/games/toggle` POST route — enables/disables a game by ID
+- [x] Add `/api/games/enabled` GET endpoint (optional) — returns enabled game list
       for the milestone trigger
 
 ### Tasks (frontend)
-- [ ] Create `reward_games.js` with game registry pattern:
+- [x] Create `reward_games.js` with game registry pattern:
       ```
       const GAMES = { sudoku: { name, init, cleanup }, tictactoe: { ... }, ... }
       ```
-- [ ] Each game: `init(container, onComplete)` renders into div, calls onComplete
+- [x] Each game: `init(container, onComplete)` renders into div, calls onComplete
       when done/skipped
-- [ ] Generic game modal with skip button, game title, and container div
-- [ ] Milestone trigger: pick random enabled game → open modal → play → close
-- [ ] Admin games page: card grid with preview + toggle per game
-- [ ] Fix Sudoku: ensure grid CSS renders, inputs accept digits 1–4, given cells
+- [x] Generic game modal with skip button, game title, and container div
+- [x] Milestone trigger: pick random enabled game → open modal → play → close
+- [x] Admin games page: card grid with preview + toggle per game
+- [x] Fix Sudoku: ensure grid CSS renders, inputs accept digits 1–4, given cells
       are pre-filled and readonly
 
 ### Tasks (individual games — all pure JS)
-- [ ] Sudoku: fix existing code, extract into `reward_games.js` module
-- [ ] Tic-Tac-Toe: 3×3 grid, X/O turns, simple AI, win/draw detection
-- [ ] Space Invaders: canvas, ship movement, bullet firing, alien grid, collision
+- [x] Sudoku: fix existing code, extract into `reward_games.js` module
+- [x] Tic-Tac-Toe: 3×3 grid, X/O turns, simple AI, win/draw detection
+- [x] Space Invaders: canvas, ship movement, bullet firing, alien grid, collision
       detection, 60-second timer, score counter
-- [ ] Pattern Memory: grid highlight sequence, replay detection, difficulty scaling
-- [ ] Tangram: SVG/canvas shapes, drag + rotate, snap detection, silhouette library
-- [ ] Reflex Tap: random positioned circle, timing, 10-round average
-- [ ] Word Scramble: word bank from subject vocabulary, anagram shuffle, text input
-- [ ] Pixel Art Reveal: tile grid, XP-based unlock tracking (localStorage), reveal
+- [x] Pattern Memory: grid highlight sequence, replay detection, difficulty scaling
+- [x] Tangram: SVG/canvas shapes, drag + rotate, snap detection, silhouette library
+- [x] Reflex Tap: random positioned circle, timing, 10-round average
+- [x] Word Scramble: word bank from subject vocabulary, anagram shuffle, text input
+- [x] Pixel Art Reveal: tile grid, XP-based unlock tracking (localStorage), reveal
       animation
-- [ ] Gravity Collector: canvas physics (simple orbit), star spawning, collection
-- [ ] Mini 2048: 4×4 grid, arrow key input, tile merging, score display
+- [x] Gravity Collector: canvas physics (simple orbit), star spawning, collection
+- [x] Mini 2048: 4×4 grid, arrow key input, tile merging, score display
 
 ### Tests
-- [ ] Sudoku puzzle solutions are valid (rows/cols/boxes have 1–4)
-- [ ] Game registry returns only enabled games
-- [ ] Admin toggle endpoint changes game state
-- [ ] Milestone trigger selects from enabled pool only
-- [ ] Each game's init function renders without JS errors (smoke test)
+- [x] Sudoku puzzle solutions are valid (rows/cols/boxes have 1–4)
+- [x] Game registry returns only enabled games
+- [x] Admin toggle endpoint changes game state
+- [x] Milestone trigger selects from enabled pool only
+- [x] Each game's init function renders without JS errors (smoke test)
 
 ### Design notes
 - Games are "Brain Reset Rewards" — fun, light, no cognitive overload
@@ -467,6 +467,60 @@ pressure. Includes an admin Games page to preview and toggle games on/off.
 - Word Scramble can reuse skill/template vocabulary from feed_loader
 - Space Invaders and Gravity Collector are canvas-based; others are DOM-based
 - All games should work on both desktop and tablet (touch + keyboard)
+
+
+## EPIC 10.7 — "Teach Me" AI Mini-Lessons ✅
+Goal: When Anna is stuck on a question or gets one wrong, she can request a short
+KS3-style lesson from Professor Quill — like a mini classroom lesson on the topic.
+Uses GPT-4o with subject-aware prompts (maths vs geography). No gold penalty
+for learning.
+
+### Stories
+- [x] **10.7.1 — Lesson service**: Add `generate_lesson()` to tutor service with
+      subject-aware system prompts (maths: worked example structure; geography:
+      key facts + real-world example structure). 600 max tokens.
+- [x] **10.7.2 — Lesson API endpoint**: POST `/tutor/lesson` returns structured
+      HTML lesson fragment. Caches in `QuestionInstance.lesson_html` field.
+- [x] **10.7.3 — Markdown-to-HTML converter**: `_lesson_to_html()` helper converts
+      GPT markdown (bold headings, numbered/bullet lists) to styled HTML.
+- [x] **10.7.4 — Question page button**: "📖 I don't understand this — teach me!"
+      link below the submit/hint buttons. Opens lesson modal.
+- [x] **10.7.5 — Result page button**: "📖 Teach me this topic" button on wrong
+      answers alongside "Why was I wrong?" button.
+- [x] **10.7.6 — Lesson modal**: Full-screen overlay with loading spinner,
+      structured lesson content, "Try the Question" dismiss button.
+      Escape key and backdrop click to close.
+
+### Tasks (backend)
+- [x] Add `lesson_html: Optional[str]` field to `QuestionInstance` model
+- [x] Add `_LESSON_SYSTEM_MATHS` prompt (What is it? → How does it work? →
+      Worked Example → Top Tips → Encouragement)
+- [x] Add `_LESSON_SYSTEM_GEOGRAPHY` prompt (What is it? → Key Facts →
+      Real-World Example → Remember! → Encouragement)
+- [x] Add `generate_lesson()` function with subject detection from skill prefix
+- [x] Update `_chat()` to accept `max_tokens` parameter (600 for lessons)
+- [x] Add POST `/tutor/lesson` route with caching
+- [x] Add `_lesson_to_html()` and `_inline_format()` helpers
+
+### Tasks (frontend)
+- [x] Add lesson modal HTML to `quest_question.html`
+- [x] Add lesson modal HTML to `quest_result.html` (wrong answers only)
+- [x] Add `openLessonModal()` / `closeLessonModal()` JS with fetch
+- [x] Add "Teach Me" button to question page
+- [x] Add "Teach me this topic" button to result page
+
+### Tests
+- [x] `generate_lesson` returns string for maths skill
+- [x] `generate_lesson` uses geography prompt for `geog.*` skills
+- [x] `generate_lesson` uses 600 max tokens
+- [x] Lesson system prompts contain required structure headings
+- [x] Lesson system prompts contain safety rules
+- [x] `_lesson_to_html` converts headings, numbered lists, bullet lists, bold
+- [x] POST `/tutor/lesson` returns 200 with HTML content
+- [x] Lesson is cached in `lesson_html` field (second call skips OpenAI)
+- [x] `lesson_html` field defaults to None
+- [x] 13 new tests (431 total)
+- [x] ADR 023: Teach Me Mini-Lessons
 
 
 ## EPIC 11 — History (Coming Soon) Framework Prep
