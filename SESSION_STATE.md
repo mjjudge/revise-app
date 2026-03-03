@@ -1,11 +1,26 @@
 # SESSION_STATE
 
 ## Current objective
-Tangram improvements — flip, centre, solid silhouette — implemented and deployed.
+Pantheon prestige tier system — implemented and deployed.
 
 ## Completed this session
 
-### Tangram Improvements (EPIC 10.9)
+### EPIC 10.10 — Pantheon Prestige Tier System
+- **27 tiers across 3 mythological pantheons** (was 9 Greek only)
+  - Greek: ranks 0–8, 0–4,000 XP (unchanged)
+  - Norse: ranks 9–17, 4,500–27,000 XP (icy blues, aurora, steel themes)
+  - Egyptian: ranks 18–26, 32,500–102,000 XP (gold, amber, lapis lazuli themes)
+- **Data model**: `Tier` dataclass gains `pantheon` field; new `Pantheon` frozen dataclass with `key`, `name`, `icon`, `badge`, `first_rank`, `last_rank`
+- **New helper functions**: `get_pantheon()`, `completed_pantheons()`, `pantheon_tiers()`, `detect_pantheon_up()`, `get_pantheon_for_tier()`
+- **`tier_progress()`** now returns `pantheon` and `completed_pantheons` in its dict
+- **UI**: Grouped journey roadmap by pantheon, locked tier names (???), completion badges (⚜️ Olympian, ⚡ Asgardian, ☥ Immortal), pantheon icon in tier badge
+- **Pantheon-up celebration**: Special "New Pantheon Unlocked" banner on quest results when crossing pantheon boundaries
+- **Max-rank message**: Updated to reference all three pantheons
+- **Tests**: 56 tier tests (up from 26), 490 total
+- **ADR**: 026-pantheon-prestige-tiers.md
+- **Commit**: `023e7fe`
+
+### Previous this session — Tangram & Stats
 - **Flip button**: ↔ Flip in both editor and game. SVG `scale(-1,1)` transform; `flipped` boolean persisted in `startPose`/`targetPose`; `checkSnap()` now requires matching flip state.
 - **Centre button**: ⊞ Centre in editor. Computes world-space bounding box of all pieces (respecting rotation + flip), shifts all pieces to centre within the PLAY area.
 - **Solid silhouette**: Replaced per-piece ghost `<polygon>` elements with a single compound `<path>`. All target piece polygons transformed to world coordinates and concatenated. No internal edge lines visible — just a solid shadow shape with subtle outer border.
@@ -95,6 +110,7 @@ Tangram improvements — flip, centre, solid silhouette — implemented and depl
 - Calculator: On-screen basic calculator, template-level opt-in (ADR 010)
 - Milestones: Fireworks + mini Sudoku every 100 XP (ADR 011)
 - Tiers: 9-tier Greek mythology progression with dynamic theming (ADR 012)
+- Pantheon prestige: 3 mythological pantheons (Greek/Norse/Egyptian), 27 total tiers, escalating XP, completion badges (ADR 026)
 - Context-aware data: sensible UK ranges + y-axis units on charts (ADR 013)
 - Hint UX: scroll-to-hint on button click for visibility (ADR 014)
 - Multi-subject: feed_loader multi-pack, subject/unit navigation, new marking modes (ADR 015)
