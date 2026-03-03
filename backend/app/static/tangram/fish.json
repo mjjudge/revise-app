@@ -69,7 +69,7 @@
     },
     {
       "id": "parallelogram",
-      "polygon": [[0,0],[60,0],[85,50],[25,50]],
+      "polygon": [[0,0],[50,0],[100,50],[50,50]],
       "color": "#14b8a6",
       "startPose": { "position": { "x": 130, "y": 360 }, "rotationDeg": 0 },
       "targetPose": { "position": { "x": 120, "y": 180 }, "rotationDeg": 0 },

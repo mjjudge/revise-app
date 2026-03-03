@@ -55,7 +55,7 @@ DEFAULT_PIECES = [
     },
     {
         "id": "parallelogram",
-        "polygon": [[0, 0], [60, 0], [85, 50], [25, 50]],
+        "polygon": [[0, 0], [50, 0], [100, 50], [50, 50]],
         "color": "#14b8a6",
         "snap": {"distPx": 22, "rotDeg": 12},
         "lockOnSnap": True,
