@@ -14,6 +14,7 @@
    - what changed
    - decisions made
    - next actions
+7) **NEVER delete `data/app.sqlite3`** to fix schema issues. User progress (XP, gold, quest history) lives there and cannot be recreated. Instead, use `ALTER TABLE … ADD COLUMN` or wait until the lightweight DB migration (BACKLOG) is implemented.
 
 ## File locations
 - Specs and decisions: `docs/`
