@@ -1253,23 +1253,48 @@ function closeRewardGame() {
       }).join('L') + 'Z ';
     });
 
+    // SVG filter: dilate slightly to close sub-pixel gaps, then soften edges
+    const defs = document.createElementNS(svgNS, 'defs');
+    const filter = document.createElementNS(svgNS, 'filter');
+    filter.setAttribute('id', 'tg-shadow-filter');
+    filter.setAttribute('x', '-5%');
+    filter.setAttribute('y', '-5%');
+    filter.setAttribute('width', '110%');
+    filter.setAttribute('height', '110%');
+    // Dilate to close tiny gaps between adjacent pieces
+    const morph = document.createElementNS(svgNS, 'feMorphology');
+    morph.setAttribute('operator', 'dilate');
+    morph.setAttribute('radius', '1');
+    morph.setAttribute('in', 'SourceAlpha');
+    morph.setAttribute('result', 'dilated');
+    filter.appendChild(morph);
+    // Slight blur on the dilated shape
+    const blur = document.createElementNS(svgNS, 'feGaussianBlur');
+    blur.setAttribute('in', 'dilated');
+    blur.setAttribute('stdDeviation', '0.5');
+    blur.setAttribute('result', 'blurred');
+    filter.appendChild(blur);
+    // Flood with the silhouette colour
+    const flood = document.createElementNS(svgNS, 'feFlood');
+    flood.setAttribute('flood-color', 'rgba(139,92,246,0.18)');
+    flood.setAttribute('result', 'color');
+    filter.appendChild(flood);
+    // Composite: use blurred alpha as mask for the colour
+    const comp = document.createElementNS(svgNS, 'feComposite');
+    comp.setAttribute('in', 'color');
+    comp.setAttribute('in2', 'blurred');
+    comp.setAttribute('operator', 'in');
+    filter.appendChild(comp);
+    defs.appendChild(filter);
+    svg.appendChild(defs);
+
     const ghostPath = document.createElementNS(svgNS, 'path');
     ghostPath.setAttribute('d', silhouettePath);
     ghostPath.setAttribute('fill', 'rgba(139,92,246,0.15)');
     ghostPath.setAttribute('stroke', 'none');
     ghostPath.setAttribute('fill-rule', 'nonzero');
+    ghostPath.setAttribute('filter', 'url(#tg-shadow-filter)');
     svg.appendChild(ghostPath);
-
-    // Add a subtle outer border on the silhouette using a second path
-    const ghostBorder = document.createElementNS(svgNS, 'path');
-    ghostBorder.setAttribute('d', silhouettePath);
-    ghostBorder.setAttribute('fill', 'none');
-    ghostBorder.setAttribute('stroke', 'rgba(139,92,246,0.25)');
-    ghostBorder.setAttribute('stroke-width', '1.5');
-    ghostBorder.setAttribute('stroke-linejoin', 'round');
-    ghostBorder.setAttribute('fill-rule', 'nonzero');
-    // Use paint-order so stroke is behind fill to avoid internal edge artefacts
-    svg.appendChild(ghostBorder);
 
     // Piece state
     const pieces = puzzle.pieces.map(p => ({
