@@ -157,6 +157,10 @@ def gen_pick_one(rng: _random_mod.Random, spec: dict, ctx: dict) -> Any:
 # Categorical data (for pie charts / tables)
 # ---------------------------------------------------------------------------
 
+# Totals that divide cleanly into 360 → whole-number pie-chart angles.
+_NICE_TOTALS = [10, 12, 15, 18, 20, 24, 30, 36, 40, 45, 60, 72, 90, 120]
+
+
 @register_gen("categorical_counts")
 def gen_categorical_counts(rng: _random_mod.Random, spec: dict, ctx: dict) -> dict:
     labels = spec.get("labels", ["A", "B", "C", "D"])
@@ -164,12 +168,41 @@ def gen_categorical_counts(rng: _random_mod.Random, spec: dict, ctx: dict) -> di
     lo, hi = cr.get("min", 2), cr.get("max", 20)
     ensure = spec.get("ensure", {})
     total_min = ensure.get("total_min", 10)
+    n = len(labels)
 
-    counts = [rng.randint(lo, hi) for _ in labels]
-    # Ensure minimum total
-    while sum(counts) < total_min:
-        idx = rng.randint(0, len(counts) - 1)
-        counts[idx] += 1
+    # Pick a nice total that divides into 360 and satisfies constraints.
+    viable = [t for t in _NICE_TOTALS if t >= max(total_min, n * lo) and t <= n * hi]
+    if viable:
+        target_total = rng.choice(viable)
+        # Distribute target_total among n bins, each ≥ lo.
+        counts = [lo] * n
+        remaining = target_total - n * lo
+        for _ in range(remaining):
+            idx = rng.randint(0, n - 1)
+            if counts[idx] < hi:
+                counts[idx] += 1
+            else:
+                # Find another bin under hi
+                candidates = [j for j in range(n) if counts[j] < hi]
+                if candidates:
+                    counts[rng.choice(candidates)] += 1
+        # If rounding left us short/over, adjust
+        while sum(counts) < target_total:
+            candidates = [j for j in range(n) if counts[j] < hi]
+            if not candidates:
+                break
+            counts[rng.choice(candidates)] += 1
+        while sum(counts) > target_total:
+            candidates = [j for j in range(n) if counts[j] > lo]
+            if not candidates:
+                break
+            counts[rng.choice(candidates)] -= 1
+    else:
+        # Fallback: random counts, no nice-total guarantee.
+        counts = [rng.randint(lo, hi) for _ in labels]
+        while sum(counts) < total_min:
+            idx = rng.randint(0, len(counts) - 1)
+            counts[idx] += 1
 
     return {"labels": labels, "counts": counts, "total": sum(counts)}
 

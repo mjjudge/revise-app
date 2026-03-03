@@ -154,7 +154,8 @@ def _compute_numeric(template: TemplateDef, params: dict[str, Any]) -> float:
         counts = cats.get("counts", [])
         total = cats.get("total", sum(counts))
         idx = labels.index(target) if target in labels else 0
-        return (counts[idx] / total) * 360
+        angle = (counts[idx] / total) * 360
+        return round(angle, 2)
 
     if "substitution" in skill:
         expr = params.get("expr", {})

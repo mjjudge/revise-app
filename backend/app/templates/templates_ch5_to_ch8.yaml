@@ -96,13 +96,15 @@ templates:
         title: "Favourite snacks"
         data_from: categories
     marking:
-      mode: exact_numeric
+      mode: numeric_tolerance
+      tolerance: 0.01
       units: degrees
     solution:
       steps:
         - "Add all counts to get the total."
         - "Work out the fraction for the target category."
         - "Multiply by 360 to get the angle."
+        - "Round to 2 decimal places if needed."
     notes:
       accepted_equivalents: []
 
@@ -510,13 +512,15 @@ templates:
         title: "Favourite sports"
         data_from: categories
     marking:
-      mode: exact_numeric
+      mode: numeric_tolerance
+      tolerance: 0.01
       units: degrees
     solution:
       steps:
         - "Find the total of all votes."
         - "Calculate the fraction for the target sport."
         - "Multiply the fraction by 360°."
+        - "Round to 2 decimal places if needed."
 
   - id: ch5_line_graph_trend_v2
     chapter: 5
