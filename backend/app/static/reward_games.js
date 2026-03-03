@@ -1276,7 +1276,7 @@ function closeRewardGame() {
     filter.appendChild(blur);
     // Flood with the silhouette colour
     const flood = document.createElementNS(svgNS, 'feFlood');
-    flood.setAttribute('flood-color', 'rgba(139,92,246,0.18)');
+    flood.setAttribute('flood-color', 'rgba(139,92,246,0.45)');
     flood.setAttribute('result', 'color');
     filter.appendChild(flood);
     // Composite: use blurred alpha as mask for the colour
@@ -1290,7 +1290,7 @@ function closeRewardGame() {
 
     const ghostPath = document.createElementNS(svgNS, 'path');
     ghostPath.setAttribute('d', silhouettePath);
-    ghostPath.setAttribute('fill', 'rgba(139,92,246,0.15)');
+    ghostPath.setAttribute('fill', 'rgba(139,92,246,0.38)');
     ghostPath.setAttribute('stroke', 'none');
     ghostPath.setAttribute('fill-rule', 'nonzero');
     ghostPath.setAttribute('filter', 'url(#tg-shadow-filter)');
