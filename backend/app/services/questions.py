@@ -626,6 +626,7 @@ def check_answer(
         # Quest streak bonus (applied to XP)
         if quest and attempt_num == 1:
             quest.streak += 1
+            quest.wrong_streak = 0  # reset wrong streak on correct
             if quest.streak > quest.best_streak:
                 quest.best_streak = quest.streak
             if quest.streak >= 5:
@@ -640,9 +641,10 @@ def check_answer(
             gold = gold * 2        # 2× gold
             xp = int(xp * 1.5)    # 1.5× XP
     else:
-        # Reset quest streak on wrong answer
+        # Reset quest streak on wrong answer; increment wrong streak
         if quest:
             quest.streak = 0
+            quest.wrong_streak += 1
 
     # Weekly gold cap enforcement
     if gold > 0:

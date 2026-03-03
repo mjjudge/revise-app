@@ -37,11 +37,26 @@
     <!-- Status banner -->
     <div class="text-center mb-6">
       {% if result.correct %}
-        <div class="text-5xl mb-3">🎉</div>
+        {% if quest and quest.streak >= 3 %}
+        <img src="/images/quill_super_happy.png" alt="Professor Quill" class="quill-avatar quill-lg quill-bounce-in mx-auto mb-3"
+             loading="lazy" onerror="this.style.display='none'">
         <h2 class="text-2xl font-bold text-realm-green-400">Correct!</h2>
+        {% else %}
+        <div id="correct-avatar" class="flex justify-center mb-3"></div>
+        <script>document.getElementById('correct-avatar').innerHTML = quillImg('thumbsup', 'lg');</script>
+        <h2 class="text-2xl font-bold text-realm-green-400">Correct!</h2>
+        {% endif %}
       {% else %}
-        <div class="text-5xl mb-3">🤔</div>
+        {% if wrong_streak >= 3 %}
+        <img src="/images/quill_concerned.png" alt="Professor Quill" class="quill-avatar quill-lg quill-bounce-in mx-auto mb-3"
+             loading="lazy" onerror="this.style.display='none'">
         <h2 class="text-2xl font-bold text-red-400">Not quite...</h2>
+        <p class="text-realm-purple-200 text-sm mt-1">Mistakes are how we learn — keep going, you're getting better!</p>
+        {% else %}
+        <div id="wrong-avatar" class="flex justify-center mb-3"></div>
+        <script>document.getElementById('wrong-avatar').innerHTML = quillImg('encouraging', 'lg');</script>
+        <h2 class="text-2xl font-bold text-red-400">Not quite...</h2>
+        {% endif %}
       {% endif %}
     </div>
 
@@ -72,13 +87,17 @@
               hx-swap="innerHTML"
               hx-vals='{"question_id": "{{ question.id }}", "student_answer": "{{ attempt.answer_raw }}"}'
               class="px-4 py-2 bg-blue-600/40 hover:bg-blue-600/60 text-blue-300
-                     rounded-lg text-sm font-medium transition-colors border border-blue-500/40">
-        🧙 Ask Professor Quill: "Why was I wrong?"
+                     rounded-lg text-sm font-medium transition-colors border border-blue-500/40 inline-flex items-center gap-2">
+        <img src="/images/quill_teaching1.png" alt="Professor Quill" class="quill-avatar"
+             style="width:20px;height:20px" loading="lazy" onerror="this.style.display='none'">
+        Ask Professor Quill: "Why was I wrong?"
       </button>
       <button type="button" onclick="openLessonModal({{ question.id }})"
               class="px-4 py-2 bg-emerald-600/40 hover:bg-emerald-600/60 text-emerald-300
-                     rounded-lg text-sm font-medium transition-colors border border-emerald-500/40">
-        📖 Teach me this topic
+                     rounded-lg text-sm font-medium transition-colors border border-emerald-500/40 inline-flex items-center gap-2">
+        <img src="/images/quill_teaching2.png" alt="Professor Quill" class="quill-avatar"
+             style="width:20px;height:20px" loading="lazy" onerror="this.style.display='none'">
+        Teach me this topic
       </button>
       <div id="explain-area"></div>
     </div>
@@ -121,7 +140,8 @@
     <div id="tierup-banner" class="relative overflow-hidden rounded-2xl mb-4 p-6 text-center
                 border-2 bg-gradient-to-br from-realm-purple-900 via-realm-purple-800 to-realm-purple-900"
          style="border-color: {{ tier_up.accent }}; box-shadow: 0 0 50px {{ tier_up.accent }}40;">
-      <div class="text-5xl mb-3 animate-bounce">{{ tier_up.icon }}</div>
+      <img src="/images/quill_super_happy.png" alt="Professor Quill" class="quill-avatar quill-lg quill-bounce-in mx-auto mb-3"
+           loading="lazy" onerror="this.style.display='none'">
       <p class="text-sm uppercase tracking-widest mb-1" style="color: {{ tier_up.accent }};">⚡ New Title Unlocked ⚡</p>
       <h3 class="text-3xl font-extrabold mb-2" style="color: {{ tier_up.accent }};">{{ tier_up.title }}</h3>
       <p class="text-realm-purple-200 text-lg italic">{{ tier_up.flavour }}</p>
@@ -133,7 +153,8 @@
     <div id="milestone-banner" class="relative overflow-hidden rounded-2xl mb-4 p-6 text-center
                 border-2 border-realm-gold-400 bg-gradient-to-br from-realm-purple-900 via-realm-purple-700 to-realm-purple-900
                 shadow-[0_0_40px_rgba(251,191,36,0.4)]">
-      <div class="text-4xl mb-2 animate-bounce">🎆</div>
+      <div id="milestone-avatar" class="flex justify-center mb-2"></div>
+      <script>document.getElementById('milestone-avatar').innerHTML = quillImg('celebrating', 'lg');</script>
       <h3 class="text-2xl font-extrabold text-realm-gold-400 gold-shimmer mb-1">{{ milestone.title }}</h3>
       <p class="text-realm-purple-200 text-lg mb-4">{{ milestone.body }}</p>
       <button onclick="openRewardGame()" id="reward-game-btn"
@@ -210,13 +231,19 @@
   <div class="bg-realm-purple-800 border-2 border-realm-gold-400 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl
               max-h-[85vh] overflow-y-auto">
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-xl font-bold text-realm-gold-400">📖 Professor Quill's Lesson</h3>
+      <div class="flex items-center gap-3">
+        <img id="lesson-quill-img" src="/images/quill_teaching1.png" alt="Professor Quill"
+             class="quill-avatar quill-sm quill-bounce-in" loading="lazy"
+             onerror="this.style.display='none'">
+        <h3 class="text-xl font-bold text-realm-gold-400">Professor Quill's Lesson</h3>
+      </div>
       <button onclick="closeLessonModal()" class="text-realm-purple-400 hover:text-white text-xl">&times;</button>
     </div>
     <div id="lesson-content">
-      <div class="flex items-center justify-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-realm-gold-400"></div>
-        <span class="ml-3 text-realm-purple-300">Professor Quill is preparing your lesson...</span>
+      <div class="flex flex-col items-center justify-center py-8">
+        <img src="/images/quill_thinking.png" alt="Professor Quill" class="quill-avatar quill-md quill-bounce-in mb-3"
+             loading="lazy" onerror="this.style.display='none'">
+        <span class="text-realm-purple-300">Professor Quill is preparing your lesson...</span>
       </div>
     </div>
   </div>
@@ -235,11 +262,17 @@
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 
+    // Randomly pick teaching pose for header
+    var teachImg = Math.random() < 0.5 ? 'quill_teaching1' : 'quill_teaching2';
+    var headerEl = document.getElementById('lesson-quill-img');
+    if (headerEl) headerEl.src = '/images/' + teachImg + '.png';
+
     if (!lessonLoaded) {
       var content = document.getElementById('lesson-content');
-      content.innerHTML = '<div class="flex items-center justify-center py-8">' +
-        '<div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-realm-gold-400"></div>' +
-        '<span class="ml-3 text-realm-purple-300">Professor Quill is preparing your lesson...</span></div>';
+      content.innerHTML = '<div class="flex flex-col items-center justify-center py-8">' +
+        '<img src="/images/quill_thinking.png" alt="Professor Quill" class="quill-avatar quill-md quill-bounce-in mb-3"' +
+        ' loading="lazy" onerror="this.style.display=\'none\'">' +
+        '<span class="text-realm-purple-300">Professor Quill is preparing your lesson...</span></div>';
 
       var formData = new FormData();
       formData.append('question_id', questionId);

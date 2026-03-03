@@ -16,7 +16,13 @@
 <main class="max-w-2xl mx-auto px-4 py-8">
   <!-- Quest Complete banner -->
   <div class="text-center mb-8">
-    <div class="text-6xl mb-4">🏆</div>
+    {% if accuracy >= 50 %}
+    <div id="summary-avatar" class="flex justify-center mb-4"></div>
+    <script>document.getElementById('summary-avatar').innerHTML = quillImg('proud', 'lg');</script>
+    {% else %}
+    <div id="summary-avatar" class="flex justify-center mb-4"></div>
+    <script>document.getElementById('summary-avatar').innerHTML = quillImg('encouraging', 'lg');</script>
+    {% endif %}
     <h1 class="text-3xl font-bold text-realm-gold-400 mb-2">Quest Complete!</h1>
     <p class="text-realm-purple-200">
       {% if quest.skill %}

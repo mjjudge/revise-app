@@ -7,6 +7,16 @@
   <div class="w-full max-w-sm">
     <!-- Title -->
     <div class="text-center mb-8">
+      <div id="login-avatar" class="flex justify-center mb-4"></div>
+      <script>
+        // Quill / bunny avatar on login — uses the global quillImg helper
+        (function() {
+          var el = document.getElementById('login-avatar');
+          if (el && typeof quillImg === 'function') {
+            el.innerHTML = quillImg('waving', 'lg');
+          }
+        })();
+      </script>
       <h1 class="text-4xl font-bold mb-2">
         <span class="text-realm-gold-400">&#9876;</span>
         Revise Quest

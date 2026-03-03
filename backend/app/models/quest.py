@@ -24,6 +24,7 @@ class QuestSession(SQLModel, table=True):
     gold_earned: int = Field(default=0, description="Total gold earned in this quest")
     streak: int = Field(default=0, description="Current consecutive correct within quest")
     best_streak: int = Field(default=0, description="Best streak achieved in quest")
+    wrong_streak: int = Field(default=0, description="Current consecutive wrong answers (resets on correct)")
     finished: bool = Field(default=False, description="Whether all questions answered")
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     finished_at: Optional[datetime] = Field(default=None)

@@ -523,6 +523,181 @@ for learning.
 - [x] ADR 023: Teach Me Mini-Lessons
 
 
+## EPIC 10.8 — Professor Quill Image Integration (Design Review)
+
+**Goal:** Bring Professor Quill to life with illustrated owl images that appear
+at meaningful moments during Anna's learning journey, creating emotional
+connection and reinforcing a growth-mindset learning environment.
+
+### Science & Pedagogy
+
+This design draws on three evidence-based principles:
+
+1. **Pedagogical Agents & the Persona Effect** (Lester et al., 1997; Moreno
+   et al., 2001) — An animated on-screen character with a consistent
+   personality increases learner motivation, perceived helpfulness, and
+   willingness to persist through difficulty. The effect is strongest when
+   the agent displays *emotional congruence* (matching the learner's
+   likely emotional state).
+
+2. **Growth Mindset Feedback** (Dweck, 2006) — Praise should target effort
+   and strategy, not raw ability. Quill's celebratory appearances reward
+   *streaks* (sustained effort) rather than single correct answers, and
+   his concerned appearance after a wrong-answer streak normalises mistakes
+   as part of learning rather than failure.
+
+3. **Emotional Design in Multimedia Learning** (Um et al., 2012; Plass
+   et al., 2014) — Warm, visually appealing design elements induce
+   positive emotions that improve comprehension and transfer. A friendly
+   owl character adds warmth without adding extraneous cognitive load.
+
+**Design principle:** Quill appears often enough to feel present, but not so
+often that he becomes wallpaper. He should feel like a *companion* who
+reacts to what's happening. Every appearance should have a clear emotional
+or instructional purpose.
+
+### Available Images (5 existing)
+
+| File | Pose | Mapped to |
+|---|---|---|
+| `quill_thinking.png` | Owl thinking / pondering | Loading states, hint delivery |
+| `quill_teaching1.png` | Owl at a blackboard | Lesson modal (alternates with teaching2) |
+| `quill_teaching2.png` | Owl with a pointer | Lesson modal (alternates with teaching1) |
+| `quill_super_happy.png` | Owl celebrating | Correct-answer streaks (≥3), milestones, tier-ups |
+| `quill_concerned.png` | Owl looking worried | Wrong-answer streaks (≥2), encouragement |
+
+### Additional Quill Images (6 — all created ✅)
+
+| File | Pose | Purpose |
+|---|---|---|
+| `quill_waving.png` | Friendly wave / greeting | Welcome screen, login, start of a new quest |
+| `quill_thumbsup.png` | Thumbs-up / wing-up | Single correct answer ("Nice one!") |
+| `quill_reading.png` | Owl reading a book | Fun rewrite loading ("Let me rewrite that…") |
+| `quill_proud.png` | Owl with a medal / chest puffed | Quest summary — good rank (Brave / Epic / Legendary) |
+| `quill_encouraging.png` | Owl with open wings, warm smile | Wrong answer (single) — "Keep going!" |
+| `quill_celebrating.png` | Owl with confetti / party hat | Milestone rewards & reward-game unlock |
+
+### 🐰 Bunny Easter Eggs (6 surprise images)
+
+Anna loves Jellycats — so a friendly bunny companion appears as a rare,
+delightful surprise. Each bunny mirrors one of the 6 new Quill poses:
+
+| File | Mirrors | Surprise trigger |
+|---|---|---|
+| `bunny_waving.png` | `quill_waving` | ~15% chance on login/welcome |
+| `bunny_thumbsup.png` | `quill_thumbsup` | ~15% chance on single correct answer |
+| `bunny_reading.png` | `quill_reading` | ~15% chance on fun rewrite |
+| `bunny_proud.png` | `quill_proud` | ~15% chance on quest summary |
+| `bunny_encouraging.png` | `quill_encouraging` | ~15% chance on wrong answer |
+| `bunny_celebrating.png` | `quill_celebrating` | ~15% chance on milestone |
+
+**Why ~15%?** Rare enough to feel special (Variable Ratio Reinforcement —
+Skinner, 1957). Intermittent, unpredictable rewards are the most
+motivating kind. Anna will never know when the bunny will pop up,
+which keeps the surprise factor alive session after session.
+
+### Appearance Map (all touchpoints)
+
+| Screen / Moment | Image | Trigger | Emotion |
+|---|---|---|---|
+| **Login / Welcome** | `quill_waving` | Page load | Warm welcome |
+| **Question page — loading spinner** | `quill_thinking` | While question renders | Anticipation |
+| **Question page — hint requested** | `quill_thinking` | Hint button clicked | Curiosity |
+| **Question page — hint delivered** | `quill_thinking` | Hint HTML shown | Helpfulness |
+| **Question page — fun rewrite loading** | `quill_reading` | Rewrite button clicked | Fun |
+| **Question page — "Teach Me" loading** | `quill_teaching1` | Lesson spinner | Patience |
+| **Lesson modal — content shown** | `quill_teaching1` or `quill_teaching2` | Random choice per load | Authority/trust |
+| **Result — correct (no streak)** | `quill_thumbsup` | `result.correct == True` | Encouragement |
+| **Result — correct (streak ≥ 3)** | `quill_super_happy` | `quest.streak >= 3` | Celebration |
+| **Result — wrong (first/second)** | `quill_encouraging` | `result.correct == False`, wrong streak < 3 | Reassurance |
+| **Result — wrong (streak ≥ 3)** | `quill_concerned` | Wrong streak ≥ 3 | Empathy |
+| **Result — "Explain" response** | `quill_teaching1` | Explain HTML shown | Teaching |
+| **Result — milestone unlocked** | `quill_celebrating` | `milestone is not None` | Excitement |
+| **Result — tier up** | `quill_super_happy` | `tier_up == True` | Pride |
+| **Quest summary — good rank** | `quill_proud` | Rank = Brave / Epic / Legendary | Pride |
+| **Quest summary — low rank** | `quill_encouraging` | Rank = Apprentice | Kindness |
+| **Practice Boost banner** | `quill_thinking` | Boost suggestion shown | Motivation |
+
+### Stories
+
+**Story 10.8.1 — Quill Image Component & CSS**
+- [ ] Create a reusable `quill-avatar` CSS class (circular frame, soft shadow, subtle bounce-in animation)
+- [ ] Support 3 sizes: `quill-sm` (48px), `quill-md` (80px), `quill-lg` (120px)
+- [ ] Add speech-bubble CSS for Quill's text (pointed at the owl)
+- [ ] Ensure images are lazy-loaded (`loading="lazy"`) for performance
+- [ ] Test: images render at correct sizes, no layout shift
+
+**Story 10.8.2 — Wrong-Streak Tracking (Backend)**
+- [ ] Add `wrong_streak` field to `QuestSession` model (default 0)
+- [ ] Increment `wrong_streak` on incorrect answer; reset to 0 on correct
+- [ ] Pass `wrong_streak` to result template context
+- [ ] Test: wrong_streak increments and resets correctly
+- [ ] Test: wrong_streak appears in template context
+
+**Story 10.8.3 — Question Page Integration**
+- [ ] Replace spinner text with `quill_thinking` image + "Professor Quill is thinking…"
+- [ ] Show `quill_thinking` beside hint responses (speech-bubble style)
+- [ ] Show `quill_teaching1` in lesson modal header (replace 📖 emoji)
+- [ ] Show `quill_reading` (or `quill_thinking` fallback) during fun-rewrite loading
+- [ ] Test: correct image `src` attributes rendered in question page HTML
+
+**Story 10.8.4 — Result Page Integration**
+- [ ] Correct answer (no streak): show `quill_thumbsup` (or `quill_super_happy` fallback)
+- [ ] Correct answer (streak ≥ 3): show `quill_super_happy` + "🔥 streak!" text
+- [ ] Wrong answer (wrong streak < 3): show `quill_encouraging` (or `quill_concerned` fallback)
+- [ ] Wrong answer (wrong streak ≥ 3): show `quill_concerned` + growth-mindset message
+- [ ] Milestone unlocked: show `quill_celebrating` (or `quill_super_happy` fallback)
+- [ ] Tier up: show `quill_super_happy`
+- [ ] Explain response: show `quill_teaching1` beside explanation text
+- [ ] Test: correct Quill image rendered for each result scenario
+
+**Story 10.8.5 — Quest Summary Integration**
+- [ ] Show `quill_proud` for Brave / Epic / Legendary rank
+- [ ] Show `quill_encouraging` for Apprentice rank
+- [ ] Add a short Quill speech bubble with rank-appropriate message
+- [ ] Test: correct image shown per rank tier
+
+**Story 10.8.6 — Welcome / Login Page**
+- [ ] Show `quill_waving` on login page with "Welcome to Revise Quest!"
+- [ ] Test: image renders on login page
+
+**Story 10.8.7 — Fallback Handling**
+- [ ] All Quill image references use fallback (`quill_thinking` as default)
+- [ ] If an image file is missing, gracefully hide (CSS `onerror` handler)
+- [ ] All `<img>` tags have `alt="Professor Quill"` for accessibility
+- [ ] Test: missing image doesn't break page layout
+
+**Story 10.8.8 — Bunny Easter Eggs 🐰**
+- [ ] Implement ~15% random chance to swap eligible Quill images for bunny equivalents
+- [ ] Bunny swaps apply to the 6 matching poses only (waving, thumbsup, reading, proud, encouraging, celebrating)
+- [ ] Core Quill poses (thinking, teaching1/2, super_happy, concerned) never swap — they're pedagogically important
+- [ ] Bunny has its own alt text ("Anna's Bunny Friend") and a subtle sparkle animation on appear
+- [ ] Test: bunny images only appear for eligible poses
+- [ ] Test: bunny probability is approximately correct
+
+**Implementation Notes:**
+- All images already served via `/images/` static mount — no backend route changes needed
+- Fallback images (noted above) allow us to ship with the 5 existing images first,
+  then swap in the 6 new ones as they're created — no code changes needed for swaps
+- Image size: recommend ≤ 150KB per PNG for fast loading; consider WebP conversion later
+- Wrong-streak tracking (Story 10.8.2) is the only backend/model change required
+
+### Tests
+- [ ] Quill CSS classes render at correct sizes
+- [ ] Wrong-streak increments on wrong answer, resets on correct
+- [ ] Question page: hint shows `quill_thinking` image
+- [ ] Question page: lesson modal shows `quill_teaching` image
+- [ ] Result page: correct answer shows appropriate Quill image
+- [ ] Result page: wrong answer shows appropriate Quill image
+- [ ] Result page: streak ≥ 3 shows `quill_super_happy`
+- [ ] Result page: milestone shows celebration Quill
+- [ ] Quest summary: rank-appropriate Quill shown
+- [ ] Missing image handled gracefully (no broken layout)
+- [ ] All Quill images have alt text
+- [ ] Bunny images appear only for eligible poses (not thinking/teaching/concerned)
+- [ ] Bunny swap probability is ~15%
+
+
 ## EPIC 11 — History (Coming Soon) Framework Prep
 Goal: Prepare the structure so History can drop in cleanly.
 

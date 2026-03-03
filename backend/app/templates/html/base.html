@@ -36,6 +36,52 @@
     .tier-glow { box-shadow: 0 0 25px var(--tier-glow, rgba(124,58,237,0.3)); }
     .tier-border { border-color: var(--tier-accent, #a78bfa); }
     .tier-progress-bar { background: var(--tier-accent, #a78bfa); }
+
+    /* ── Professor Quill / Bunny Avatar System ── */
+    .quill-avatar {
+      border-radius: 50%;
+      border: 2px solid rgba(251, 191, 36, 0.5);
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.2);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .quill-sm { width: 48px; height: 48px; }
+    .quill-md { width: 80px; height: 80px; }
+    .quill-lg { width: 120px; height: 120px; }
+    .quill-bounce-in {
+      animation: quillBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    @keyframes quillBounce {
+      0% { transform: scale(0); opacity: 0; }
+      60% { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+    .bunny-sparkle {
+      animation: quillBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+                 bunnyGlow 1.5s ease-in-out 0.5s 2;
+    }
+    @keyframes bunnyGlow {
+      0%, 100% { box-shadow: 0 0 12px rgba(251, 191, 36, 0.2); }
+      50% { box-shadow: 0 0 25px rgba(236, 72, 153, 0.5), 0 0 40px rgba(251, 191, 36, 0.3); }
+    }
+    /* Speech bubble */
+    .quill-speech {
+      position: relative;
+      background: rgba(76, 29, 149, 0.7);
+      border: 1px solid rgba(154, 106, 255, 0.4);
+      border-radius: 1rem;
+      padding: 0.75rem 1rem;
+    }
+    .quill-speech::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 8px 8px 8px 0;
+      border-style: solid;
+      border-color: transparent rgba(154, 106, 255, 0.4) transparent transparent;
+    }
   </style>
   {% block head %}{% endblock %}
 </head>
@@ -69,6 +115,27 @@
       toast.style.opacity = '1';
       setTimeout(function() { toast.style.opacity = '0'; }, 4000);
     });
+
+    /* ── Quill / Bunny avatar helper ── */
+    var BUNNY_CHANCE = 0.15; // ~15% chance for bunny Easter egg
+    var BUNNY_ELIGIBLE = ['waving','thumbsup','reading','proud','encouraging','celebrating'];
+
+    /**
+     * Build an <img> tag for Professor Quill (or a surprise bunny).
+     * @param {string} pose - e.g. 'thinking', 'teaching1', 'thumbsup'
+     * @param {string} size - 'sm', 'md', 'lg'
+     * @returns {string} HTML string
+     */
+    function quillImg(pose, size) {
+      size = size || 'md';
+      var isBunny = BUNNY_ELIGIBLE.indexOf(pose) !== -1 && Math.random() < BUNNY_CHANCE;
+      var src = isBunny ? '/images/bunny_' + pose + '.png' : '/images/quill_' + pose + '.png';
+      var alt = isBunny ? "Anna's Bunny Friend" : 'Professor Quill';
+      var cls = isBunny ? 'quill-avatar quill-' + size + ' bunny-sparkle'
+                        : 'quill-avatar quill-' + size + ' quill-bounce-in';
+      return '<img src="' + src + '" alt="' + alt + '" class="' + cls + '"' +
+             ' loading="lazy" onerror="this.style.display=\'none\'">';
+    }
   </script>
 </body>
 </html>

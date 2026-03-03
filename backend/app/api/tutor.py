@@ -101,9 +101,14 @@ def tutor_hint(
 
     html = f"""
     <div class="bg-realm-purple-800/60 border border-realm-gold-500/40 rounded-xl p-4 mt-3">
-      <div class="flex items-center gap-2 mb-2">
-        <span class="text-realm-gold-400 font-bold">💡 Hint {hint_number} of 3</span>
-        <span class="text-xs text-realm-purple-400">(from Professor Quill)</span>
+      <div class="flex items-center gap-3 mb-2">
+        <img src="/images/quill_thinking.png" alt="Professor Quill"
+             class="quill-avatar quill-sm quill-bounce-in" loading="lazy"
+             onerror="this.style.display='none'">
+        <div>
+          <span class="text-realm-gold-400 font-bold">Hint {hint_number} of 3</span>
+          <span class="text-xs text-realm-purple-400 ml-1">(from Professor Quill)</span>
+        </div>
       </div>
       <p class="text-white text-sm leading-relaxed">{_escape_html(hint_text)}</p>
       <p class="text-xs text-realm-purple-400 mt-2">⚠️ Using hints halves your gold reward.</p>
@@ -169,8 +174,11 @@ def tutor_explain(
 
     html = f"""
     <div class="bg-realm-purple-800/60 border border-blue-500/40 rounded-xl p-4 mt-4">
-      <div class="flex items-center gap-2 mb-2">
-        <span class="text-blue-400 font-bold">🧙 Professor Quill explains:</span>
+      <div class="flex items-center gap-3 mb-2">
+        <img src="/images/quill_teaching1.png" alt="Professor Quill"
+             class="quill-avatar quill-sm quill-bounce-in" loading="lazy"
+             onerror="this.style.display='none'">
+        <span class="text-blue-400 font-bold">Professor Quill explains:</span>
       </div>
       <p class="text-white text-sm leading-relaxed">{_escape_html(explanation)}</p>
     </div>

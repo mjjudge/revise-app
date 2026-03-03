@@ -341,6 +341,7 @@ def quest_answer(
         "can_retry": not result.correct and attempt.attempt_number < 3,
         "quest": quest,
         "quest_finished": quest.finished if quest else False,
+        "wrong_streak": quest.wrong_streak if quest else 0,
         "milestone": milestone,
         "tier_up": tier_up,
         "is_boosted": is_boosted,

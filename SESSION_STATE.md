@@ -1,33 +1,35 @@
 # SESSION_STATE
 
 ## Current objective
-EPIC 10.7 — "Teach Me" Mini-Lessons implemented and deployed.
+EPIC 10.8 — Professor Quill Image Integration & Bunny Easter Eggs — implemented and deployed.
 
 ## Completed this session
 
-### EPIC 10.7 — "Teach Me" AI Mini-Lessons
-- **Feature**: "Teach Me" button on question page + result page (wrong answers) opens modal with AI-generated KS3-style lesson
-- **Subject-aware**: Maths and geography get different lesson structures (maths: worked example, steps; geography: key facts, real-world example)
-- **Tutor service**: New `generate_lesson()` function with dedicated system prompts (`_LESSON_SYSTEM_MATHS`, `_LESSON_SYSTEM_GEOGRAPHY`)
-- **API endpoint**: `POST /tutor/lesson` returns styled HTML fragment, cached on `QuestionInstance.lesson_html`
-- **Markdown-to-HTML converter**: `_lesson_to_html()` converts GPT markdown output to styled HTML (headings, lists, bold/italic)
-- **Modal popup**: Full-screen overlay with loading spinner, escape/backdrop close, "Try the Question" button
-- **No gold penalty**: Lessons are free — encouraging learning without cost
-- **Schema**: New `lesson_html` field on `QuestionInstance` for caching
-- **Tests**: 13 new tests (431 total passing)
-- **ADR**: 023-teach-me-mini-lessons.md
+### EPIC 10.8 — Professor Quill Images & Bunny Easter Eggs
+- **11 Quill images**: thinking, teaching1/2, super_happy, concerned, waving, thumbsup, reading, proud, encouraging, celebrating
+- **6 bunny Easter eggs**: waving, thumbsup, reading, proud, encouraging, celebrating — ~15% random chance to swap eligible Quill poses
+- **Avatar CSS system**: `quill-avatar` class with 3 sizes (sm/md/lg), bounce-in animation for Quill, sparkle animation for bunny
+- **Speech bubble CSS**: Styled callout with arrow pointing at Quill
+- **`quillImg()` JS helper**: Client-side bunny swap logic; core poses (thinking, teaching, concerned, super_happy) never swap
+- **Wrong-streak tracking**: New `wrong_streak` field on `QuestSession`, increments on wrong, resets on correct
+- **Login page**: Quill waving (or bunny surprise) above title
+- **Question page**: Quill thinking for hints/loading, teaching for lesson modal, reading for fun rewrite
+- **Result page**: thumbsup/super_happy for correct (streak-aware), encouraging/concerned for wrong (wrong-streak-aware), celebrating for milestones, super_happy for tier-ups
+- **Quest summary**: proud for good ranks, encouraging for Apprentice rank
+- **Tutor API**: Quill thinking image in hint HTML, teaching image in explain HTML
+- **Fallback handling**: All images have `onerror="this.style.display='none'"` and `alt="Professor Quill"` / `alt="Anna's Bunny Friend"`
+- **Tests**: 27 new tests (458 total passing)
+- **ADR**: 024-quill-images-bunny-eggs.md
+- **DB migration**: Requires DB recreate (wrong_streak column added)
 
-### Parallelogram Fix
-- Fixed tangram parallelogram polygon from `[[0,0],[60,0],[85,50],[25,50]]` to `[[0,0],[50,0],[100,50],[50,50]]`
-- Updated DEFAULT_PIECES, 5 seed files, 6 runtime data files
+## Decisions made
+- Bunny Easter eggs use ~15% probability (Variable Ratio Reinforcement — Skinner, 1957)
+- Core pedagogical poses never swap to bunny — only 6 lighter poses are eligible
+- Science-backed: Persona Effect, Growth Mindset, Emotional Design research grounds all Quill appearance triggers
 
-### EPIC 10.6 — Brain Reset Reward Mini-Games
-- **Game framework**: Created `backend/app/static/reward_games.js` with registry pattern, modal system, random game selection, skip button
-- **10 games implemented** (all pure client-side JS):
-  1. Mini Sudoku (fixed) — 4×4 grid with inline styles (fixes broken Jinja2 block issue)
-  2. Tic-Tac-Toe — vs simple AI (win/block/prefer-centre strategy)
-  3. Space Invaders — canvas, 45s arcade, mobile touch controls
-  4. Pattern Memory — 4×4 grid sequence recall with difficulty scaling
+## Next actions
+- Review BACKLOG.md EPIC 10.8 stories — mark tasks as complete
+- Consider EPIC 11 (History) or other backlog items
   5. Reflex Tap — 10 rounds, average reaction time
   6. Word Scramble — 60s, unscramble maths/geography vocabulary
   7. Mini 2048 — tile-merging, target 256, swipe support
