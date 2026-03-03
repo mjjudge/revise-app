@@ -7,7 +7,8 @@
   <a href="/" class="tier-accent font-bold text-lg">⚔️ Revise Quest</a>
   <div class="flex items-center gap-3">
     {% set tier = get_tier(user.xp) %}
-    <span class="tier-badge px-2 py-0.5 rounded-full text-xs font-bold">{{ tier.icon }} {{ tier.title }}</span>
+    {% set cur_pantheon = get_pantheon(user.xp) %}
+    <span class="tier-badge px-2 py-0.5 rounded-full text-xs font-bold">{{ cur_pantheon.icon }} {{ tier.icon }} {{ tier.title }}</span>
     <span class="text-realm-gold-400 gold-shimmer">💰 {{ user.gold }}</span>
     <span class="tier-accent">⭐ {{ user.xp }} XP</span>
   </div>
@@ -132,6 +133,19 @@
         🔥 {{ quest.streak }} in a row!
         {% if quest.streak >= 5 %}Double XP!{% else %}+50% XP bonus!{% endif %}
       </span>
+    </div>
+    {% endif %}
+
+    <!-- 🌍 Pantheon-up celebration 🌍 -->
+    {% if pantheon_up %}
+    <div id="pantheon-banner" class="relative overflow-hidden rounded-2xl mb-4 p-6 text-center
+                border-2 border-realm-gold-400 bg-gradient-to-br from-realm-purple-900 via-realm-purple-800 to-realm-purple-900
+                shadow-[0_0_60px_rgba(251,191,36,0.5)]">
+      <img src="/images/quill_super_happy.png" alt="Professor Quill" class="quill-avatar quill-lg quill-bounce-in mx-auto mb-3"
+           loading="lazy" onerror="this.style.display='none'">
+      <p class="text-sm uppercase tracking-widest mb-1 text-realm-gold-400">🌟 New Pantheon Unlocked 🌟</p>
+      <h3 class="text-3xl font-extrabold mb-2 text-realm-gold-400">{{ pantheon_up.icon }} {{ pantheon_up.name }} Mythology</h3>
+      <p class="text-realm-purple-200 text-lg italic">A new legend begins — the {{ pantheon_up.name }} gods await your arrival!</p>
     </div>
     {% endif %}
 

@@ -24,7 +24,7 @@ from app.models.user import Role, User
 from app.services.auth import get_current_user
 from app.services.questions import generate_question, check_answer, detect_milestone, milestone_message, get_mcq_options, get_order_items, get_grid_fill_data, get_boosted_skills
 from app.services.game_config import get_enabled_games
-from app.services.tiers import detect_tier_up
+from app.services.tiers import detect_tier_up, detect_pantheon_up
 from app.templates.feed_loader import get_templates_by_chapter, get_templates_by_unit, get_skill_map, get_template_by_id
 
 router = APIRouter(prefix="/quest", tags=["quest"])
@@ -313,6 +313,16 @@ def quest_answer(
             "accent": new_tier.accent,
         }
 
+    # Pantheon transition detection
+    new_pantheon = detect_pantheon_up(old_xp, user.xp)
+    pantheon_up = None
+    if new_pantheon:
+        pantheon_up = {
+            "name": new_pantheon.name,
+            "icon": new_pantheon.icon,
+            "key": new_pantheon.key,
+        }
+
     # Update quest session
     if quest:
         quest.completed += 1
@@ -344,6 +354,7 @@ def quest_answer(
         "wrong_streak": quest.wrong_streak if quest else 0,
         "milestone": milestone,
         "tier_up": tier_up,
+        "pantheon_up": pantheon_up,
         "is_boosted": is_boosted,
         "enabled_games": get_enabled_games() if milestone else [],
     })

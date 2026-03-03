@@ -1,11 +1,12 @@
-"""Tests for EPIC 6.7 — Adventurer Tier System.
+"""Tests for Adventurer Tier System — Pantheon Prestige.
 
 Covers:
   - get_tier: correct tier at boundaries and mid-range
   - get_next_tier: returns next or None at max
-  - tier_progress: percentage, bounds, max tier
+  - tier_progress: percentage, bounds, max tier, pantheon info
   - detect_tier_up: crossing detection
   - Tier data integrity (all tiers valid, ordered, unique)
+  - Pantheon helpers: get_pantheon, completed_pantheons, pantheon_tiers, detect_pantheon_up
 """
 
 import pytest
@@ -13,10 +14,17 @@ import pytest
 from app.services.tiers import (
     TIERS,
     Tier,
+    Pantheon,
+    PANTHEONS,
     get_tier,
     get_next_tier,
     tier_progress,
     detect_tier_up,
+    get_pantheon,
+    get_pantheon_for_tier,
+    completed_pantheons,
+    pantheon_tiers,
+    detect_pantheon_up,
 )
 
 
@@ -43,14 +51,41 @@ class TestGetTier:
         assert t.title == "Messenger of Hermes"
         assert t.rank == 2
 
-    def test_max_tier(self):
-        t = get_tier(10000)
-        assert t.title == "Heir of Olympus"
-        assert t.rank == 8
-
-    def test_exact_max_threshold(self):
+    def test_max_greek_tier(self):
         t = get_tier(4000)
         assert t.title == "Heir of Olympus"
+        assert t.rank == 8
+        assert t.pantheon == "greek"
+
+    def test_first_norse_tier(self):
+        t = get_tier(4500)
+        assert t.title == "Thrall of Midgard"
+        assert t.rank == 9
+        assert t.pantheon == "norse"
+
+    def test_between_greek_and_norse(self):
+        """XP between Greek cap and Norse start stays at Greek max."""
+        t = get_tier(4200)
+        assert t.title == "Heir of Olympus"
+        assert t.pantheon == "greek"
+
+    def test_max_norse_tier(self):
+        t = get_tier(27000)
+        assert t.title == "Allfather's Heir"
+        assert t.rank == 17
+        assert t.pantheon == "norse"
+
+    def test_first_egyptian_tier(self):
+        t = get_tier(32500)
+        assert t.title == "Scribe of the Nile"
+        assert t.rank == 18
+        assert t.pantheon == "egyptian"
+
+    def test_max_tier_overall(self):
+        t = get_tier(200000)
+        assert t.title == "Child of the Stars"
+        assert t.rank == 26
+        assert t.pantheon == "egyptian"
 
     def test_each_tier_at_threshold(self):
         """Every tier is reachable at its exact xp_required."""
@@ -71,13 +106,25 @@ class TestGetNextTier:
         assert nxt.title == "Acolyte of Athena"
 
     def test_max_tier_has_no_next(self):
-        nxt = get_next_tier(4000)
+        nxt = get_next_tier(102000)
         assert nxt is None
 
     def test_mid_tier_next(self):
         nxt = get_next_tier(650)
         assert nxt is not None
         assert nxt.title == "Artisan of Hephaestus"
+
+    def test_greek_cap_next_is_norse(self):
+        nxt = get_next_tier(4000)
+        assert nxt is not None
+        assert nxt.title == "Thrall of Midgard"
+        assert nxt.pantheon == "norse"
+
+    def test_norse_cap_next_is_egyptian(self):
+        nxt = get_next_tier(27000)
+        assert nxt is not None
+        assert nxt.title == "Scribe of the Nile"
+        assert nxt.pantheon == "egyptian"
 
 
 class TestTierProgress:
@@ -106,10 +153,27 @@ class TestTierProgress:
         assert tp["xp_into_tier"] == 0
 
     def test_max_tier_progress(self):
-        tp = tier_progress(5000)
-        assert tp["current"].rank == 8
+        tp = tier_progress(150000)
+        assert tp["current"].rank == 26
         assert tp["next"] is None
         assert tp["pct"] == 100
+
+    def test_includes_pantheon_info(self):
+        tp = tier_progress(500)
+        assert tp["pantheon"].key == "greek"
+        assert isinstance(tp["completed_pantheons"], list)
+        assert len(tp["completed_pantheons"]) == 0
+
+    def test_norse_progress_has_completed_greek(self):
+        tp = tier_progress(5000)
+        assert tp["pantheon"].key == "norse"
+        assert len(tp["completed_pantheons"]) == 1
+        assert tp["completed_pantheons"][0].key == "greek"
+
+    def test_egyptian_progress_has_completed_both(self):
+        tp = tier_progress(40000)
+        assert tp["pantheon"].key == "egyptian"
+        assert len(tp["completed_pantheons"]) == 2
 
 
 class TestDetectTierUp:
@@ -142,6 +206,12 @@ class TestDetectTierUp:
         result = detect_tier_up(0, 4000)
         assert result is not None
         assert result.title == "Heir of Olympus"
+
+    def test_cross_pantheon_boundary(self):
+        result = detect_tier_up(4000, 4500)
+        assert result is not None
+        assert result.title == "Thrall of Midgard"
+        assert result.pantheon == "norse"
 
 
 class TestTierDataIntegrity:
@@ -176,5 +246,95 @@ class TestTierDataIntegrity:
         for t in TIERS:
             assert len(t.flavour) > 10, f"Tier {t.title} flavour too short"
 
-    def test_at_least_5_tiers(self):
-        assert len(TIERS) >= 5
+    def test_27_tiers_total(self):
+        assert len(TIERS) == 27
+
+    def test_9_tiers_per_pantheon(self):
+        for p_key in ("greek", "norse", "egyptian"):
+            count = sum(1 for t in TIERS if t.pantheon == p_key)
+            assert count == 9, f"Pantheon {p_key} has {count} tiers, expected 9"
+
+    def test_all_tiers_have_valid_pantheon(self):
+        valid = {"greek", "norse", "egyptian"}
+        for t in TIERS:
+            assert t.pantheon in valid, f"Tier {t.title} has invalid pantheon {t.pantheon}"
+
+
+class TestPantheonHelpers:
+    """Tests for pantheon helper functions."""
+
+    def test_three_pantheons(self):
+        assert len(PANTHEONS) == 3
+        assert PANTHEONS[0].key == "greek"
+        assert PANTHEONS[1].key == "norse"
+        assert PANTHEONS[2].key == "egyptian"
+
+    def test_get_pantheon_greek(self):
+        p = get_pantheon(500)
+        assert p.key == "greek"
+        assert p.name == "Greek"
+
+    def test_get_pantheon_norse(self):
+        p = get_pantheon(5000)
+        assert p.key == "norse"
+
+    def test_get_pantheon_egyptian(self):
+        p = get_pantheon(35000)
+        assert p.key == "egyptian"
+
+    def test_get_pantheon_between_greek_norse(self):
+        """XP between Greek cap and Norse start is still Greek pantheon."""
+        p = get_pantheon(4200)
+        assert p.key == "greek"
+
+    def test_get_pantheon_for_tier(self):
+        norse_tier = TIERS[10]
+        p = get_pantheon_for_tier(norse_tier)
+        assert p.key == "norse"
+
+    def test_completed_pantheons_none(self):
+        result = completed_pantheons(500)
+        assert result == []
+
+    def test_completed_pantheons_greek(self):
+        result = completed_pantheons(5000)
+        assert len(result) == 1
+        assert result[0].key == "greek"
+
+    def test_completed_pantheons_greek_and_norse(self):
+        result = completed_pantheons(35000)
+        assert len(result) == 2
+        assert result[0].key == "greek"
+        assert result[1].key == "norse"
+
+    def test_pantheon_tiers_returns_correct_count(self):
+        greek = pantheon_tiers("greek")
+        assert len(greek) == 9
+        assert all(t.pantheon == "greek" for t in greek)
+
+    def test_pantheon_tiers_norse_ordered(self):
+        norse = pantheon_tiers("norse")
+        assert norse[0].title == "Thrall of Midgard"
+        assert norse[-1].title == "Allfather's Heir"
+
+    def test_detect_pantheon_up_within_greek(self):
+        result = detect_pantheon_up(50, 200)
+        assert result is None
+
+    def test_detect_pantheon_up_greek_to_norse(self):
+        result = detect_pantheon_up(4000, 4500)
+        assert result is not None
+        assert result.key == "norse"
+
+    def test_detect_pantheon_up_norse_to_egyptian(self):
+        result = detect_pantheon_up(27000, 32500)
+        assert result is not None
+        assert result.key == "egyptian"
+
+    def test_detect_pantheon_up_no_change(self):
+        result = detect_pantheon_up(5000, 7000)
+        assert result is None
+
+    def test_detect_pantheon_up_xp_decrease(self):
+        result = detect_pantheon_up(5000, 3000)
+        assert result is None
