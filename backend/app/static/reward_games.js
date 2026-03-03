@@ -1351,10 +1351,34 @@ function closeRewardGame() {
       }
     }
 
+    // Rotational symmetry period for each polygon shape.
+    // Square looks identical every 90°; the other pieces (triangles,
+    // parallelogram) have no useful rotational symmetry (period = 360°).
+    function symmetryPeriod(pk) {
+      // Square polygon: "0,0;50,0;50,50;0,50"
+      const verts = pk.split(';');
+      if (verts.length === 4) {
+        // Check if it's a square (all sides equal, all right angles)
+        const pts = verts.map(function(v) { const c = v.split(','); return [+c[0], +c[1]]; });
+        const sides = [];
+        for (let i = 0; i < 4; i++) {
+          const dx = pts[(i+1)%4][0] - pts[i][0];
+          const dy = pts[(i+1)%4][1] - pts[i][1];
+          sides.push(Math.round(dx*dx + dy*dy));
+        }
+        if (sides[0] === sides[1] && sides[1] === sides[2] && sides[2] === sides[3]) {
+          return 90;
+        }
+      }
+      return 360;
+    }
+
     function checkSnap(p) {
       // Try all unclaimed target slots that share this piece's polygon shape
       const slots = targetSlots[p.polyKey];
       if (!slots) return false;
+
+      const symPeriod = symmetryPeriod(p.polyKey);
 
       for (const slot of slots) {
         if (slot.claimed) continue;
@@ -1362,7 +1386,11 @@ function closeRewardGame() {
         const dx = p.x - slot.x;
         const dy = p.y - slot.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
+        // Account for rotational symmetry: reduce rotation diff modulo the symmetry period
         let rotDiff = ((p.rotation - slot.rot) % 360 + 540) % 360 - 180;
+        if (symPeriod < 360) {
+          rotDiff = ((rotDiff % symPeriod) + symPeriod + symPeriod / 2) % symPeriod - symPeriod / 2;
+        }
 
         if (dist <= slot.snapDist && Math.abs(rotDiff) <= slot.snapRot && p.flipped === slot.flipped) {
           // Snap to this slot!
