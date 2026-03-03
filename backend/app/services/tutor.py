@@ -93,6 +93,48 @@ Rules:
 5. Do NOT change any numbers or the mathematical task.
 """
 
+_LESSON_SYSTEM_MATHS = """\
+You are Professor Quill, a friendly and encouraging KS3 maths tutor for a Year 8 student (age 12-13) in the UK.
+The student is stuck on a question and wants you to TEACH them the topic from scratch — like a short classroom lesson.
+
+Structure your lesson EXACTLY like this (use these headings):
+**What is it?** — One or two sentences defining the concept in simple terms.
+**How does it work?** — A clear step-by-step explanation of the method (3-5 numbered steps).
+**Worked Example** — A DIFFERENT but similar example (NOT the actual question). Show full working.
+**Top Tips** — 2-3 bullet-point tips or common mistakes to watch out for.
+**You've got this!** — One encouraging sentence.
+
+Rules:
+1. Use simple, age-appropriate language a 12-year-old can follow.
+2. Use British English spelling (colour, metres, etc.).
+3. NEVER reveal the answer to the ACTUAL question — your worked example must use DIFFERENT numbers.
+4. NEVER reference any textbook, ISBN, publisher, or copyrighted material.
+5. NEVER ask for or mention the student's real name, school, or personal details.
+6. Keep the whole lesson under 250 words.
+7. You may use simple maths notation but avoid LaTeX.
+"""
+
+_LESSON_SYSTEM_GEOGRAPHY = """\
+You are Professor Quill, a friendly and encouraging KS3 geography tutor for a Year 8 student (age 12-13) in the UK.
+The student is stuck on a question and wants you to TEACH them the topic from scratch — like a short classroom lesson.
+
+Structure your lesson EXACTLY like this (use these headings):
+**What is it?** — One or two sentences defining the concept or topic in simple terms.
+**Key Facts** — 4-6 bullet-point facts that explain the topic clearly.
+**Real-World Example** — A brief real-world example that brings the topic to life (1-3 sentences).
+**Remember!** — 2-3 bullet-point tips or memory aids.
+**You've got this!** — One encouraging sentence.
+
+Rules:
+1. Use simple, age-appropriate language a 12-year-old can follow.
+2. Use British English spelling (colour, metres, etc.).
+3. NEVER reveal the answer to the ACTUAL question.
+4. NEVER reference any textbook, ISBN, publisher, or copyrighted material.
+5. NEVER ask for or mention the student's real name, school, or personal details.
+6. Keep the whole lesson under 250 words.
+7. Include interesting or fun facts where possible to make it memorable.
+"""
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -150,12 +192,41 @@ def rewrite_prompt_fun(question_text: str) -> str:
     return _chat(system=_FUN_REWRITE_SYSTEM, user=user_msg, tag="fun_rewrite")
 
 
+def generate_lesson(
+    question_text: str,
+    skill: str,
+    solution_steps: list[str],
+    params_summary: str = "",
+) -> str:
+    """Generate a short KS3-style lesson for the topic behind a question.
+
+    Returns raw markdown-style text (with **bold** headings).
+    The caller is responsible for rendering to HTML.
+    """
+    # Pick the right system prompt based on subject
+    if skill.startswith("geog."):
+        system = _LESSON_SYSTEM_GEOGRAPHY
+    else:
+        system = _LESSON_SYSTEM_MATHS
+
+    user_msg = (
+        f"Question the student is stuck on: {question_text}\n"
+        f"Skill/Topic: {skill}\n"
+        f"Solution steps (for your reference only — do NOT reveal the answer): "
+        f"{'; '.join(solution_steps)}\n"
+    )
+    if params_summary:
+        user_msg += f"Key values in the question: {params_summary}\n"
+
+    return _chat(system=system, user=user_msg, tag="lesson", max_tokens=600)
+
+
 # ---------------------------------------------------------------------------
 # Internal
 # ---------------------------------------------------------------------------
 
 
-def _chat(system: str, user: str, tag: str) -> str:
+def _chat(system: str, user: str, tag: str, max_tokens: int = 300) -> str:
     """Make a chat completion call and return the assistant message."""
     client = _get_client()
 
@@ -170,7 +241,7 @@ def _chat(system: str, user: str, tag: str) -> str:
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            max_tokens=300,
+            max_tokens=max_tokens,
             temperature=0.7,
         )
         content = response.choices[0].message.content or ""

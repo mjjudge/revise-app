@@ -1,4 +1,5 @@
-"""Tests for EPIC 5 — Tutor Mode (OpenAI hints, explanations, fun rewrites).
+"""Tests for EPIC 5 — Tutor Mode (OpenAI hints, explanations, fun rewrites)
+   + EPIC 10.7 — Teach Me mini-lessons.
 
 Tests mock the OpenAI client to avoid real API calls.
 """
@@ -375,6 +376,152 @@ class TestTutorAPI:
         assert response.status_code == 200
         session.refresh(q)
         assert q.hints_used == 3
+
+
+# ---------------------------------------------------------------------------
+# EPIC 10.7: Teach Me mini-lesson tests
+# ---------------------------------------------------------------------------
+
+
+class TestGenerateLesson:
+    """Tests for the generate_lesson service function."""
+
+    def test_generate_lesson_maths(self, mock_openai):
+        from app.services.tutor import generate_lesson
+
+        result = generate_lesson(
+            question_text="Find the mean of 3, 5, 7",
+            skill="stats.mean.basic",
+            solution_steps=["Add: 3+5+7=15", "Divide by 3: 15/3=5"],
+        )
+        assert isinstance(result, str)
+        assert len(result) > 0
+        mock_openai.chat.completions.create.assert_called_once()
+
+    def test_generate_lesson_geography(self, mock_openai):
+        from app.services.tutor import generate_lesson
+
+        result = generate_lesson(
+            question_text="Name three types of cloud",
+            skill="geog.weather.clouds",
+            solution_steps=["cumulus, stratus, cirrus"],
+        )
+        assert isinstance(result, str)
+        assert len(result) > 0
+        # Verify it used the correct system prompt (geography)
+        call_args = mock_openai.chat.completions.create.call_args
+        system_msg = call_args[1]["messages"][0]["content"]
+        assert "geography" in system_msg.lower()
+
+    def test_generate_lesson_uses_600_tokens(self, mock_openai):
+        from app.services.tutor import generate_lesson
+
+        generate_lesson("Q?", "stats.mean.basic", ["Step 1"])
+        call_args = mock_openai.chat.completions.create.call_args
+        assert call_args[1]["max_tokens"] == 600
+
+    def test_lesson_system_prompts_exist(self):
+        from app.services.tutor import _LESSON_SYSTEM_MATHS, _LESSON_SYSTEM_GEOGRAPHY
+
+        assert "What is it?" in _LESSON_SYSTEM_MATHS
+        assert "Worked Example" in _LESSON_SYSTEM_MATHS
+        assert "Key Facts" in _LESSON_SYSTEM_GEOGRAPHY
+        assert "Real-World Example" in _LESSON_SYSTEM_GEOGRAPHY
+
+    def test_lesson_prompts_safety(self):
+        from app.services.tutor import _LESSON_SYSTEM_MATHS, _LESSON_SYSTEM_GEOGRAPHY
+
+        for prompt in [_LESSON_SYSTEM_MATHS, _LESSON_SYSTEM_GEOGRAPHY]:
+            assert "NEVER reveal the answer" in prompt
+            assert "personal" in prompt.lower()
+            assert "copyrighted" in prompt.lower()
+
+
+class TestLessonToHtml:
+    """Tests for the _lesson_to_html helper."""
+
+    def test_headings(self):
+        from app.api.tutor import _lesson_to_html
+
+        raw = "**What is it?**\nIt's a thing.\n\n**How does it work?**\nLike this."
+        html = _lesson_to_html(raw)
+        assert "<h4" in html
+        assert "What is it?" in html
+        assert "How does it work?" in html
+
+    def test_numbered_list(self):
+        from app.api.tutor import _lesson_to_html
+
+        raw = "**Steps**\n1. First step\n2. Second step"
+        html = _lesson_to_html(raw)
+        assert "<ol" in html
+        assert "<li>" in html
+        assert "First step" in html
+
+    def test_bullet_list(self):
+        from app.api.tutor import _lesson_to_html
+
+        raw = "**Tips**\n- Tip one\n- Tip two"
+        html = _lesson_to_html(raw)
+        assert "<ul" in html
+        assert "<li>" in html
+
+    def test_bold_inline(self):
+        from app.api.tutor import _lesson_to_html
+
+        raw = "Remember to **always check** your work."
+        html = _lesson_to_html(raw)
+        assert "<strong" in html
+        assert "always check" in html
+
+    def test_heading_with_content(self):
+        from app.api.tutor import _lesson_to_html
+
+        raw = "**What is it?** — The mean is the average of a set of numbers."
+        html = _lesson_to_html(raw)
+        assert "What is it?" in html
+        assert "mean is the average" in html
+
+
+class TestLessonAPI:
+    """Tests for POST /tutor/lesson route."""
+
+    def test_lesson_route_returns_html(self, session, kid, mock_openai):
+        from app.api.tutor import tutor_lesson
+
+        q = generate_question(session, kid, chapter=5)
+        mock_request = _build_mock_request(kid, session)
+
+        response = tutor_lesson(
+            request=mock_request,
+            question_id=q.id,
+            session=session,
+        )
+        assert response.status_code == 200
+        body = response.body.decode()
+        assert "Professor Quill" in body or "lesson" in body.lower() or "Try the Question" in body
+
+    def test_lesson_caches_html(self, session, kid, mock_openai):
+        """Second call should use cached lesson_html, not call OpenAI again."""
+        from app.api.tutor import tutor_lesson
+
+        q = generate_question(session, kid, chapter=5)
+        mock_request = _build_mock_request(kid, session)
+
+        # First call — generates
+        tutor_lesson(request=mock_request, question_id=q.id, session=session)
+        session.refresh(q)
+        assert q.lesson_html is not None
+
+        # Second call — should NOT call OpenAI again
+        mock_openai.chat.completions.create.reset_mock()
+        tutor_lesson(request=mock_request, question_id=q.id, session=session)
+        mock_openai.chat.completions.create.assert_not_called()
+
+    def test_lesson_html_field_default_none(self, session, kid):
+        """lesson_html should default to None."""
+        q = generate_question(session, kid, chapter=5)
+        assert q.lesson_html is None
 
 
 # ---------------------------------------------------------------------------

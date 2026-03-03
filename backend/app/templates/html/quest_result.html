@@ -75,6 +75,11 @@
                      rounded-lg text-sm font-medium transition-colors border border-blue-500/40">
         🧙 Ask Professor Quill: "Why was I wrong?"
       </button>
+      <button type="button" onclick="openLessonModal({{ question.id }})"
+              class="px-4 py-2 bg-emerald-600/40 hover:bg-emerald-600/60 text-emerald-300
+                     rounded-lg text-sm font-medium transition-colors border border-emerald-500/40">
+        📖 Teach me this topic
+      </button>
       <div id="explain-area"></div>
     </div>
     {% endif %}
@@ -198,9 +203,72 @@
   </div>
 </div>
 {% endif %}
+
+<!-- Lesson Modal (available on wrong answers) -->
+{% if not result.correct %}
+<div id="lesson-modal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 hidden">
+  <div class="bg-realm-purple-800 border-2 border-realm-gold-400 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl
+              max-h-[85vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-bold text-realm-gold-400">📖 Professor Quill's Lesson</h3>
+      <button onclick="closeLessonModal()" class="text-realm-purple-400 hover:text-white text-xl">&times;</button>
+    </div>
+    <div id="lesson-content">
+      <div class="flex items-center justify-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-realm-gold-400"></div>
+        <span class="ml-3 text-realm-purple-300">Professor Quill is preparing your lesson...</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
+<!-- Lesson modal JS (wrong answers only) -->
+{% if not result.correct %}
+<script>
+  var lessonLoaded = false;
+  function openLessonModal(questionId) {
+    var modal = document.getElementById('lesson-modal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    if (!lessonLoaded) {
+      var content = document.getElementById('lesson-content');
+      content.innerHTML = '<div class="flex items-center justify-center py-8">' +
+        '<div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-realm-gold-400"></div>' +
+        '<span class="ml-3 text-realm-purple-300">Professor Quill is preparing your lesson...</span></div>';
+
+      var formData = new FormData();
+      formData.append('question_id', questionId);
+      fetch('/tutor/lesson', { method: 'POST', body: formData })
+        .then(function(r) { return r.text(); })
+        .then(function(html) {
+          content.innerHTML = html;
+          lessonLoaded = true;
+        })
+        .catch(function() {
+          content.innerHTML = '<p class="text-red-400 text-center py-4">Sorry, the lesson could not be loaded. Try again!</p>';
+        });
+    }
+  }
+  function closeLessonModal() {
+    var modal = document.getElementById('lesson-modal');
+    if (modal) modal.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLessonModal();
+  });
+  var lm = document.getElementById('lesson-modal');
+  if (lm) lm.addEventListener('click', function(e) {
+    if (e.target === this) closeLessonModal();
+  });
+</script>
+{% endif %}
+
 {% if milestone %}
 <script src="/static/reward_games.js"></script>
 <script>

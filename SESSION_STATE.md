@@ -1,9 +1,25 @@
 # SESSION_STATE
 
 ## Current objective
-EPIC 10.6 — Brain Reset Reward Games implemented and deployed.
+EPIC 10.7 — "Teach Me" Mini-Lessons implemented and deployed.
 
 ## Completed this session
+
+### EPIC 10.7 — "Teach Me" AI Mini-Lessons
+- **Feature**: "Teach Me" button on question page + result page (wrong answers) opens modal with AI-generated KS3-style lesson
+- **Subject-aware**: Maths and geography get different lesson structures (maths: worked example, steps; geography: key facts, real-world example)
+- **Tutor service**: New `generate_lesson()` function with dedicated system prompts (`_LESSON_SYSTEM_MATHS`, `_LESSON_SYSTEM_GEOGRAPHY`)
+- **API endpoint**: `POST /tutor/lesson` returns styled HTML fragment, cached on `QuestionInstance.lesson_html`
+- **Markdown-to-HTML converter**: `_lesson_to_html()` converts GPT markdown output to styled HTML (headings, lists, bold/italic)
+- **Modal popup**: Full-screen overlay with loading spinner, escape/backdrop close, "Try the Question" button
+- **No gold penalty**: Lessons are free — encouraging learning without cost
+- **Schema**: New `lesson_html` field on `QuestionInstance` for caching
+- **Tests**: 13 new tests (431 total passing)
+- **ADR**: 023-teach-me-mini-lessons.md
+
+### Parallelogram Fix
+- Fixed tangram parallelogram polygon from `[[0,0],[60,0],[85,50],[25,50]]` to `[[0,0],[50,0],[100,50],[50,50]]`
+- Updated DEFAULT_PIECES, 5 seed files, 6 runtime data files
 
 ### EPIC 10.6 — Brain Reset Reward Mini-Games
 - **Game framework**: Created `backend/app/static/reward_games.js` with registry pattern, modal system, random game selection, skip button

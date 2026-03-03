@@ -28,6 +28,7 @@ class QuestionInstance(SQLModel, table=True):
     assets_html: str = Field(default="", description="Pre-rendered HTML/SVG assets")
     hints_used: int = Field(default=0, description="Number of tutor hints consumed")
     fun_prompt: Optional[str] = Field(default=None, description="Fun-rewritten prompt (cached from OpenAI)")
+    lesson_html: Optional[str] = Field(default=None, description="Cached AI mini-lesson HTML for this topic")
     user_id: Optional[int] = Field(default=None, foreign_key="user.id", index=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
