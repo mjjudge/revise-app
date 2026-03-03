@@ -34,8 +34,20 @@ function polyToPoints(verts) {
   return verts.map(v => v[0] + ',' + v[1]).join(' ');
 }
 
-function svgTf(x, y, rot) {
-  return 'translate(' + x + ',' + y + ') rotate(' + rot + ')';
+function polyCentroid(verts) {
+  let cx = 0, cy = 0;
+  verts.forEach(v => { cx += v[0]; cy += v[1]; });
+  return { x: cx / verts.length, y: cy / verts.length };
+}
+
+function svgTf(x, y, rot, flipped) {
+  let tf = 'translate(' + x + ',' + y + ') rotate(' + rot + ')';
+  if (flipped) {
+    // Mirror horizontally around the polygon origin (we flip the <g> contents)
+    // We apply scaleX(-1) with the centroid offset handled in the polygon points
+    tf += ' scale(-1,1)';
+  }
+  return tf;
 }
 
 function setStatus(msg, isError) {
@@ -98,7 +110,7 @@ function teRender() {
     poly.setAttribute('stroke-linejoin', 'round');
     g.appendChild(poly);
 
-    g.setAttribute('transform', svgTf(p.x, p.y, p.rotation));
+    g.setAttribute('transform', svgTf(p.x, p.y, p.rotation, p.flipped));
     svg.appendChild(g);
     p.el = g;
   });
@@ -152,7 +164,10 @@ function renderPieceList() {
 
 function updatePiecePos(idx) {
   const pos = document.getElementById('te-pos-' + idx);
-  if (pos) pos.textContent = Math.round(_pieces[idx].x) + ',' + Math.round(_pieces[idx].y) + ' ' + _pieces[idx].rotation + '°';
+  const p = _pieces[idx];
+  let txt = Math.round(p.x) + ',' + Math.round(p.y) + ' ' + p.rotation + '°';
+  if (p.flipped) txt += ' ↔';
+  if (pos) pos.textContent = txt;
 }
 
 /* ── Selection ─────────────────────────────────────────────────── */
@@ -205,7 +220,7 @@ function onMove(e) {
   const pt = svgPt(e);
   p.x = pt.x - _dragOffset.x;
   p.y = pt.y - _dragOffset.y;
-  p.el.setAttribute('transform', svgTf(p.x, p.y, p.rotation));
+  p.el.setAttribute('transform', svgTf(p.x, p.y, p.rotation, p.flipped));
   updatePiecePos(_selectedIdx);
   selectPiece(_selectedIdx);  // refresh info text
 }
@@ -222,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (_selectedIdx < 0) return;
     const p = _pieces[_selectedIdx];
     p.rotation = (p.rotation - ROT_STEP + 360) % 360;
-    p.el.setAttribute('transform', svgTf(p.x, p.y, p.rotation));
+    p.el.setAttribute('transform', svgTf(p.x, p.y, p.rotation, p.flipped));
     updatePiecePos(_selectedIdx);
     selectPiece(_selectedIdx);
   });
@@ -230,9 +245,49 @@ document.addEventListener('DOMContentLoaded', () => {
     if (_selectedIdx < 0) return;
     const p = _pieces[_selectedIdx];
     p.rotation = (p.rotation + ROT_STEP) % 360;
-    p.el.setAttribute('transform', svgTf(p.x, p.y, p.rotation));
+    p.el.setAttribute('transform', svgTf(p.x, p.y, p.rotation, p.flipped));
     updatePiecePos(_selectedIdx);
     selectPiece(_selectedIdx);
+  });
+  document.getElementById('te-flip').addEventListener('click', () => {
+    if (_selectedIdx < 0) return;
+    const p = _pieces[_selectedIdx];
+    p.flipped = !p.flipped;
+    p.el.setAttribute('transform', svgTf(p.x, p.y, p.rotation, p.flipped));
+    updatePiecePos(_selectedIdx);
+    selectPiece(_selectedIdx);
+  });
+
+  document.getElementById('te-centre').addEventListener('click', () => {
+    if (!_pieces.length) return;
+    // Compute bounding box of all pieces in world coordinates
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    _pieces.forEach(p => {
+      const rad = p.rotation * Math.PI / 180;
+      const cosR = Math.cos(rad), sinR = Math.sin(rad);
+      p.polygon.forEach(v => {
+        let vx = v[0], vy = v[1];
+        if (p.flipped) vx = -vx;
+        const wx = vx * cosR - vy * sinR + p.x;
+        const wy = vx * sinR + vy * cosR + p.y;
+        if (wx < minX) minX = wx;
+        if (wy < minY) minY = wy;
+        if (wx > maxX) maxX = wx;
+        if (wy > maxY) maxY = wy;
+      });
+    });
+    // Calculate offset to centre the bounding box within the PLAY area
+    const bw = maxX - minX, bh = maxY - minY;
+    const cx = PLAY.x + (PLAY.w - bw) / 2;
+    const cy = PLAY.y + (PLAY.h - bh) / 2;
+    const dx = cx - minX, dy = cy - minY;
+    // Shift all pieces
+    _pieces.forEach(p => {
+      p.x += dx;
+      p.y += dy;
+    });
+    teRender();
+    setStatus('Pieces centred in play area ✓');
   });
 });
 
@@ -258,6 +313,7 @@ function teLoad() {
         x: p.targetPose.position.x,
         y: p.targetPose.position.y,
         rotation: p.targetPose.rotationDeg,
+        flipped: !!(p.targetPose.flipped),
         snap: p.snap,
         lockOnSnap: p.lockOnSnap,
         startPose: p.startPose,
@@ -287,6 +343,7 @@ function teNew() {
         x: p.startPose.position.x,
         y: p.startPose.position.y,
         rotation: p.startPose.rotationDeg,
+        flipped: false,
         snap: p.snap,
         lockOnSnap: p.lockOnSnap,
         startPose: p.startPose,
@@ -317,6 +374,7 @@ function teSave() {
     puzzle.pieces[i].targetPose = {
       position: { x: Math.round(p.x), y: Math.round(p.y) },
       rotationDeg: p.rotation,
+      flipped: !!p.flipped,
     };
   });
 

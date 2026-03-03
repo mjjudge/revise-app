@@ -145,9 +145,9 @@ def blank_puzzle(title: str) -> dict:
     for i, tmpl in enumerate(DEFAULT_PIECES):
         p = dict(tmpl)
         pos = start_positions[i]
-        p["startPose"] = {"position": pos, "rotationDeg": 0}
+        p["startPose"] = {"position": pos, "rotationDeg": 0, "flipped": False}
         # Default target = same as start (user will drag to set)
-        p["targetPose"] = {"position": dict(pos), "rotationDeg": 0}
+        p["targetPose"] = {"position": dict(pos), "rotationDeg": 0, "flipped": False}
         pieces.append(p)
     return {
         "id": pid,

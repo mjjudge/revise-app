@@ -698,6 +698,20 @@ which keeps the surprise factor alive session after session.
 - [ ] Bunny swap probability is ~15%
 
 
+## TECH DEBT — Lightweight DB Migration
+Goal: Avoid needing to delete `data/app.sqlite3` whenever a new column is added.
+
+- [ ] On startup, introspect existing SQLite schema (`PRAGMA table_info`)
+- [ ] Compare against SQLModel metadata columns
+- [ ] Auto-run `ALTER TABLE … ADD COLUMN` for any missing columns (with safe defaults)
+- [ ] Log each migration applied; skip columns that already exist
+- [ ] Add a test that verifies migration detects and adds a missing column
+- [ ] Document approach in `docs/decisions/` (ADR)
+
+Priority: **Medium** — every schema change currently requires a full DB recreate,
+which loses user progress. This has bitten us twice (lesson_html, wrong_streak).
+
+
 ## EPIC 11 — History (Coming Soon) Framework Prep
 Goal: Prepare the structure so History can drop in cleanly.
 

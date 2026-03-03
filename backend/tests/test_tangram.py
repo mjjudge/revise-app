@@ -152,6 +152,38 @@ class TestBlankPuzzle:
             assert "targetPose" in piece
             assert "snap" in piece
 
+    def test_blank_poses_include_flipped(self):
+        """blank_puzzle start and target poses include flipped=False."""
+        p = blank_puzzle("FlipTest")
+        for piece in p["pieces"]:
+            assert piece["startPose"]["flipped"] is False
+            assert piece["targetPose"]["flipped"] is False
+
+    def test_blank_rules_include_allow_flip(self):
+        """blank_puzzle rules include allowFlip."""
+        p = blank_puzzle("RuleTest")
+        assert "allowFlip" in p["rules"]
+
+    def test_parallelogram_is_non_symmetrical(self):
+        """The parallelogram is the only non-symmetrical piece (can benefit from flip)."""
+        polys = {p["id"]: p["polygon"] for p in DEFAULT_PIECES}
+        para = polys["parallelogram"]
+        # Verify it's non-symmetrical: mirroring the X coords produces different polygon
+        cx = sum(v[0] for v in para) / len(para)
+        mirrored = sorted([[2 * cx - v[0], v[1]] for v in para])
+        original = sorted(para)
+        assert mirrored != original, "Parallelogram should be non-symmetrical"
+
+    def test_save_preserves_flipped_state(self, _temp_tangram_dir):
+        """save_puzzle preserves flipped flag in target poses."""
+        puzzle = blank_puzzle("FlipSave")
+        # Simulate setting one piece as flipped via the editor
+        puzzle["pieces"][6]["targetPose"]["flipped"] = True  # parallelogram
+        pid = save_puzzle(puzzle)
+        loaded = get_puzzle(pid)
+        assert loaded["pieces"][6]["targetPose"]["flipped"] is True
+        assert loaded["pieces"][0]["targetPose"]["flipped"] is False
+
     def test_default_pieces_count(self):
         """DEFAULT_PIECES has 7 entries."""
         assert len(DEFAULT_PIECES) == 7

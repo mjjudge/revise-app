@@ -1,31 +1,24 @@
 # SESSION_STATE
 
 ## Current objective
-EPIC 10.8 — Professor Quill Image Integration & Bunny Easter Eggs — implemented and deployed.
+Tangram improvements — flip, centre, solid silhouette — implemented and deployed.
 
 ## Completed this session
 
-### EPIC 10.8 — Professor Quill Images & Bunny Easter Eggs
-- **11 Quill images**: thinking, teaching1/2, super_happy, concerned, waving, thumbsup, reading, proud, encouraging, celebrating
-- **6 bunny Easter eggs**: waving, thumbsup, reading, proud, encouraging, celebrating — ~15% random chance to swap eligible Quill poses
-- **Avatar CSS system**: `quill-avatar` class with 3 sizes (sm/md/lg), bounce-in animation for Quill, sparkle animation for bunny
-- **Speech bubble CSS**: Styled callout with arrow pointing at Quill
-- **`quillImg()` JS helper**: Client-side bunny swap logic; core poses (thinking, teaching, concerned, super_happy) never swap
-- **Wrong-streak tracking**: New `wrong_streak` field on `QuestSession`, increments on wrong, resets on correct
-- **Login page**: Quill waving (or bunny surprise) above title
-- **Question page**: Quill thinking for hints/loading, teaching for lesson modal, reading for fun rewrite
-- **Result page**: thumbsup/super_happy for correct (streak-aware), encouraging/concerned for wrong (wrong-streak-aware), celebrating for milestones, super_happy for tier-ups
-- **Quest summary**: proud for good ranks, encouraging for Apprentice rank
-- **Tutor API**: Quill thinking image in hint HTML, teaching image in explain HTML
-- **Fallback handling**: All images have `onerror="this.style.display='none'"` and `alt="Professor Quill"` / `alt="Anna's Bunny Friend"`
-- **Tests**: 27 new tests (458 total passing)
-- **ADR**: 024-quill-images-bunny-eggs.md
-- **DB migration**: Requires DB recreate (wrong_streak column added)
+### Tangram Improvements (EPIC 10.9)
+- **Flip button**: ↔ Flip in both editor and game. SVG `scale(-1,1)` transform; `flipped` boolean persisted in `startPose`/`targetPose`; `checkSnap()` now requires matching flip state.
+- **Centre button**: ⊞ Centre in editor. Computes world-space bounding box of all pieces (respecting rotation + flip), shifts all pieces to centre within the PLAY area.
+- **Solid silhouette**: Replaced per-piece ghost `<polygon>` elements with a single compound `<path>`. All target piece polygons transformed to world coordinates and concatenated. No internal edge lines visible — just a solid shadow shape with subtle outer border.
+- **DB migration backlog**: Added `TECH DEBT — Lightweight DB Migration` section to BACKLOG.md.
+- **Tests**: 5 new tangram tests (blank_poses_include_flipped, blank_rules_include_allow_flip, parallelogram_is_non_symmetrical, save_preserves_flipped_state); 463 total.
+- **ADR**: 025-tangram-flip-centre-silhouette.md
+- **Admin template**: Updated instructions to mention Flip and Centre buttons.
 
 ## Decisions made
-- Bunny Easter eggs use ~15% probability (Variable Ratio Reinforcement — Skinner, 1957)
-- Core pedagogical poses never swap to bunny — only 6 lighter poses are eligible
-- Science-backed: Persona Effect, Growth Mindset, Emotional Design research grounds all Quill appearance triggers
+- Flip uses SVG `scale(-1,1)` rather than rewriting polygon coordinates — simpler, reversible
+- Silhouette uses compound `<path>` with `fill-rule: nonzero` to merge adjacent pieces visually
+- Snap check requires flipped state to match — prevents accidental snap of un-flipped parallelogram
+- `!!undefined` gracefully handles old puzzle JSON files without `flipped` fields (defaults to false)
 
 ## Next actions
 - Review BACKLOG.md EPIC 10.8 stories — mark tasks as complete

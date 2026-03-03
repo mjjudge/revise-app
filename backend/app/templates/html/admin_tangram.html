@@ -63,14 +63,20 @@
         <div id="te-svg-wrap" class="bg-realm-purple-800/60 border border-realm-purple-500/30 rounded-xl p-4">
           <div id="te-canvas" style="max-width:500px;margin:0 auto;"></div>
         </div>
-        <!-- Rotation + info -->
-        <div class="flex items-center justify-center gap-4 mt-3">
+        <!-- Rotation + flip + centre controls -->
+        <div class="flex items-center justify-center gap-4 mt-3 flex-wrap">
           <button id="te-rot-ccw" class="px-4 py-2 bg-realm-purple-700 hover:bg-realm-purple-600 text-white rounded-lg text-sm font-bold">
             ↺ Rotate left
+          </button>
+          <button id="te-flip" class="px-4 py-2 bg-realm-purple-700 hover:bg-realm-purple-600 text-white rounded-lg text-sm font-bold">
+            ↔ Flip
           </button>
           <span id="te-piece-info" class="text-realm-purple-300 text-sm">Select a piece</span>
           <button id="te-rot-cw" class="px-4 py-2 bg-realm-purple-700 hover:bg-realm-purple-600 text-white rounded-lg text-sm font-bold">
             Rotate right ↻
+          </button>
+          <button id="te-centre" class="px-4 py-2 bg-realm-green-700 hover:bg-realm-green-600 text-white rounded-lg text-sm font-bold">
+            ⊞ Centre
           </button>
         </div>
       </div>
@@ -88,8 +94,10 @@
             <li>1. <strong>New</strong> or <strong>Load</strong> a puzzle</li>
             <li>2. Drag each piece into the play area (dotted box)</li>
             <li>3. Use <strong>Rotate</strong> buttons for the selected piece</li>
-            <li>4. The position of each piece becomes the <strong>target pose</strong> the player must match</li>
-            <li>5. Click <strong>Save</strong> — puzzle appears in the game immediately</li>
+            <li>4. Use <strong>Flip</strong> to mirror (useful for the parallelogram)</li>
+            <li>5. Click <strong>Centre</strong> to centre all pieces in the play area</li>
+            <li>6. The position of each piece becomes the <strong>target pose</strong> the player must match</li>
+            <li>7. Click <strong>Save</strong> — puzzle appears in the game immediately</li>
             <li class="text-realm-gold-400 font-medium">💡 Same-shaped pieces (e.g. both large triangles) are interchangeable for the player</li>
           </ul>
         </div>

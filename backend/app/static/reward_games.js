@@ -1126,6 +1126,7 @@ function closeRewardGame() {
       <div id="tg-area" style="position:relative;max-width:400px;margin:0 auto;"></div>
       <div id="tg-controls" class="flex justify-center gap-3 mt-2">
         <button id="tg-rot-ccw" class="px-3 py-1 bg-realm-purple-700 hover:bg-realm-purple-600 text-white rounded-lg text-sm font-bold">↺ Rotate</button>
+        <button id="tg-flip" class="px-3 py-1 bg-realm-purple-700 hover:bg-realm-purple-600 text-white rounded-lg text-sm font-bold">↔ Flip</button>
         <button id="tg-rot-cw" class="px-3 py-1 bg-realm-purple-700 hover:bg-realm-purple-600 text-white rounded-lg text-sm font-bold">Rotate ↻</button>
       </div>
       <div class="flex justify-between mt-2" style="max-width:400px;margin:4px auto;">
@@ -1200,15 +1201,17 @@ function closeRewardGame() {
     function polyToPoints(verts) {
       return verts.map(v => v[0] + ',' + v[1]).join(' ');
     }
-    function svgTransform(x, y, rot) {
-      return 'translate(' + x + ',' + y + ') rotate(' + rot + ')';
+    function svgTransform(x, y, rot, flipped) {
+      let tf = 'translate(' + x + ',' + y + ') rotate(' + rot + ')';
+      if (flipped) tf += ' scale(-1,1)';
+      return tf;
     }
     function polyKey(polygon) {
       return polygon.map(v => v.join(',')).join(';');
     }
 
     // Build target slots grouped by polygon shape (for interchangeable pieces)
-    //   { polyKey → [{ x, y, rot, snapDist, snapRot, claimed: false }] }
+    //   { polyKey → [{ x, y, rot, flipped, snapDist, snapRot, claimed: false }] }
     const targetSlots = {};
     puzzle.pieces.forEach(p => {
       const key = polyKey(p.polygon);
@@ -1217,24 +1220,56 @@ function closeRewardGame() {
         x: p.targetPose.position.x,
         y: p.targetPose.position.y,
         rot: p.targetPose.rotationDeg,
+        flipped: !!(p.targetPose.flipped),
         snapDist: p.snap.distPx,
         snapRot: p.snap.rotDeg,
         claimed: false,
       });
     });
 
-    // Draw target silhouettes (ghost outlines)
-    puzzle.pieces.forEach(p => {
-      const ghost = document.createElementNS(svgNS, 'polygon');
+    // Draw a single merged silhouette of all target pieces.
+    // We transform each piece's polygon to world coordinates, then build
+    // a single <path> from their outlines so no internal lines are visible.
+    function transformPoly(polygon, x, y, rotDeg, flipped) {
+      const rad = rotDeg * Math.PI / 180;
+      const cosR = Math.cos(rad), sinR = Math.sin(rad);
+      return polygon.map(function(v) {
+        let vx = v[0], vy = v[1];
+        if (flipped) vx = -vx;
+        const rx = vx * cosR - vy * sinR;
+        const ry = vx * sinR + vy * cosR;
+        return [rx + x, ry + y];
+      });
+    }
+
+    // Build a single compound SVG path from all target piece polygons
+    let silhouettePath = '';
+    puzzle.pieces.forEach(function(p) {
       const tp = p.targetPose;
-      ghost.setAttribute('points', polyToPoints(p.polygon));
-      ghost.setAttribute('fill', 'rgba(139,92,246,0.12)');
-      ghost.setAttribute('stroke', 'rgba(139,92,246,0.25)');
-      ghost.setAttribute('stroke-width', '1');
-      ghost.setAttribute('stroke-dasharray', '3,3');
-      ghost.setAttribute('transform', svgTransform(tp.position.x, tp.position.y, tp.rotationDeg));
-      svg.appendChild(ghost);
+      const worldPts = transformPoly(p.polygon, tp.position.x, tp.position.y,
+                                      tp.rotationDeg, !!(tp.flipped));
+      silhouettePath += 'M' + worldPts.map(function(pt) {
+        return pt[0].toFixed(2) + ',' + pt[1].toFixed(2);
+      }).join('L') + 'Z ';
     });
+
+    const ghostPath = document.createElementNS(svgNS, 'path');
+    ghostPath.setAttribute('d', silhouettePath);
+    ghostPath.setAttribute('fill', 'rgba(139,92,246,0.15)');
+    ghostPath.setAttribute('stroke', 'none');
+    ghostPath.setAttribute('fill-rule', 'nonzero');
+    svg.appendChild(ghostPath);
+
+    // Add a subtle outer border on the silhouette using a second path
+    const ghostBorder = document.createElementNS(svgNS, 'path');
+    ghostBorder.setAttribute('d', silhouettePath);
+    ghostBorder.setAttribute('fill', 'none');
+    ghostBorder.setAttribute('stroke', 'rgba(139,92,246,0.25)');
+    ghostBorder.setAttribute('stroke-width', '1.5');
+    ghostBorder.setAttribute('stroke-linejoin', 'round');
+    ghostBorder.setAttribute('fill-rule', 'nonzero');
+    // Use paint-order so stroke is behind fill to avoid internal edge artefacts
+    svg.appendChild(ghostBorder);
 
     // Piece state
     const pieces = puzzle.pieces.map(p => ({
@@ -1245,6 +1280,7 @@ function closeRewardGame() {
       x: p.startPose.position.x,
       y: p.startPose.position.y,
       rotation: p.startPose.rotationDeg,
+      flipped: !!(p.startPose && p.startPose.flipped),
       locked: false,
       el: null,
     }));
@@ -1267,7 +1303,7 @@ function closeRewardGame() {
       poly.setAttribute('stroke-linejoin', 'round');
       g.appendChild(poly);
 
-      g.setAttribute('transform', svgTransform(p.x, p.y, p.rotation));
+      g.setAttribute('transform', svgTransform(p.x, p.y, p.rotation, p.flipped));
       g.dataset.idx = idx;
       svg.appendChild(g);
       p.el = g;
@@ -1299,14 +1335,15 @@ function closeRewardGame() {
         const dist = Math.sqrt(dx * dx + dy * dy);
         let rotDiff = ((p.rotation - slot.rot) % 360 + 540) % 360 - 180;
 
-        if (dist <= slot.snapDist && Math.abs(rotDiff) <= slot.snapRot) {
+        if (dist <= slot.snapDist && Math.abs(rotDiff) <= slot.snapRot && p.flipped === slot.flipped) {
           // Snap to this slot!
           p.x = slot.x;
           p.y = slot.y;
           p.rotation = slot.rot;
+          p.flipped = slot.flipped;
           p.locked = true;
           slot.claimed = true;
-          p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation));
+          p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation, p.flipped));
           p.el.style.cursor = 'default';
           p.el.style.opacity = '0.85';
           const poly = p.el.querySelector('polygon');
@@ -1364,7 +1401,7 @@ function closeRewardGame() {
       const pt = svgPoint(e);
       p.x = pt.x - dragOffset.x;
       p.y = pt.y - dragOffset.y;
-      p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation));
+      p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation, p.flipped));
     }
 
     function onPointerUp(e) {
@@ -1391,14 +1428,21 @@ function closeRewardGame() {
       if (selectedIdx < 0 || pieces[selectedIdx].locked) return;
       const p = pieces[selectedIdx];
       p.rotation = (p.rotation - rotStep + 360) % 360;
-      p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation));
+      p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation, p.flipped));
       checkSnap(p);
     });
     document.getElementById('tg-rot-cw').addEventListener('click', () => {
       if (selectedIdx < 0 || pieces[selectedIdx].locked) return;
       const p = pieces[selectedIdx];
       p.rotation = (p.rotation + rotStep) % 360;
-      p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation));
+      p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation, p.flipped));
+      checkSnap(p);
+    });
+    document.getElementById('tg-flip').addEventListener('click', () => {
+      if (selectedIdx < 0 || pieces[selectedIdx].locked) return;
+      const p = pieces[selectedIdx];
+      p.flipped = !p.flipped;
+      p.el.setAttribute('transform', svgTransform(p.x, p.y, p.rotation, p.flipped));
       checkSnap(p);
     });
   }
