@@ -1352,13 +1352,11 @@ function closeRewardGame() {
     }
 
     // Rotational symmetry period for each polygon shape.
-    // Square looks identical every 90°; the other pieces (triangles,
-    // parallelogram) have no useful rotational symmetry (period = 360°).
+    // Square: identical every 90°. Parallelogram: identical every 180°.
+    // Triangles: no rotational symmetry (period = 360°).
     function symmetryPeriod(pk) {
-      // Square polygon: "0,0;50,0;50,50;0,50"
       const verts = pk.split(';');
       if (verts.length === 4) {
-        // Check if it's a square (all sides equal, all right angles)
         const pts = verts.map(function(v) { const c = v.split(','); return [+c[0], +c[1]]; });
         const sides = [];
         for (let i = 0; i < 4; i++) {
@@ -1366,8 +1364,13 @@ function closeRewardGame() {
           const dy = pts[(i+1)%4][1] - pts[i][1];
           sides.push(Math.round(dx*dx + dy*dy));
         }
+        // Square: all 4 sides equal → 90° symmetry
         if (sides[0] === sides[1] && sides[1] === sides[2] && sides[2] === sides[3]) {
           return 90;
+        }
+        // Parallelogram / rhombus: opposite sides equal → 180° symmetry
+        if (sides[0] === sides[2] && sides[1] === sides[3]) {
+          return 180;
         }
       }
       return 360;
